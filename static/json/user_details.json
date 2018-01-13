@@ -1,0 +1,679 @@
+{
+  "seshu.kumar": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Layout"
+    ],
+    "group": "Production",
+    "name": "seshu.kumar",
+    "departments": [
+      "Animation"
+    ]
+  },
+  "rajesh.karle": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Layout"
+    ],
+    "group": "Production",
+    "name": "rajesh.karle",
+    "departments": [
+      "Animation"
+    ]
+  },
+  "muttangouda.b": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Lighting"
+    ],
+    "group": "Sup",
+    "name": "muttangouda.b",
+    "departments": [
+      "Lighting",
+      "VFX"
+    ]
+  },
+  "mahendra.upadhyay": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Lighting",
+      "Render",
+      "PreLighting"
+    ],
+    "group": "Production",
+    "name": "mahendra.upadhyay",
+    "departments": [
+      "Lighting"
+    ]
+  },
+  "vibhor.tyagi": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Render",
+      "Lighting"
+    ],
+    "group": "Production",
+    "name": "vibhor.tyagi",
+    "departments": [
+      "Lighting"
+    ]
+  },
+  "shahid.shaikh": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Lighting"
+    ],
+    "group": "Production",
+    "name": "shahid.shaikh",
+    "departments": [
+      "Lighting"
+    ]
+  },
+  "ajay.trivedi": {
+    "role": "Co-ordinator",
+    "columns": [
+      "CFX",
+      "Texturing",
+      "Fur Shape"
+    ],
+    "group": "Sup",
+    "name": "ajay.trivedi",
+    "departments": [
+      "CFX",
+      "SHF",
+      "Fur"
+    ]
+  },
+  "nishant.khanna": {
+    "role": "Co-ordinator",
+    "columns": [
+      "FX"
+    ],
+    "group": "Sup",
+    "name": "nishant.khanna",
+    "departments": [
+      "FX"
+    ]
+  },
+  "abhijit.gohil": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Modeling",
+      "Rigging",
+      "Texturing",
+      "Matte Painting",
+      "Blend Shape",
+      "Fur Shape",
+      "Sim Modeling",
+      "Layout Rig",
+      "Set Dressing",
+      "Proxy Set"
+    ],
+    "group": "Production",
+    "name": "abhijit.gohil",
+    "departments": [
+      "Modeling",
+      "Blend Shape",
+      "Fur Shape"
+    ]
+  },
+  "mangesh.panchal": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Modeling",
+      "Blend Shape"
+    ],
+    "group": "Production",
+    "name": "mangesh.panchal",
+    "departments": [
+      "Modeling"
+    ]
+  },
+  "tushar.chavan": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Modeling"
+    ],
+    "group": "Production",
+    "name": "tushar.chavan",
+    "departments": [
+      "Modeling"
+    ]
+  },
+  "pradeep.patel": {
+    "role": "Co-ordinator",
+    "columns": [],
+    "group": "Sup",
+    "name": "pradeep.patel",
+    "departments": [
+      "CG"
+    ]
+  },
+  "priyank.raj": {
+    "role": "Supervisor",
+    "columns": [],
+    "group": "Production",
+    "name": "priyank.raj",
+    "departments": []
+  },
+  "neha.thakur": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Animation",
+      "Layout",
+      "Blocking",
+      "Animation Stereo",
+      "Final Animation Stereo",
+      "Layout Stereo"
+    ],
+    "group": "Production",
+    "name": "neha.thakur",
+    "departments": [
+      "Surfacing"
+    ]
+  },
+  "prafull.sakharkar": {
+    "role": "Supervisor",
+    "columns": [
+      "Animation",
+      "Animation Stereo",
+      "Anim Tech Check",
+      "Anim Texture",
+      "Blend Shape",
+      "Blocking",
+      "CFX",
+      "Foliage",
+      "Cloth",
+      "Previz",
+      "Crowd",
+      "Final Animation Stereo",
+      "Fur Shape",
+      "FX",
+      "Layout",
+      "Layout Rig",
+      "Layout Stereo",
+      "Lighting",
+      "Modeling",
+      "PreLighting",
+      "Proxy Set",
+      "Render",
+      "Rigging",
+      "Set Dressing",
+      "Shave Hair",
+      "Shot Finaling",
+      "Sim Modeling",
+      "Stereo Comp",
+      "Stereo Render",
+      "Rig Test",
+      "Texturing"
+    ],
+    "group": "Sup",
+    "name": "prafull.sakharkar",
+    "departments": [
+      "Lighting",
+      "FX"
+    ]
+  },
+  "ajay.maurya": {
+    "role": "Supervisor",
+    "columns": [
+      "Animation",
+      "Animation Stereo",
+      "Anim Tech Check",
+      "Anim Texture",
+      "Blend Shape",
+      "Blocking",
+      "CFX",
+      "Cloth",
+      "Final Animation Stereo",
+      "Fur Shape",
+      "FX",
+      "Layout",
+      "Layout Rig",
+      "Layout Stereo",
+      "Lighting",
+      "Modeling",
+      "PreLighting",
+      "Proxy Set",
+      "Render",
+      "Rigging",
+      "Set Dressing",
+      "Shave Hair",
+      "Shot Finaling",
+      "Sim Modeling",
+      "Stereo Comp",
+      "Stereo Render",
+      "Texturing",
+      "Rig Test",
+      "Sim Modeling"
+    ],
+    "group": "Sup",
+    "name": "ajay.maurya",
+    "departments": [
+      "Lighting",
+      "FX",
+      "Blend Shape"
+    ]
+  },
+  "raj.thackaray": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Animation"
+    ],
+    "group": "Sup",
+    "name": "raj.thackaray",
+    "departments": [
+      "Animation"
+    ]
+  },
+  "urmila.kanse": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Lighting",
+      "Render",
+      "FX",
+      "Shot Finaling",
+      "Cloth",
+      "CFX",
+      "Shave Hair"
+    ],
+    "group": "Production",
+    "name": "urmila.kanse",
+    "departments": [
+      "Animation"
+    ]
+  },
+  "swapnil.khotkar": {
+    "role": "Co-ordinator",
+    "columns": [],
+    "group": "Production",
+    "name": "swapnil.khotkar",
+    "departments": []
+  },
+  "vaishal.shah": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Shot Finaling",
+      "Cloth",
+      "CFX",
+      "Previz",
+      "Shave Hair"
+    ],
+    "group": "Production",
+    "name": "vaishal.shah",
+    "departments": []
+  },
+  "sweta.chakrabarty": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Blend Shape",
+      "Modeling",
+      "Fur Shape",
+      "Sim Modeling",
+      "Anim Texture",
+      "Rigging"
+    ],
+    "group": "Production",
+    "name": "sweta.chakrabarty",
+    "departments": []
+  },
+  "stefan.dsouza": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Shot Finaling",
+      "Cloth",
+      "Previz",
+      "Shave Hair"
+    ],
+    "group": "Production",
+    "name": "stefan.dsouza",
+    "departments": []
+  },
+  "atif.khan": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Shot Finaling",
+      "Animation",
+      "Blocking",
+      "Cloth",
+      "Previz",
+      "Anim Tech Check",
+      "Shave Hair"
+    ],
+    "group": "Production",
+    "name": "atif.khan",
+    "departments": []
+  },
+  "aazim.mohammad": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Animation",
+      "Animation Stereo",
+      "Anim Tech Check",
+      "Anim Texture",
+      "Blend Shape",
+      "Blocking",
+      "CFX",
+      "Cloth",
+      "Final Animation Stereo",
+      "Fur Shape",
+      "FX",
+      "Layout",
+      "Layout Rig",
+      "Layout Stereo",
+      "Lighting",
+      "Modeling",
+      "PreLighting",
+      "Proxy Set",
+      "Render",
+      "Rigging",
+      "Set Dressing",
+      "Shave Hair",
+      "Shot Finaling",
+      "Sim Modeling",
+      "Stereo Comp",
+      "Stereo Render",
+      "Texturing"
+    ],
+    "group": "Sup",
+    "name": "aazim.mohammad",
+    "departments": [
+      "Lighting",
+      "FX"
+    ]
+  },
+  "santosh.gowda": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Modeling",
+      "Rigging",
+      "Texturing",
+      "Foliage",
+      "Anim Texture",
+      "Matte Painting",
+      "Blend Shape",
+      "Fur Shape",
+      "Sim Modeling",
+      "Layout Rig",
+      "Set Dressing",
+      "Proxy Set",
+      "Texturing"
+    ],
+    "group": "Production",
+    "name": "santosh.gowda",
+    "departments": [
+      "Matte Painting",
+      "Texturing"
+    ]
+  },
+  "sachin.patekar": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Rigging"
+    ],
+    "group": "Sup",
+    "name": "sachin.patekar",
+    "departments": [
+      "Rigging"
+    ]
+  },
+  "mayuresh.deshpande": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Animation"
+    ],
+    "group": "Sup",
+    "name": "mayuresh.deshpande",
+    "departments": [
+      "Animation"
+    ]
+  },
+  "mallikarjun.dharve": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Lighting",
+      "CFX",
+      "Shot Finaling ",
+      "FX"
+    ],
+    "group": "Production",
+    "name": "mallikarjun.dharve",
+    "departments": [
+      "Lighting",
+      "CFX",
+      "SHF",
+      "FX"
+    ]
+  },
+  "krutika.shinde": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Rig Test",
+      "Layout",
+      "Animation"
+    ],
+    "group": "Production",
+    "name": "krutika.shinde",
+    "departments": [
+      "Animation"
+    ]
+  },
+  "prashant.shivankar": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Texturing"
+    ],
+    "group": "Sup",
+    "name": "prashant.shivankar",
+    "departments": [
+      "Surfacing"
+    ]
+  },
+  "shradha.hada": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Animation",
+      "Layout",
+      "Blocking",
+      "Modeling",
+      "Texturing",
+      "Blend Shape",
+      "Rigging",
+      "Foliage",
+      "Sim Modeling",
+      "Fur Shape",
+      "Layout Rig",
+      "Anim Texture",
+      "Previz",
+      "Animation Stereo",
+      "Final Animation Stereo",
+      "Layout Stereo"
+    ],
+    "group": "Production",
+    "name": "shradha.hada",
+    "departments": [
+      "Animation"
+    ]
+  },
+  "sanket.shembekar": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Rig Test",
+      "Layout",
+      "Previz",
+      "Animation"
+    ],
+    "group": "Production",
+    "name": "sanket.shembekar",
+    "departments": [
+      "Animation"
+    ]
+  },
+  "vikram.donode": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Animation",
+      "Layout",
+      "Blocking",
+      "Crowd",
+      "Rig Test",
+      "Previz",
+      "Anim Tech Check",
+      "Animation Stereo",
+      "Final Animation Stereo",
+      "Layout Stereo"
+    ],
+    "group": "Production",
+    "name": "vikram.donode",
+    "departments": [
+      "Animation"
+    ]
+  },
+  "dilip.rathod": {
+    "role": "Supervisor",
+    "columns": [],
+    "group": "Sup",
+    "name": "dilip.rathod",
+    "departments": [
+      "CG"
+    ]
+  },
+  "vinod.sawant": {
+    "role": "Co-ordinator",
+    "columns": [],
+    "group": "Production",
+    "name": "vinod.sawant",
+    "departments": []
+  },
+  "nitin.kashyap": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Animation",
+      "Animation Stereo",
+      "Anim Tech Check",
+      "Anim Texture",
+      "Blend Shape",
+      "Blocking",
+      "CFX",
+      "Previz",
+      "Cloth",
+      "Final Animation Stereo",
+      "Fur Shape",
+      "FX",
+      "Layout",
+      "Layout Rig",
+      "Layout Stereo",
+      "Lighting",
+      "Modeling",
+      "Matte Painting",
+      "PreLighting",
+      "Proxy Set",
+      "Render",
+      "Rigging",
+      "Set Dressing",
+      "Shave Hair",
+      "Shot Finaling",
+      "Sim Modeling",
+      "Stereo Comp",
+      "Stereo Render",
+      "Rig Test",
+      "Texturing"
+    ],
+    "group": "Sup",
+    "name": "nitin.kashyap",
+    "departments": [
+      "Lighting",
+      "FX"
+    ]
+  },
+  "ayush.goel": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Animation",
+      "Animation Stereo",
+      "Anim Tech Check",
+      "Anim Texture",
+      "Blend Shape",
+      "Blocking",
+      "CFX",
+      "Cloth",
+      "Final Animation Stereo",
+      "Fur Shape",
+      "FX",
+      "Layout",
+      "Previz",
+      "Layout Rig",
+      "Layout Stereo",
+      "Lighting",
+      "Modeling",
+      "Matte Painting",
+      "PreLighting",
+      "Proxy Set",
+      "Render",
+      "Rigging",
+      "Set Dressing",
+      "Shave Hair",
+      "Shot Finaling",
+      "Sim Modeling",
+      "Stereo Comp",
+      "Stereo Render",
+      "Texturing"
+    ],
+    "group": "Sup",
+    "name": "ayush.goel",
+    "departments": [
+      "Lighting",
+      "FX"
+    ]
+  },
+  "sultan.bal": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Animation",
+      "Animation Stereo",
+      "Anim Tech Check",
+      "Anim Texture",
+      "Blend Shape",
+      "Blocking",
+      "CFX",
+      "Cloth",
+      "Final Animation Stereo",
+      "Fur Shape",
+      "FX",
+      "Layout",
+      "Layout Rig",
+      "Layout Stereo",
+      "Lighting",
+      "Modeling",
+      "PreLighting",
+      "Proxy Set",
+      "Render",
+      "Rigging",
+      "Set Dressing",
+      "Shave Hair",
+      "Shot Finaling",
+      "Sim Modeling",
+      "Stereo Comp",
+      "Stereo Render",
+      "Rig Test",
+      "Texturing"
+    ],
+    "group": "Sup",
+    "name": "sultan.bal",
+    "departments": [
+      "Lighting",
+      "FX"
+    ]
+  },
+  "vaibhav.shah": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Modeling"
+    ],
+    "group": "Sup",
+    "name": "vaibhav.shah",
+    "departments": [
+      "Modeling"
+    ]
+  }
+}

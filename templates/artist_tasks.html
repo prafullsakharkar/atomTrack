@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ user_id }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- The styles -->
+  <link id="bs-css" href="/static/css/bootstrap-cerulean.min.css" rel="stylesheet">
+  <link href='/static/css/charisma-app.css' rel="stylesheet">
+  <link href='/static/bower_components/chosen/chosen.min.css' rel='stylesheet'>
+  <link href='/static/bower_components/responsive-tables/responsive-tables.css' rel='stylesheet'>
+  <link href='/static/css/jquery.noty.css' rel='stylesheet'>
+  <link href='/static/css/noty_theme_default.css' rel='stylesheet'>
+  <link href='/static/css/animate.min.css' rel='stylesheet'>
+  <link href='/static/css/theme-dark-all.css' rel='stylesheet'>
+  <link href='/static/css/jquery.popVideo.css' rel='stylesheet'>
+
+  <!-- jQuery -->
+  <script src="/static/bower_components/jquery/jquery.min.js"></script>
+</head>
+
+
+<body>
+<!-- topbar starts -->
+<div class="navbar navbar-default" role="navigation">
+  <div class="navbar-inner">
+    <a class="navbar-brand toggle_right" id="toggle_right" style="display:block"><i
+      class="glyphicon glyphicon-chevron-right"
+      style="float:left;font-size: 18px;"></i></a>
+    <a class="navbar-brand toggle_left" id="toggle_left" style="display:none"><i
+      class="glyphicon glyphicon-chevron-left"
+      style="float:left;font-size: 18px;"></i></a>
+    <a class="navbar-brand" href="http://atom">
+      <!--            <img alt="" src="/static/img/atom01.jpg" class="hidden-xs"/> -->
+      <img alt="" src="/static/img/assemblage.png" class="hidden-xs" style="width: 280px;"/>
+      <!--            <span>A.T.O.M</span> -->
+    </a>
+
+    <div class="btn-group pull-right theme-container animated tada">
+      <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+        <span class="hidden-sm hidden-xs"><i class="glyphicon glyphicon-user"></i>&nbsp; {{ user_id }}</span>
+        <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu">
+        <li><a href="/logout"> LOGOUT</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+<!-- topbar ends -->
+<div class="ch-container">
+  <div class="row">
+    <noscript>
+      <div class="alert alert-block col-md-12">
+        <h4 class="alert-heading">Warning!</h4>
+
+        <p>You need to have <a href="http://en.wikipedia.org/wiki/JavaScript" target="_blank">JavaScript</a>
+          enabled to use this site.</p>
+      </div>
+    </noscript>
+  </div>
+
+  <div class="row">
+    <!-- leftside menu start -->
+    <div class="col-sm-1" id="task_menu1" style="display:none">
+      <div class="sidebar-nav">
+        <div class="nav-canvas">
+          <ul class="nav nav-pills nav-stacked main-menu">
+            <li class="nav-header"><img class="dashboard-avatar" alt=""
+                                        src="http://192.168.1.18/Employees/{{emp_code}}.jpg"></li>
+            <li class="nav-header">Main</li>
+            {% if data.user_role == 'Supervisor' %}
+            <li id="mgm_dashboard_page"><a class="ajax-link" href="/mgm_dashboard"><i
+              class="glyphicon glyphicon-dashboard"></i>&nbsp;&nbsp;<span> Management</span></a></li>
+            <li><a class="ajax-link" href="/dashboard"><i class="glyphicon glyphicon-dashboard"></i>&nbsp;&nbsp;<span> Dashboard</span></a>
+            </li>
+            {% endif %}
+            <li class="active" id="artist_tasks"><a class="ajax-link" href="/tasks"><i
+              class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;<span> To Do List</span></a>
+            </li>
+            <li><a class="ajax-link" href="/status"><i
+              class="glyphicon glyphicon-th"></i><span>&nbsp;&nbsp; Task Status</span></a>
+            </li>
+            {% if data.user_role == 'Co-ordinator' or data.user_role == 'Supervisor' %}
+            <li><a class="ajax-link" href="/review"><i class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;<span> Review Tasks</span></a>
+            <li><a class="ajax-link" href="/ftp"><i class="glyphicon glyphicon-cloud-upload"></i>&nbsp;&nbsp;<span> FTP Upload</span></a>
+            </li>
+            {% endif %}
+
+
+          </ul>
+        </div>
+      </div>
+    </div>
+    <!-- leftside menu start -->
+
+    <div class="col-at-12" id="panel_big">
+      <ul class="breadcrumb">
+        <li>
+          <a href="#">Main</a>
+        </li>
+        <li>
+          <a href="#">To Do List</a>
+        </li>
+      </ul>
+      <div class="sidebar-nav">
+        <div class="box-content row">
+          <div class="box col-at-11">
+            <div class="col-at-sm-3" style="display:block;">
+              <div class="controls">
+                <label class="control-label" for="selectArtistProject">Projects : &nbsp;</label>
+                <select id="selectArtistProject" data-rel="chosen" style="width: 122px;">
+                  {% for proj,id in data.projects.items %}
+                  {% if proj == data.project %}
+                  <option value="{{ proj }}" selected>{{ proj }}</option>
+                  {% else %}
+                  <option value="{{ proj }}">{{ proj }}</option>
+                  {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="col-at-sm-3" style="display:block;">
+              <div class="controls">
+                <label class="control-label" for="selectStatus">Status : &nbsp;</label>
+                <select id="selectStatus" data-rel="chosen" data-placeholder="Select one...">
+
+                  <option value="">All</option>
+                  {% for status in statuses %}
+                  <option value="{{status.name}}">{{status.name}}</option>
+                  {% endfor %}
+
+                </select>
+              </div>
+            </div>
+
+            <div class="col-at-2" style="float: right;">
+              &nbsp; <input data-errorqtip="" aria-invalid="false" id="search"
+                            data-qtip="Type to filter on task name or description"
+                            placeholder="Type to search ..." class="x-form-field x-form-text x-form-empty-field"
+                            autocomplete="off" type="text">
+              <!--                            &nbsp; &nbsp;<label id="table_row_count"></label> -->
+            </div>
+            <div class="box-icon" style="float: right;">
+              <button class="btn btn-inverse btn-default btn-sm" id="task_refresh">
+                <i class="glyphicon glyphicon-refresh icon-white"></i></button>
+              <button class="btn btn-inverse btn-default btn-sm" id="download_user_task">
+                <!--                            <button class="btn btn-inverse btn-default btn-xs" id="download_user_task" onClick ="$('#tbl_task').tableExport({type:'excel',escape:'false',filename:'user_task_details'});">-->
+                <i class="glyphicon glyphicon-save icon-white"></i></button>
+            </div>
+          </div>
+          <div class="col-at-12">
+            <div class="box" style="overflow:auto; overflow-y:auto; height:710px"
+                 id="div_task_details">
+              <table class="table table-hover table-bordered" id="tbl_task">
+                <thead>
+                <tr>
+                  <th>Project</th>
+                  <th>Task</th>
+                  <th>Path</th>
+                  <th>Status</th>
+                  <th>Start Date</th>
+                  <th>Stop Date</th>
+                  <th>Daily Backup Status</th>
+                  <th>Last Upload Date</th>
+                  <th>Bid Hours</th>
+                  <th>Time Spend</th>
+                  <th>Time Left</th>
+                </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+           data-backdrop="static" data-keyboard="false" aria-hidden="true">
+
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal">×</button>
+              <div id="modal_header">
+                <div id="task_details_loader" style="text-align: left;"><img
+                  src="/static/img/loading.gif"></div>
+              </div>
+            </div>
+            <div class="modal-body">
+              <div class="container">
+                <div class="row">
+                  <div class="col-md-9">
+                    <!-- Nav tabs -->
+                    <div class="card">
+                      <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a href="#my_notes"
+                                                                  aria-controls="my_notes"
+                                                                  role="tab" data-toggle="tab">Task Notes</a>
+                        </li>
+                        <li role="presentation"><a href="#my_links" aria-controls="my_links"
+                                                   role="tab" data-toggle="tab">Links</a></li>
+                        <li role="presentation"><a href="#my_versions"
+                                                   aria-controls="my_versions" role="tab"
+                                                   data-toggle="tab">Versions</a></li>
+                        <li role="presentation"><a href="#my_version_notes"
+                                                   aria-controls="my_version_notes" role="tab"
+                                                   data-toggle="tab">Version Notes</a></li>
+                      </ul>
+
+                      <!-- Tab panes -->
+                      <div class="tab-content">
+                        <div role="tabpanel" class="tab-pane active" id="my_notes">
+                          <div class="box">
+                            <div class="controls">
+                              <span>Category : </span>
+                              <select id="selectNoteCategory" data-rel="chosen"
+                                      data-placeholder="Select one..."
+                                      style="width:130px !important;"
+                                      onchange="toggle_parent_note(this)">
+                                <option value="">All</option>
+                                <option value="None">None</option>
+                                <option value="Internal">Internal</option>
+                                <option value="Client feedback">Client feedback
+                                </option>
+                                <option value="Client">Client</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div id="task_notes_loader" style="text-align: center;"><img
+                            src="/static/img/loading.gif"></div>
+                          <div class="box"
+                               style="overflow:auto; overflow-y:auto; height:572px;"
+                               id="note_details" data-user-id="{{ user_id }}">
+                          </div>
+
+                        </div>
+
+                        <div role="tabpanel" class="tab-pane" id="my_links">
+                          <div id="task_link_loader" style="text-align: center;"><img
+                            src="/static/img/loading.gif"></div>
+                          <div class="box"
+                               style="overflow:auto; overflow-y:auto; height:624px;"
+                               id="link_details"></div>
+                        </div>
+
+                        <div role="tabpanel" class="tab-pane" id="my_versions">
+                          <div class="box">
+                            <div class="controls">
+                              <span>Asset Types : </span>
+                              <select id="selectAssetTypes" data-rel="chosen"
+                                      data-placeholder="Select one..."
+                                      style="width:130px !important;"
+                                      onchange="toggle_asset_type(this)">
+                                <option value="">All</option>
+                                {% for type in asset_types %}
+                                <option value="{{ type }}">{{ type }}</option>
+                                {% endfor %}
+                              </select>
+                              <!--
+                                                      <button class="btn btn-inverse btn-default btn-sm" id="save_ver_changes">
+                                                          <i class="glyphicon glyphicon-floppy-save icon-white"></i>&nbsp;&nbsp;Save</button>&nbsp;
+                                                      <button class="btn btn-inverse btn-default btn-sm" id="undo_ver">
+                                                          <i class="glyphicon glyphicon-hand-left icon-white"></i>&nbsp;&nbsp;Undo</button>
+                              -->
+                              <input data-errorqtip="" aria-invalid="false"
+                                     id="search_version"
+                                     data-qtip="Type to filter on task name or description"
+                                     placeholder="Type to filter..."
+                                     class="x-form-field x-form-text x-form-empty-field"
+                                     autocomplete="off" type="text" style="float: right;">
+                            </div>
+                          </div>
+                          <div id="version_loader" style="text-align: center;"><img
+                            src="/static/img/loading.gif"></div>
+                          <div class="box"
+                               style="overflow:auto; overflow-y:auto; height:572px;"
+                               id="version_details">
+                            <table class="table table-striped" id="tbl_versions">
+                              <thead>
+                              <tr>
+                                <th onclick="sortOrder(this)"><i
+                                  class="glyphicon glyphicon-sort-by-alphabet"></i>&nbsp;
+                                  Name
+                                </th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Published On</th>
+                                <th>Published by</th>
+                              </tr>
+                              </thead>
+                              <tbody>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+
+                        <div role="tabpanel" class="tab-pane" id="my_version_notes">
+                          <div class="box">
+                            <div class="controls">
+                              <!--
+                                                                  <select id="selectVersionTaskAssetTypes" data-rel="chosen"
+                                                                          style="width: 140px;" onchange="show_versions(this)">
+                                                                      <option value="">Select Asset Type</option>
+                                                          {% for type in asset_types %}
+                                                              <option value="{{type}}">{{type}}</option>
+                                                          {% endfor %}
+                                                                  </select>&nbsp;&nbsp;
+                              -->
+                              <span>Category :</span>&nbsp;&nbsp;
+                              <select id="selectVersionNoteCategory" data-rel="chosen"
+                                      data-placeholder="Select one..."
+                                      style="width:130px !important;"
+                                      onchange="toggle_parent_note(this)">
+                                <option value="">All</option>
+                                <option value="None">None</option>
+                                <option value="Internal">Internal</option>
+                                <option value="Client feedback">Client feedback</option>
+                                <option value="Client">Client</option>
+                              </select>
+
+                            </div>
+                          </div>
+                          <div id="task_version_notes_loader"
+                               style="text-align: center; display: none;"><img
+                            src="/static/img/loading.gif"></div>
+                          <div class="box"
+                               style="overflow:auto; overflow-y:auto; height:572px;"
+                               id="version_note_details" data-user-id="{{user_id}}"></div>
+                        </div>
+
+
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!--
+                          <div class="modal-footer">
+                              <a href="#" class="btn btn-default" data-dismiss="modal">Close</a>
+                              <a href="#" class="btn btn-primary" data-dismiss="modal">Save changes</a>
+                          </div>
+          -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+
+
+<!-- external javascript -->
+
+<script src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+
+<!--&lt;!&ndash; library for cookie management &ndash;&gt;-->
+<script src="/static/js/jquery.cookie.js"></script>
+<!--&lt;!&ndash; calender plugin &ndash;&gt;-->
+<script src='/static/bower_components/moment/min/moment.min.js'></script>
+<!--<script src='/static/bower_components/fullcalendar/dist/fullcalendar.min.js'></script>-->
+<!--&lt;!&ndash; data table plugin &ndash;&gt;-->
+<script src='/static/js/jquery.dataTables.min.js'></script>
+
+<script src="/static/js/jquery.colorbox.min.js"></script>
+<!--&lt;!&ndash; select or dropdown enhancer &ndash;&gt;-->
+<script src="/static/bower_components/chosen/chosen.jquery.min.js"></script>
+<!--&lt;!&ndash; notification plugin &ndash;&gt;-->
+<script src="/static/js/jquery.noty.js"></script>
+<!--&lt;!&ndash; library for making tables responsive &ndash;&gt;-->
+<script src="/static/bower_components/responsive-tables/responsive-tables.js"></script>
+<!--&lt;!&ndash; tour plugin &ndash;&gt;-->
+<script src="/static/bower_components/bootstrap-tour/build/js/bootstrap-tour.min.js"></script>
+<!--&lt;!&ndash; star rating plugin &ndash;&gt;-->
+<script src="/static/js/jquery.raty.min.js"></script>
+<!--&lt;!&ndash; for iOS style toggle switch &ndash;&gt;-->
+<script src="/static/js/jquery.iphone.toggle.js"></script>
+<!--&lt;!&ndash; autogrowing textarea plugin &ndash;&gt;-->
+<script src="/static/js/jquery.autogrow-textarea.js"></script>
+<!--&lt;!&ndash; multiple file upload plugin &ndash;&gt;-->
+<script src="/static/js/jquery.uploadify-3.1.min.js"></script>
+<!--&lt;!&ndash; history.js for cross-browser state change on ajax &ndash;&gt;-->
+<script src="/static/js/jquery.history.js"></script>
+<script src="/static/js/main.js"></script>
+
+<script src="/static/js/tableExport/tableExport.js"></script>
+<script src="/static/js/tableExport/jquery.base64.js"></script>
+<!-- PNG -->
+<script src="/static/js/tableExport/html2canvas.js"></script>
+<!-- PDF -->
+<!--
+<script src="/static/js/jspdf.debug.js"></script>
+<script src="/static/js/jspdf.plugin.autotable.js"></script>
+<script src="/static/js/faker.min.js"></script>
+<script src="/static/js/tableExport/jspdf/libs/sprintf.js"></script>
+<script src="/static/js/tableExport/jspdf/jspdf.js"></script>
+<script src="/static/js/tableExport/jspdf/libs/base64.js"></script>
+-->
+<script src="/static/js/custom.js"></script>
+<script src="/static/js/sortElements.js"></script>
+<script src="/static/jquery-plainoverlay/jquery.plainoverlay.min.js"></script>
+<script src="/static/bower_components/jQuery-table2excel/src/jquery.table2excel.js"></script>
+<script src="/static/js/Date.format.min.js"></script>
+<script src="/static/js/jquery.popVideo.js"></script>
+
+</html>

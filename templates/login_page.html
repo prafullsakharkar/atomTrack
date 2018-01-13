@@ -1,0 +1,33 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Login</title>  
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">  
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="/static/css/login.css" rel="stylesheet" type="text/css" media="all"/>
+<style>
+                        body
+                                {
+                                        background-image: url('/static/img/atom01.jpg');
+                                        background-attachment: fixed;
+                                        background-size: 100% 100%;
+                                }
+</style>
+
+</head>
+<body>
+<div class="login">
+        <div style="width: 223px;"> 
+            <form method="post" action="/auth/">{% csrf_token %}
+                {% if form.errors %}
+                    <h1>Please enter a correct username and password</h1>
+                {% endif %}
+                <input type="text" name="username" placeholder="Username" required="">
+		<input type="password" placeholder="Password" value=""  name="password" required="">
+                <input type="submit" value="Sign in">
+	    </form>
+    </div> 
+</div>
+</body>
+</html>

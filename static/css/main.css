@@ -1,0 +1,299 @@
+
+@font-face{
+	font-family: 'headerfont';
+	src:url('/static/fonts/GeorginaDemo-Regular.ttf');
+}
+@font-face{
+font-family: 'btnfont';
+	src:url('/static/fonts/alienleague.ttf');
+}
+@font-face{
+font-family: 'head';
+	src:url('/static/fonts/Kirvy-Regular.otf');
+}
+
+@font-face{
+font-family: 'taskfont';
+	src:url('/static/fonts/TitilliumWeb-Light.ttf');
+}
+
+@font-face{
+font-family: 'pathfont';
+	src:url('/static/fonts/Kirvy-Thin.otf');
+}
+
+
+html, body {
+    font-size: 1.1em;
+    line-height: 1.3;
+    font-family: taskfont;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    }
+body {
+	background: linear-gradient(60deg, #333, #222);
+	background-size: 600% 600%;
+	-webkit-animation: Gradient 60s ease infinite;
+	-moz-animation: Gradient 60s ease infinite;
+	animation: Gradient 60s ease infinite;
+}
+	
+    
+    @-webkit-keyframes Gradient {
+		0%{background-position:0% 50%}
+		50%{background-position:100% 50%}
+		100%{background-position:0% 50%}
+	}
+	@-moz-keyframes Gradient {
+		0%{background-position:0% 50%}
+		50%{background-position:100% 50%}
+		100%{background-position:0% 50%}
+	}
+	@keyframes Gradient { 
+		0%{background-position:0% 50%}
+		50%{background-position:100% 50%}
+		100%{background-position:0% 50%}
+	}
+
+    #id_first_name {
+        width: 88%;
+        height: 70px;
+        border-radius: 10px;
+        margin-top: 8px;
+        border: 1px solid #CCC;
+        overflow: auto;
+        color: #81919C;
+        text-align: justify;
+    }
+        .content {
+        display: none;
+        font-size: 12pt;
+        margin-right: 10px;
+        margin-top: -10px;
+        color:#999;
+    }
+    .container {
+        display: none;
+        padding : 5px;
+    }
+    .content1 {
+        display: none;
+        padding : 5px;
+        margin-top: -50px;
+    }
+    .container1 {
+        display: none;
+        padding : 5px;
+    }
+    .specific {
+        padding-left: 1%;
+    }
+
+    .link_special{
+        float: right;
+        position: relative;
+        left: -57%;
+        top: -405px;
+    }
+    .task {
+        font-size: 18pt;
+        font-family: taskfont;
+        color: white;
+    }
+    .task1 {
+        font-size: 13pt;
+	    width: 75%;
+	    font-family: taskfont;
+    }
+    .note {
+        font-family: taskfont;
+        font-size: 13pt;
+        color: #C7CECA;
+        border-bottom:2px solid #64646E;
+    }
+    .note1 {
+        font-family: taskfont;
+        font-size: 13pt;
+        color: #F6EEEE;
+        position: relative;
+        bottom: -7px;
+    }
+    #logout {
+        float: right;
+        position: relative;
+        left: 0%;
+        top: -12px;
+        font-size: 18px;
+        padding-top: 10px;
+    }
+    #logout:hover {
+        color: white;
+    }
+    .pass_link {
+        margin: 8px;
+        text-decoration: double;
+        color: #F99989;
+    }
+    .notedata{
+        height: 200px;
+        width: 80%;
+        border: 1px solid #CCC;
+        border-radius: 20px;
+        overflow: auto;
+        color: white;
+        text-align: justify;
+    }
+    .path:hover {
+        color: #AB9996;
+    }
+    .path {
+        color: #F99989;
+        font-family: sans-serif;
+        font-size: 14px;
+    }
+    .spec_status {
+        position: relative;
+        left: 19%;
+        bottom: 52px;
+        width: 20%;
+    }
+.button_change_status {
+border: 0px none;
+font-family: headerfont;
+font-size: 0.8em;
+color: #000;
+background: #FFF none repeat scroll 0% 0%;
+border-radius: 0.5rem;
+transition: #EDECEB 0.2s ease 0s;
+margin-top: 2px;
+height: 20px;
+    }
+    
+    
+.button_change_status:hover {
+border: 1px none;
+color: #FFF;
+background: #1CBC90 none repeat scroll 0% 0%;
+border: 2px double;
+  border-color: #E9D15A;
+    }
+    
+    
+    .extra {
+        width: 85%;
+        border-bottom: 1px dashed #996767;
+    }
+
+    /* Button */
+.btn {
+  border: 0;
+  font-size: 0.75rem;
+  height: 2.5rem;
+  line-height: 2.5rem;
+  padding: 0 1.5rem;
+  color: white;
+  background: #8E49E8;
+  text-transform: uppercase;
+  border-radius: .25rem;
+  transition: background .2s;
+}
+
+.header1 {
+        position: relative;
+        left: 25%;
+        height: 25px;
+        top: -87px;
+        width: 7%;
+        border: 0;
+        font-family: headerfont;
+        font-size: 1rem;
+        color: #000;
+        background: #FFF;
+        text-transform: uppercase;
+        border-radius: 0.5rem;
+        transition: background .2s;
+    }
+    .header1:focus {
+  outline: 0;
+}
+
+.header1:hover,
+.btn:focus {
+  background: transparent linear-gradient(#DCE9F0, #0F3C5D, #000, #081821) repeat scroll 0% 0%;
+  box-shadow: 0px 4px 10px 0px rgba(86, 142, 215, 0.59), 0px 2px 10px 0px rgba(121, 163, 225, 0.6);
+  border: 2px double #79AED5;
+  border: 2px double;
+  border-color: #E9D15A;
+  color: #FFF;
+  cursor: pointer;
+}
+.header {
+    float: right;
+    position: relative;
+    top: -50px;
+    height: 20px;
+    width: 7%;
+    border: 0px none;
+    font-family: headerfont;
+    font-size: 0.7rem;
+    color: #000;
+    background: #FFF none repeat scroll 0% 0%;
+    text-transform: uppercase;
+    border-radius: 0.5rem;
+    transition: #EDECEB 0.2s ease 0s;
+    margin-right: 10px;
+}
+
+    .header:focus {
+  outline: 0;
+}
+.header:hover,
+.btn:focus {
+  background: #1CBC90 none repeat scroll 0% 0%;
+  box-shadow: 0px 4px 10px 0px rgba(86, 142, 215, 0.59), 0px 2px 10px 0px rgba(121, 163, 225, 0.6);
+  border: 2px double;
+  border-color: #E9D15A;
+  color: #FFF;
+  cursor: pointer;
+}
+.header2 {
+        float: right;
+position: relative;
+top: 36px;
+height: 20px;
+width: 6%;
+border: 0px none;
+font-family: headerfont;
+font-size: 0.8rem;
+color: #000;
+background: #FFF none repeat scroll 0% 0%;
+text-transform: uppercase;
+border-radius: 0.5rem;
+transition: #EDECEB 0.2s ease 0s;
+    }
+    .header2:focus {
+  outline: 0;
+}
+.header2:hover,
+.btn:focus {
+  background: #1CBC90 none repeat scroll 0% 0%;
+  box-shadow: 0px 4px 10px 0px rgba(86, 142, 215, 0.59), 0px 2px 10px 0px rgba(121, 163, 225, 0.6);
+  border: 2px double;
+  border-color: #E9D15A;
+  color: #FFF;
+  cursor: pointer;
+}
+.bgimg {
+background-image: linear-gradient(30deg, #333, #222);
+position: fixed;
+width: 100%;
+top: 0%;
+color: white;
+z-index: 1;
+border-bottom: 5px solid #131417;
+height: 100px;
+font-family: headerfont;
+font-size: 11px;
+}

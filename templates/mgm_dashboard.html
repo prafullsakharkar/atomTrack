@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{user_id}}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- The styles -->
+  <link id="bs-css" href="/static/css/bootstrap-cerulean.min.css" rel="stylesheet">
+  <link href='/static/css/charisma-app.css' rel="stylesheet">
+  <link href='/static/bower_components/chosen/chosen.min.css' rel='stylesheet'>
+  <link href='/static/bower_components/responsive-tables/responsive-tables.css' rel='stylesheet'>
+  <link href='/static/css/jquery.noty.css' rel='stylesheet'>
+  <link href='/static/css/noty_theme_default.css' rel='stylesheet'>
+  <link href='/static/css/animate.min.css' rel='stylesheet'>
+  <link href='/static/css/bootstrap-datepicker.min.css' rel='stylesheet'>
+  <link href='/static/css/theme-dark-all.css' rel='stylesheet'>
+
+  <!-- jQuery -->
+  <script src="/static/bower_components/jquery/jquery.min.js"></script>
+</head>
+
+<body>
+<!-- topbar starts -->
+<div class="navbar navbar-default" role="navigation">
+  <div class="navbar-inner">
+    <a class="navbar-brand toggle_right" id="toggle_right" style="display:block"><i class="glyphicon glyphicon-chevron-right"
+                                                                       style="float:left;font-size: 18px;"></i></a>
+    <a class="navbar-brand toggle_left" id="toggle_left" style="display:none"><i class="glyphicon glyphicon-chevron-left"
+                                                                    style="float:left;font-size: 18px;"></i></a>
+    <a class="navbar-brand" href="http://atom">
+      <!--            <img alt="" src="/static/img/atom01.jpg" class="hidden-xs"/>
+      <span>A.T.O.M</span> -->
+      <img alt="" src="/static/img/assemblage.png" class="hidden-xs" style="width: 280px;"/>
+    </a>
+    <div class="btn-group pull-right theme-container animated tada">
+      <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+        <span class="hidden-sm hidden-xs"><i class="glyphicon glyphicon-user"></i>&nbsp; {{user_id}}</span>
+        <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu">
+        <li><a href="/logout"> LOGOUT</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+<!-- topbar ends -->
+<div class="ch-container">
+  <div class="row">
+  </div>
+  <!--/span-->
+  <!-- left menu ends -->
+
+  <noscript>
+    <div class="alert alert-block col-md-12">
+      <h4 class="alert-heading">Warning!</h4>
+
+      <p>You need to have <a href="http://en.wikipedia.org/wiki/JavaScript" target="_blank">JavaScript</a>
+        enabled to use this site.</p>
+    </div>
+  </noscript>
+  <div class="row">
+    <div class="col-sm-1" id="task_menu1" style="display:none">
+      <div class="sidebar-nav">
+        <div class="nav-canvas">
+          <ul class="nav nav-pills nav-stacked main-menu">
+	    <li class="nav-header"><img class="dashboard-avatar" alt="" src="http://192.168.1.18/Employees/{{emp_code}}.jpg"></li>
+            <li class="nav-header">Main</li>
+            {% if data.user_role == 'Supervisor' %}
+            <li class="active" id="mgm_dashboard_page"><a class="ajax-link" href="/mgm_dashboard"><i
+              class="glyphicon glyphicon-dashboard"></i>&nbsp;&nbsp;<span> Management</span></a></li>
+            <li id="dashboard_page"><a class="ajax-link" href="/dashboard"><i
+              class="glyphicon glyphicon-dashboard"></i>&nbsp;&nbsp;<span> Dashboard</span></a></li>
+            {% endif %}
+            <li><a class="ajax-link" href="/tasks"><i
+              class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;<span> To Do List</span></a></li>
+            <li><a class="ajax-link" href="/status"><i
+              class="glyphicon glyphicon-th"></i><span>&nbsp;&nbsp; Task Status</span></a>
+            </li>
+            {% if data.user_role == 'Co-ordinator' or data.user_role == 'Supervisor' %}
+            <li><a class="ajax-link" href="/review"><i
+              class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;<span> Review Tasks</span></a>
+            <li><a class="ajax-link" href="/ftp"><i class="glyphicon glyphicon-cloud-upload"></i>&nbsp;&nbsp;<span> FTP Upload</span></a>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- left menu ends -->
+
+    <div class="col-at-12" id="panel_big">
+
+      <ul class="breadcrumb">
+        <li>
+          <a href="#">Main</a>
+        </li>
+        <li>
+          <a href="#">Management &nbsp; Dashboard</a>
+        </li>
+      </ul>
+      <div class="sidebar-nav">
+        <div class="box-content row">
+          <div class="box col-at-11">
+
+            <div class="col-at-sm-3" style="display:block;">
+              <div class="controls">
+                <label class="control-label" for="selectMGMDashProject">Projects : &nbsp;</label>
+                <select id="selectMGMDashProject" data-rel="chosen" style="width: 122px;">
+                  {% for proj,id in data.projects.items %}
+                  {% if data.current_project == proj %}
+                  <option value="{{id}}" selected>{{proj}}</option>
+                  {% else %}
+                  <option value="{{id}}">{{proj}}</option>
+                  {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="box col-at-11">
+
+            <div class="box-header well">
+              <h2><i class="glyphicon glyphicon-user"></i> &nbsp; Users Count</h2>
+            </div>
+            <div style="overflow:auto; overflow-y:auto; height:165px"
+                 id="div_dash_users_count">
+
+            </div>
+
+            <div class="box-header well">
+              <h2><i class="glyphicon glyphicon-info-sign"></i> &nbsp; Report : Sequence</h2>
+              <div class="box-icon">
+                <button class="btn btn-inverse btn-default btn-xs" id="download_user_task" onclick="$('#tbl_sequence').table2excel({filename: 'sequence_details',exclude: '.noExl'});">
+                  <i class="glyphicon glyphicon-save icon-white"></i></button>
+              </div>
+            </div>
+            <div style="overflow:auto; overflow-y:auto; height:315px"
+                 id="div_dash_sequence_details">
+              <table class="table-hover table-condensed table-bordered" id="tbl_sequence">
+                <thead>
+                <tr>
+                  <th>Sequnce</th>
+                  <th>Shots</th>
+                  <th>Status</th>
+                  {% for obj_name,task_name in task_temp_data.items %}
+                    {% for type,task_list in task_name.items %}
+                      {% if type == 'Static shot' %}
+                        {% for task in task_list %}
+                          <th>{{ task }}</th>
+                        {% endfor %}
+                      {% endif %}
+                    {% endfor %}
+                  {% endfor %}
+
+                </tr>
+                </thead>
+              </table>
+            </div>
+
+            <div class="box-header well">
+              <h2><i class="glyphicon glyphicon-info-sign"></i> &nbsp; Report : Asset Build</h2>
+              <div class="box-icon">
+                <button class="btn btn-inverse btn-default btn-xs" id="download_asset_build" onclick="$('#tbl_asset_build').table2excel({filename: 'asset_build_details',exclude: '.noExl'});">
+                  <i class="glyphicon glyphicon-save icon-white"></i></button>
+              </div>
+            </div>
+            <div style="overflow:auto; overflow-y:auto; height:285px"
+                 id="div_dash_asset_build_details">
+              <table class="table-hover table-condensed table-bordered" id="tbl_asset_build">
+                <thead>
+                <tr>
+                  <th>Asset Type</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  {% for obj_name,task_name in task_temp_data.items %}
+                    {% for type,task_list in task_name.items %}
+                      {% if type == 'All Asset Build' %}
+                        {% for task in task_list %}
+                          <th>{{ task }}</th>
+                        {% endfor %}
+                      {% endif %}
+                    {% endfor %}
+                  {% endfor %}
+
+                </tr>
+                </thead>
+              </table>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+</body>
+
+
+<!-- external javascript -->
+
+<script src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+
+<!--&lt;!&ndash; library for cookie management &ndash;&gt;-->
+<script src="/static/js/jquery.cookie.js"></script>
+<!--&lt;!&ndash; calender plugin &ndash;&gt;-->
+<script src='/static/bower_components/moment/min/moment.min.js'></script>
+<!--<script src='/static/bower_components/fullcalendar/dist/fullcalendar.min.js'></script>-->
+<!--&lt;!&ndash; data table plugin &ndash;&gt;-->
+<script src='/static/js/jquery.dataTables.min.js'></script>
+
+<script src="/static/js/jquery.colorbox.min.js"></script>
+<!--&lt;!&ndash; select or dropdown enhancer &ndash;&gt;-->
+<script src="/static/bower_components/chosen/chosen.jquery.min.js"></script>
+<!--&lt;!&ndash; notification plugin &ndash;&gt;-->
+<script src="/static/js/jquery.noty.js"></script>
+<!--&lt;!&ndash; library for making tables responsive &ndash;&gt;-->
+<script src="/static/bower_components/responsive-tables/responsive-tables.js"></script>
+<!--&lt;!&ndash; tour plugin &ndash;&gt;-->
+<script src="/static/bower_components/bootstrap-tour/build/js/bootstrap-tour.min.js"></script>
+<!--&lt;!&ndash; star rating plugin &ndash;&gt;-->
+<script src="/static/js/jquery.raty.min.js"></script>
+<!--&lt;!&ndash; for iOS style toggle switch &ndash;&gt;-->
+<script src="/static/js/jquery.iphone.toggle.js"></script>
+<!--&lt;!&ndash; autogrowing textarea plugin &ndash;&gt;-->
+<script src="/static/js/jquery.autogrow-textarea.js"></script>
+<!--&lt;!&ndash; multiple file upload plugin &ndash;&gt;-->
+<script src="/static/js/jquery.uploadify-3.1.min.js"></script>
+<!--&lt;!&ndash; history.js for cross-browser state change on ajax &ndash;&gt;-->
+<script src="/static/js/jquery.history.js"></script>
+<script src="/static/js/main.js"></script>
+
+<script src="/static/js/tableExport/tableExport.js"></script>
+<script src="/static/js/tableExport/jquery.base64.js"></script>
+<!-- PNG -->
+<script src="/static/js/tableExport/html2canvas.js"></script>
+<!-- PDF -->
+<!--
+<script src="/static/js/jspdf.debug.js"></script>
+<script src="/static/js/jspdf.plugin.autotable.js"></script>
+<script src="/static/js/faker.min.js"></script>
+<script src="/static/js/tableExport/jspdf/libs/sprintf.js"></script>
+<script src="/static/js/tableExport/jspdf/jspdf.js"></script>
+<script src="/static/js/tableExport/jspdf/libs/base64.js"></script>
+-->
+<script src="/static/js/custom.js"></script>
+<script src="/static/js/sortElements.js"></script>
+<script src="/static/jquery-plainoverlay/jquery.plainoverlay.min.js"></script>
+<script src="/static/js/canvasjs.min.js"></script>
+<script src="/static/js/bootstrap-datepicker.min.js"></script>
+<script src="/static/js/jquery.table2excel.js"></script>
+
+</html>

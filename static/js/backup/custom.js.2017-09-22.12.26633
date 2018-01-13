@@ -1,0 +1,2464 @@
+$("#selectObject").change(function(){
+
+    var obj_name = $("#selectObject").val();
+    var type_select = $("#selectType").val();
+    prev_div = '#div_'+type_select+'_checkbox';
+    $(prev_div).css({'display':'none'});
+
+    reset_object()
+
+    var proj_id = $('#selectProject').val();
+    if (!proj_id){
+        alert("Please select valid project !!")
+        return null
+    }
+
+    var div_check = '';
+    if (obj_name == 'Sequence'){
+        $("#div_shot_task_checkbox").css({'display':'none'});
+        $("#div_shot_asset_build_task_checkbox").css({'display':'none'});
+        $("#div_Sequence_checkbox").css({'display':'block'});
+        div_check = '#div_Sequence_checkbox';
+        create_table(div_check);
+        load_obj_name(obj_name,'');
+    }else if (obj_name == 'Asset Build'){
+        $("#div_shot_task_checkbox").css({'display':'none'});
+        $("#div_Sequence_checkbox").css({'display':'none'});
+        $("#div_shot_asset_build_task_checkbox").css({'display':'none'});
+	$select_elem = $("#selectType");
+        load_types($select_elem)
+    }else if (obj_name == 'Shot'){
+        $("#div_Sequence_checkbox").css({'display':'none'});
+        $("#div_shot_task_checkbox").css({'display':'block'});
+        $("#div_shot_asset_build_task_checkbox").css({'display':'none'});
+	div_check = '#div_shot_task_checkbox';
+        create_table(div_check);
+        load_obj_name('Sequence','');
+    }else if (obj_name == 'Shot Asset Build'){
+        $("#div_shot_task_checkbox").css({'display':'none'});
+        $("#div_Sequence_checkbox").css({'display':'none'});
+        $("#div_shot_asset_build_task_checkbox").css({'display':'block'});
+	div_check = '#div_shot_asset_build_task_checkbox';
+        create_table(div_check);
+        load_obj_name('Sequence','');
+    }else{
+        return null
+    }
+
+});
+
+$("#selectFtpObject").change(function(){
+
+    var proj_id = $('#selectProject').val();
+    if (!proj_id){
+        alert("Please select valid project !!")
+        return null
+    }
+
+    reset_ftp_object()
+
+    var obj_name = $("#selectFtpObject").val();
+    if (obj_name == 'Sequence'){
+        load_obj_name('FtpSequence','');
+	$("#div_shot_department_name").css({'display':'block'}); 
+	$("#div_asset_department_name").css({'display':'none'}); 
+	$("#selectShotFtpDepartment_chosen").css({"width":"89%"})
+	$('#selectShotFtpDepartment').val('').trigger("liszt:updated").trigger("chosen:updated");
+    }else if (obj_name == 'Asset Build'){
+	$select_elem = $("#selectFtpType");
+        load_types($select_elem)
+	$("#div_asset_department_name").css({'display':'block'}); 
+	$("#div_shot_department_name").css({'display':'none'}); 
+	$("#selectAssetFtpDepartment_chosen").css({"width":"89%"})
+	$('#selectAssetFtpDepartment').val('').trigger("liszt:updated").trigger("chosen:updated");
+    }else{
+	$("#div_shot_department_name").css({'display':'none'}); 
+	$("#div_asset_department_name").css({'display':'none'}); 
+        return null
+    }
+
+});
+
+$("#selectClientObject").change(function(){
+
+    var proj_id = $('#selectProject').val();
+    if (!proj_id){
+        alert("Please select valid project !!")
+        return null
+    }
+
+    reset_client_object()
+
+    var obj_name = $("#selectClientObject").val();
+    if (obj_name == 'Sequence'){
+        load_obj_name('ClientSequence','');
+    }else if (obj_name == 'Asset Build'){
+	$select_elem = $("#selectClientType");
+        load_types($select_elem)
+    }else{
+        return null
+    }
+
+});
+
+// Asset build type
+(function () {
+    var previous;
+
+    $("#selectType").focus(function () {
+        previous = this.value;
+    }).change(function() {
+    remove_rows("#tbl_task");
+    $('#all_assets').attr('checked',false);
+    var obj_name = $("#selectObject").val();
+    if (!obj_name){
+        alert("Please select valid Object !!")
+        return null
+    }
+   
+    var select_type = $("#selectType").val();
+
+    div_check = '#div_'+select_type+'_checkbox';
+    prev_div = '#div_'+previous+'_checkbox';
+    $(prev_div).css({'display':'none'});
+    $(div_check).css({'display':'block'});
+    create_table(div_check);
+
+    if (select_type){
+        load_obj_name(obj_name,'');
+    }else{
+        $("#selectAsset").empty();
+        $("#selectAsset").trigger("chosen:updated");
+        $("#selectAsset").trigger("liszt:updated");
+        $("#div_asset_name").css({'display':'none'});
+    }
+    previous = this.value;
+    });
+})();
+
+$("#selectFtpType").change(function(){
+    select_type = $("#selectFtpType").val();
+    if (!select_type){
+	alert("Please select valid asset type !!!");
+	return null;
+    }
+    load_obj_name('FtpAsset','');
+});
+
+$("#selectClientType").change(function(){
+    select_type = $("#selectClientType").val();
+    if (!select_type){
+	alert("Please select valid asset type !!!");
+	return null;
+    }
+    load_obj_name('ClientAsset','');
+});
+
+// Asset Build
+$("#selectAsset").on('change', function(evt, params) {
+
+    var proj_id = $('#selectProject').val();
+    if (!proj_id){
+        alert("Please select valid project !!");
+        return null;
+    }
+    var deselectedValue = params.deselected;
+    var selectedValue = params.selected;
+
+    if (selectedValue){
+        var array = [];
+        array[0] = selectedValue
+	id = selectedValue
+        p_name = $("#selectAsset option[value='"+id+"']").text();
+        load_tasks(array,'',p_name);
+    }else if (deselectedValue){
+        var asset_name = $("#selectAsset option[value='"+deselectedValue+"']").text();
+        $("#tbl_task tr:contains("+ asset_name +")").remove();
+    }
+});
+
+$("#all_assets").click(function(){
+    if (this.checked){
+        $('#selectAsset option').prop('selected', true);
+	$('#selectAsset').trigger('chosen:updated');
+	reload_tasks();
+    }else{
+        $('#selectAsset option').prop('selected', false);
+	$('#selectAsset').trigger('chosen:updated');
+	remove_rows("#tbl_task");
+    }
+});
+
+$('#selectFtpAsset').on('change', function(evt, params) {
+
+    $('#selectFtpAssetType').val('').trigger("liszt:updated").trigger("chosen:updated");
+    var proj_id = $('#selectProject').val();
+    if (!proj_id){
+        alert("Please select valid project !!");
+        return null;
+    }
+    var deselectedValue = params.deselected;
+    var selectedValue = params.selected;
+
+    if (selectedValue){
+	load_ftp_asset_type(selectedValue);
+    }
+
+    if (deselectedValue){
+        var asset_name = $("#selectFtpAsset option[value='"+deselectedValue+"']").text();
+        $("#tbl_ftp_version tr:contains("+ asset_name +")").remove();
+    }
+});
+
+$("#all_ftp_assets").click(function(){
+    if (this.checked){
+        $('#selectFtpAsset option').prop('selected', true);
+    }else{
+        $('#selectFtpAsset option').prop('selected', false);
+    }
+    $('#selectFtpAsset').trigger('chosen:updated');
+
+    assets = $('#selectFtpAsset').val();
+    if (assets){
+	parent_id = assets[0];
+	load_ftp_asset_type(parent_id);
+    }else{
+	alert("Please select atleast 1 asset build !!!");
+	return null;
+    }
+});
+$('#selectFtpAssetType').on('change', function(evt, params) {
+    var selectedValue = params.selected;
+
+    $('#selectFtpAssetName').val('').trigger("liszt:updated").trigger("chosen:updated");
+
+    obj = $('#selectFtpObject').val();
+    parent_id = ''
+    values = ''
+    if (obj == 'Sequence'){
+	values = $('#selectFtpShot').val();
+    }else if (obj == 'Asset Build'){
+	values = $('#selectFtpAsset').val();
+    }
+
+    if (values){
+	parent_id = values[0];
+    }else{
+	alert("Please select "+obj);
+	return null;
+    }
+
+    load_ftp_asset_name(parent_id);
+
+});
+
+$('#selectAssetFtpDepartment').change(function(){
+    if ($(this).val() == 'Lighting'){
+	$('#div_side_name').css({'display':'block'});
+	$("#selectFtpVersionSide_chosen").css({"width":"89%"})
+    }else{
+	$('#div_side_name').css({'display':'none'});
+    }
+
+    $('#selectFtpVersionSide').val('').trigger("liszt:updated").trigger("chosen:updated");
+    refresh_asset_builds();
+});
+
+$('#refresh_asset_build').click(function(){
+
+    refresh_asset_builds();
+//    setTimeout(5000);
+//    alert("Prafull");
+});
+
+$('#selectClientAsset').on('change', function(evt, params) {
+
+    var selectedValue = params.selected;
+
+    if (selectedValue){
+	name = $('#selectClientAsset option[value="'+selectedValue+'"]').text();
+	load_client_version(name);
+    }
+
+});
+
+// sequence box
+$('#selectSequence').on('change', function(evt, params) {
+
+//    remove_rows("#tbl_task");
+    $('#all_shots').attr('checked',false);
+    var obj_name = $("#selectObject").val();
+    if (!obj_name){
+        alert("Please select valid Object !!")
+        return null
+    }
+    var deselectedValue = params.deselected;
+    var selectedValue = params.selected;
+
+    if (selectedValue && obj_name == 'Shot'){
+        var obj_name = 'Shot';
+        load_obj_name(obj_name,selectedValue);
+    }else if (selectedValue && obj_name == 'Shot Asset Build'){
+        var obj_name = 'Shot';
+        load_obj_name(obj_name,selectedValue);
+    }else if (selectedValue){
+        var array = [];
+        array[0] = selectedValue
+	id = selectedValue
+        p_name = $("#selectSequence option[value='"+id+"']").text();
+        load_tasks(array,'',p_name);
+    }else if (deselectedValue){
+        de_seq = $("#selectSequence option[value='"+deselectedValue+"']").text();
+        $("#selectShot option:contains('"+de_seq+"')").remove();
+        $("#selectShot").trigger("chosen:updated");
+        $("#selectShot").trigger("liszt:updated");
+        $("#tbl_task tr:contains("+ de_seq +")").remove();
+    }
+});
+
+$("#all_sequences").click(function(){
+    if (this.checked){
+        $('#selectSequence option').prop('selected', true);
+	$('#selectSequence').trigger('chosen:updated');
+	reload_tasks();
+    }else{
+        $('#selectSequence option').prop('selected', false);
+	$('#selectSequence').trigger('chosen:updated');
+	remove_rows("#tbl_task");
+    }
+
+});
+$('#selectFtpSequence').on('change', function(evt, params) {
+
+    var task_name = $("#selectShotFtpDepartment").val();
+    if (!task_name){
+        alert("Please select valid Department !!")
+        return null
+    }
+
+    var deselectedValue = params.deselected;
+    var selectedValue = params.selected;
+
+    if (selectedValue){
+        var obj_name = 'FtpShot';
+        load_obj_name(obj_name,selectedValue);
+    }else if (deselectedValue){
+        de_seq = $("#selectFtpSequence option[value='"+deselectedValue+"']").text();
+        $("#selectFtpShot option:contains('"+de_seq+"')").remove();
+        $("#selectFtpShot").trigger("chosen:updated");
+        $("#selectFtpShot").trigger("liszt:updated");
+        $("#tbl_ftp_version tr:contains("+ de_seq +")").remove();
+    }
+});
+
+$('#selectClientSequence').on('change', function(evt, params) {
+
+    var seq_id = $("#selectClientSequence").val();
+    if (!seq_id){
+        alert("Please select valid Sequence !!")
+        return null
+    }
+
+    if (seq_id){
+        var obj_name = 'ClientShot';
+        load_obj_name(obj_name,seq_id);
+    }
+});
+
+// Shot
+$('#selectShot').on('change', function(evt, params) {
+    var proj_id = $('#selectProject').val();
+    if (!proj_id){
+        alert("Please select valid project !!");
+        return null;
+    }
+    var deselectedValue = params.deselected;
+    var selectedValue = params.selected;
+
+    object = $('#selectObject').val();
+
+    if (selectedValue){
+        var array = [];
+        array[0] = selectedValue
+	id = selectedValue
+        p_name = $("#selectShot option[value='"+id+"']").text();
+        load_tasks(array,'',p_name,0,object);
+    }else if (deselectedValue){
+        var shot_name = $("#selectShot option[value='"+deselectedValue+"']").text();
+        $("#tbl_task tr:contains("+ shot_name +")").remove();
+    }
+});
+
+$("#all_shots").click(function(){
+    if (this.checked){
+        $('#selectShot option').prop('selected', true);
+	$('#selectShot').trigger('chosen:updated');
+	reload_tasks();
+    }else{
+        $('#selectShot option').prop('selected', false);
+	$('#selectShot').trigger('chosen:updated');
+	remove_rows("#tbl_task");
+    }
+
+});
+
+$('#selectFtpShot').on('change', function(evt, params) {
+
+    $('#selectFtpAssetType').val('').trigger("liszt:updated").trigger("chosen:updated");
+    var proj_id = $('#selectProject').val();
+    if (!proj_id){
+        alert("Please select valid project !!");
+        return null;
+    }
+    var deselectedValue = params.deselected;
+    var selectedValue = params.selected;
+
+    if (selectedValue){
+	load_ftp_asset_type(selectedValue);
+    }
+
+    if (deselectedValue){
+        var shot_name = $("#selectFtpShot option[value='"+deselectedValue+"']").text();
+        $("#tbl_ftp_version tr:contains("+ shot_name +")").remove();
+    }
+});
+
+$("#all_ftp_shots").click(function(){
+    if (this.checked){
+        $('#selectFtpShot option').prop('selected', true);
+    }else{
+        $('#selectFtpShot option').prop('selected', false);
+    }
+    $('#selectFtpShot').trigger('chosen:updated');
+
+    shots = $('#selectFtpShot').val();
+    if (shots){
+	parent_id = shots[0];
+	load_ftp_asset_type(parent_id);
+    }else{
+	alert("Please select atleast 1 shot !!!");
+	return null;
+    }
+
+});
+
+$('#selectShotFtpDepartment').change(function(){
+    if ($(this).val() == 'Lighting'){
+	$('#div_side_name').css({'display':'block'});
+	$("#selectFtpVersionSide_chosen").css({"width":"89%"})
+    }else{
+	$('#div_side_name').css({'display':'none'});
+    }
+
+    $('#selectFtpVersionSide').val('').trigger("liszt:updated").trigger("chosen:updated");
+    refresh_shots();
+});
+
+$('#refresh_shot').click(function(){
+
+    refresh_shots();
+//    setTimeout(5000);
+//    alert("Prafull");
+});
+
+$('#selectClientShot').on('change', function(evt, params) {
+
+    var selectedValue = params.selected;
+
+    if (selectedValue){
+	name = $('#selectClientShot option[value="'+selectedValue+'"]').text();
+	load_client_version(name);
+    }
+
+});
+// functions starts here
+(function () {
+    var toggle_selection1=0;
+    var toggle_selection2=0;
+//Menu Navigator
+$('a.toggle_right').click(function () {
+    if(toggle_selection2==1){
+        $("#panel_big").css({"width":"80%"});}
+    else{
+    $("#panel_big").css({"width":"89%"});}
+        $("#toggle_right").css({"display":"none"});
+        $("#toggle_left").css({"display":"block"});
+    $("#task_menu1").css({"display":"block"});
+    toggle_selection1=1;
+    });
+$('a.toggle_left').click(function () {
+    if(toggle_selection2==1){
+        $("#panel_big").css({"width":"89%"});}
+    else{
+        $("#panel_big").css({"width":"99.80%"});}
+        $("#toggle_left").css({"display":"none"});
+        $("#toggle_right").css({"display":"block"});
+    $("#task_menu1").css({"display":"none"});
+    toggle_selection1=0;
+    });
+
+// Task status navigator
+$('a.toggle_task_right').click(function () {
+    if(toggle_selection1==1){
+        $("#panel_big").css({"width":"89%"});}
+    else{
+        $("#panel_big").css({"width":"99.80%"});}
+        $("#toggle_task_right").css({"display":"none"});
+        $("#toggle_task_left").css({"display":"block"});
+        $("#task_menu").css({"display":"none"});
+    toggle_selection2=0;
+    });
+$('a.toggle_task_left').click(function () {
+    if(toggle_selection1==1){
+        $("#panel_big").css({"width":"80%"});}
+    else{
+    $("#panel_big").css({"width":"89%"});}
+        $("#toggle_task_left").css({"display":"none"});
+        $("#toggle_task_right").css({"display":"block"});
+        $("#task_menu").css({"display":"block"});
+    toggle_selection2=1;
+    });
+    
+
+})();
+
+function remove_rows(tablename) { 
+    $(tablename).find("tr:gt(0)").remove();        
+}
+
+function reset_object(){
+
+    $('#all_assets').attr('checked',false);
+    $('#all_shots').attr('checked',false);
+    $('#all_sequences').attr('checked',false);
+
+    $("#selectSequence").empty();
+    $("#selectSequence").trigger("chosen:updated");
+    $("#selectSequence").trigger("liszt:updated");
+    $("#div_sequence_name").css({'display':'none'});
+
+    $("#selectType").empty();
+    $("#selectType").trigger("chosen:updated");
+    $("#selectType").trigger("liszt:updated");
+    $("#div_type_name").css({'display':'none'});
+
+    $("#selectShot").empty();
+    $("#selectShot").trigger("chosen:updated");
+    $("#selectShot").trigger("liszt:updated");
+    $("#div_shot_name").css({'display':'none'});
+
+    $("#selectAsset").empty();
+    $("#selectAsset").trigger("chosen:updated");
+    $("#selectAsset").trigger("liszt:updated");
+    $("#div_asset_name").css({'display':'none'});
+
+    remove_rows('#tbl_task');
+}
+
+function reset_ftp_object(){
+
+    $('#all_assets').attr('checked',false);
+    $('#all_shots').attr('checked',false);
+
+    $("#selectFtpSequence").empty();
+    $("#selectFtpSequence").trigger("chosen:updated");
+    $("#selectFtpSequence").trigger("liszt:updated");
+    $("#div_sequence_name").css({'display':'none'});
+
+    $("#selectFtpType").empty();
+    $("#selectFtpType").trigger("chosen:updated");
+    $("#selectFtpType").trigger("liszt:updated");
+    $("#div_type_name").css({'display':'none'});
+
+    $("#selectFtpShot").empty();
+    $("#selectFtpShot").trigger("chosen:updated");
+    $("#selectFtpShot").trigger("liszt:updated");
+    $("#div_shot_name").css({'display':'none'});
+
+    $("#selectFtpAsset").empty();
+    $("#selectFtpAsset").trigger("chosen:updated");
+    $("#selectFtpAsset").trigger("liszt:updated");
+    $("#div_asset_name").css({'display':'none'});
+
+    remove_rows('#tbl_task');
+}
+function reset_client_object(){
+
+    $("#selectClientSequence").empty();
+    $("#selectClientSequence").trigger("chosen:updated");
+    $("#selectClientSequence").trigger("liszt:updated");
+    $("#div_sequence_name").css({'display':'none'});
+
+    $("#selectClientType").empty();
+    $("#selectClientType").trigger("chosen:updated");
+    $("#selectClientType").trigger("liszt:updated");
+    $("#div_type_name").css({'display':'none'});
+
+    $("#selectClientShot").empty();
+    $("#selectClientShot").trigger("chosen:updated");
+    $("#selectClientShot").trigger("liszt:updated");
+    $("#div_shot_name").css({'display':'none'});
+
+    $("#selectClientAsset").empty();
+    $("#selectClientAsset").trigger("chosen:updated");
+    $("#selectClientAsset").trigger("liszt:updated");
+    $("#div_asset_name").css({'display':'none'});
+
+    $("#selectClientVersion").empty();
+    $("#selectClientVersion").trigger("chosen:updated");
+    $("#selectClientVersion").trigger("liszt:updated");
+
+}
+function load_types($select_elem){
+    $select_elem.empty();
+    $("#div_type_name").css({'display':'block'});
+
+    $select_elem.append('<option value="">Select Type</option>');
+    $select_elem.append('<option value="Set">Set</option>');
+    $select_elem.append('<option value="Prop">Prop</option>');
+    $select_elem.append('<option value="Character">Character</option>');
+    $select_elem.append('<option value="Vehicle">Vehicle</option>');
+    $select_elem.append('<option value="Environment">Environment</option>');
+
+    $select_elem.trigger("chosen:updated");
+    $select_elem.trigger("liszt:updated");
+    $select_elem.data("chosen").destroy().chosen();
+}
+
+function load_obj_name(obj_name,parent_id) {
+
+    var project = $('#selectProject').val();
+    if (!project){
+        alert("Please select valid project !!")
+        return null
+    }
+    var client_final_combo = $("#selectFtpAssetName").val();
+    var select_type = ''
+    var $div_name = ''
+    var $select_elem = ''
+    var task_name = ''
+    var status_name = ''
+
+    if (obj_name == 'Sequence'){
+        $select_elem = $("#selectSequence");
+        $div_name = $("#div_sequence_name")
+    }else if (obj_name == 'Asset Build'){
+        $select_elem = $("#selectAsset");
+        $div_name = $("#div_asset_name")
+        select_type = $("#selectType").val();
+    }else if (obj_name == 'Shot'){
+        $select_elem = $("#selectShot");
+        $div_name = $("#div_shot_name")
+    }else if (obj_name == 'FtpSequence'){
+        $select_elem = $("#selectFtpSequence");
+        $div_name = $("#div_sequence_name");
+	obj_name = 'Sequence';
+    }else if (obj_name == 'FtpShot'){
+        $select_elem = $("#selectFtpShot");
+        $div_name = $("#div_shot_name");
+	task_name = $("#selectShotFtpDepartment").val();
+	status_name = $("#selectFtpStatus").val();
+    }else if (obj_name == 'FtpAsset'){
+        $select_elem = $("#selectFtpAsset");
+        $div_name = $("#div_asset_name");
+	task_name = $("#selectAssetFtpDepartment").val();
+	status_name = $("#selectFtpStatus").val();
+        select_type = $("#selectFtpType").val();
+    }else if (obj_name == 'ClientSequence'){
+        $select_elem = $("#selectClientSequence");
+        $div_name = $("#div_sequence_name");
+	obj_name = 'Sequence';
+    }else if (obj_name == 'ClientShot'){
+        $select_elem = $("#selectClientShot");
+        $div_name = $("#div_shot_name");
+	obj_name = 'Shot';
+    }else if (obj_name == 'ClientAsset'){
+        $select_elem = $("#selectClientAsset");
+        $div_name = $("#div_asset_name");
+        select_type = $("#selectClientType").val();
+	obj_name = 'Asset Build';
+    }else{
+        return null
+    }
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'proj_id': project ,'object_name': obj_name , 'object_type' : select_type, 'parent_id' : parent_id, 'task_name': task_name, 'status_name': status_name, 'upload_for':client_final_combo},
+        beforeSend: function(){
+            if (!(parent_id)){
+                $select_elem.empty(); 
+            }
+        },
+        success: function(json){
+            $div_name.css({'display':'block'});
+            $.each(json, function (idx, obj) {
+		opt_text = ''
+		opt_id = obj.id
+                if(parent_id){
+		    opt_text = obj.parent_name+'_'+obj.name
+                }else{
+		    opt_text = obj.name
+                }
+
+		$select_elem.append('<option value="'+opt_id+'">' + opt_text + '</option>');
+            });
+            $select_elem.trigger("chosen:updated");
+            $select_elem.trigger("liszt:updated");
+            $select_elem.data("chosen").destroy().chosen();
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
+}
+
+function load_task(proj_id,parent_id,parent_name) {
+    var mycol = [];
+    var mycolusers = [];
+    var task_id = [];
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'proj_id': proj_id ,'object_name': 'Task', 'parent_id': parent_id },
+        beforeSend: function(){
+        },
+        success: function(json){
+            $("#div_task_details").css({'display':'block'});
+            $.each(json, function (idx, obj) {
+                $('#tbl_task th').each(function(index) { 
+                    var task_name = this.innerHTML;
+                    if (obj.name == task_name){
+                        task_id[index] = obj.id; 
+                        mycol[index] = obj.status; 
+                        mycolusers[index] = obj.users; 
+                    }
+                });
+            });
+            mycol[0] = parent_name;
+            add_rows(mycol,parent_id,mycolusers,task_id);
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
+}
+function add_rows(mycol,parent_id,mycolusers,task_id){
+
+    var obj_name = $("#selectObject").val();
+    var table = $('#tbl_task tbody');
+    row = $(table[0].insertRow(-1));
+    $('#tbl_task th').each(function(index) { 
+        var th_name = $(this).text();
+        var t_status = '---';
+        var stat_lbl = 'label-default';
+        var t_stat_user = '---';
+        var stat_usr_lbl = 'label-default';
+        var taskid = ''
+        if(mycol[index]){
+            t_status = mycol[index];
+            label = mycol[index].replace(/ /g,"_").toLowerCase();
+            stat_lbl = 'label-'+label;
+        }
+	
+        if(mycolusers[index]){
+            t_stat_user = mycolusers[index];
+            stat_usr_lbl = 'label-default';
+        }
+
+        if(task_id[index]){
+            taskid = task_id[index];
+        }
+
+        on_click_status = "";
+        on_click_user = "";
+        if (index > 0){
+            if($(this).css('display') == 'none'){
+                show = "style='display:none'";
+            }else{
+                show = "";
+                var header = this.innerHTML;
+                col_arr = $('#user_columns').val().split(',');
+                if (col_arr.indexOf(header) > -1){ 
+                    on_click_status = "ondblclick='editCell(this)'";
+                    on_click_user = "ondblclick='editUserCell(this)'";
+                }
+            }
+
+            var stat_display = ''
+            var assi_display = ''
+            if(show == ''){
+                if($('#show_assignee').is(":not(:checked)")){
+                    assi_display = 'style="display:none"';
+                }
+                if($('#show_status').is(":not(:checked)")){
+                    stat_display = 'style="display:none"';
+                }
+            }
+
+            var cell = $("<td title='"+th_name+"' data-task-id='"+taskid+"' data-org-val='"+t_status+"' data-parent-id='"+parent_id+"' data-id='show_status' "+show+" "+stat_display+" "+on_click_status+" />");
+/*
+            if(t_status == '---'){
+                cell = $("<td title='"+th_name+"' data-task-id='"+taskid+"' data-org-val='"+t_status+"' data-id='show_status' "+show+" "+stat_display+" />");
+            }
+*/
+            col_data = '<span class="label '+stat_lbl+'" >'+t_status+'</span>';
+
+            var usercell = $("<td title='"+th_name+"' data-task-id='"+taskid+"' data-org-val='"+t_stat_user+"' data-parent-id='"+parent_id+"' data-id='show_assignee' "+show+" "+assi_display+" "+on_click_user+" />");
+            usercol_data = '<span class="label '+stat_usr_lbl+'" >'+t_stat_user+'</span>';
+        }else{
+
+	    if (mycol[0] != t_status){
+		t_status = t_status+'_'+mycol[0]; 
+	    }
+            var cell = $("<td id='"+parent_id+"' data-task-id='"+parent_id+"' />");
+            col_data = '<a href="#" id="parent_object" onclick="show_model(this)">'+t_status+'</a>';
+
+            var usercell = $("<span />");
+            usercol_data = '';
+        }
+
+        
+        cell.html(col_data); 
+        usercell.html(usercol_data);
+
+        th_id = $(this).attr("class");
+        if ($('#' + th_id).is(":not(:checked)")){
+            cell.css({'display':'none'});
+        }
+        row.append(cell,usercell);
+    });
+
+    $(row).click(function(event){
+        if(event.ctrlKey === true) {
+            $(this).toggleClass("selected")
+        }
+    });
+}
+function create_table(div_check) {
+
+    var table = $('<table class="table-hover table-condensed table-bordered" id="tbl_task" />');
+
+    thead = $('<thead />');
+    tbody = $('<tbody />');
+
+    var row = $(thead[0].insertRow(-1));
+
+//    var headerCell = $('<th />');
+    var headerCell = $('<th name="Name" onclick="sortOrder(this)" colspan="2" title="Double Click to sort"/>');
+    var header = 'Name';
+            
+    headerCell.html('<i class="glyphicon glyphicon-sort-by-alphabet"></i>&nbsp;'+header);
+    row.append(headerCell);
+
+    col_val = $('#user_columns').val();
+    col_arr = col_val.split(',');
+
+    $(div_check+' input[type="checkbox"]').each(function() {
+        if($.contains(document, this)){
+            var header = this.value;
+            if (col_arr.indexOf(header) > -1){
+                this.checked = true;
+                show = "";
+            }else{
+                this.checked = false;
+                show = "style='display:none'";
+            }
+
+            var class_id = $(this).attr('id');
+            var headerCell = $('<th name="'+header+'" class="'+class_id+'" '+show+' colspan="2"/>');
+            
+            headerCell.html(header);
+            row.append(headerCell);
+        }
+    });
+
+    table.append(thead);
+    table.append(tbody);
+
+    var dvTable = $("#div_task_details");
+    dvTable.html("");
+    dvTable.append(table);
+
+    $(div_check+' input[type="checkbox"]').click(function() {
+        var index = $(this).attr('id').match(/\d+/)[0];
+        var index2 = index--;
+        $('#tbl_task tr').each(function() { 
+            if($('#show_assignee').is(":checked")){
+                $('td:eq(' + index2 + ')',this).toggle();
+            }
+            if($('#show_status').is(":checked")){
+                $('td:eq(' + index + ')',this).toggle();
+            }
+        });
+        if($('#show_assignee').is(":checked") && $('#show_status').is(":checked")){
+            $('th.' + $(this).attr('id')).attr('colspan','2');
+        }else{
+            $('th.' + $(this).attr('id')).attr('colspan','1');
+        }
+        $('th.' + $(this).attr('id')).toggle();
+    });
+
+}
+
+$('#div_elements_checkbox input[type="checkbox"]').each(function() {
+    this.checked = true;
+});
+
+$('#div_elements_checkbox input[type="checkbox"]').click(function() {
+    var id = $(this).attr('id');
+    var checked = this.checked;
+    $('#tbl_task td').each(function() { 
+        td_idx = $(this).index();
+        var td_id = $(this).attr('data-id');
+        var title = $(this).attr('title');
+        if (td_id == id){
+            if ($('#tbl_task th[name="'+title+'"]').css('display') != 'none'){
+                if (checked){
+                    if((id=='show_status' && $('#show_assignee').is(":checked")) || (id=='show_assignee' && $('#show_status').is(":checked"))){
+                        $('#tbl_task th[name="'+title+'"]').attr('colspan','2');
+                    }
+                    $(this).show();
+                }else{
+                    $('#tbl_task th[name="'+title+'"]').attr('colspan','1');
+                    $(this).hide();
+                }
+            }
+        }
+    });
+});
+
+function reload_tasks(reload){
+   
+    reload = reload || 0;
+ 
+    var proj_id = $('#selectProject').val();
+    var asset_ids = $('#selectAsset').val();
+    var shot_ids = $('#selectShot').val();
+    var seq_ids = $('#selectSequence').val();
+    var type_name = $('#selectType').val();
+    var obj_name = $('#selectObject').val();
+
+    remove_rows("#tbl_task");
+    var parent_name  = ''
+    var parent_ids = ''
+    var p_name = ''
+    var parent_object_type = '';
+    if (asset_ids){
+        pparent_ids = [proj_id]
+	parent_ids = asset_ids
+	id = parent_ids[0]
+	p_name = $("#selectAsset option[value='"+id+"']").text();
+	parent_object_name = 'Asset Build';
+	parent_object_type = type_name;
+    }else if(shot_ids){
+        pparent_ids = seq_ids;
+	parent_ids = shot_ids;
+	id = parent_ids[0]
+	p_name = $("#selectShot option[value='"+id+"']").text();
+	parent_object_name = 'Shot';
+	if (obj_name == 'Shot Asset Build'){
+	    for (i in shot_ids){
+		id = shot_ids[i];
+		object = 'Shot Asset Build';
+		p_name = $("#selectShot option[value='"+id+"']").text();
+		var array = [];
+		array[0] = id;
+		load_tasks(array,'',p_name,0,object);
+	    }
+	    return null;
+	}
+    }else if(seq_ids){
+        pparent_ids = [proj_id]
+	parent_ids = seq_ids;
+	id = parent_ids[0]
+	p_name = $("#selectSequence option[value='"+id+"']").text();
+	parent_object_name = 'Sequence';
+    }
+    if (parent_ids.length == 1) {
+	parent_name = p_name
+    }
+    load_tasks(parent_ids,pparent_ids,parent_name,reload,parent_object_name,parent_object_type);
+
+}
+
+function load_tasks(parent_ids,pparent_ids,parent_name,reload,parent_object_name,parent_object_type) {
+    var task;
+    parent_name = parent_name || '';
+    reload = reload || 0;
+    parent_object_name = parent_object_name || '';
+    parent_object_type = parent_object_type || '';
+
+    if (parent_ids.length == 1 || reload == 1){ 
+        task = 'Task';
+    }else{
+        task = 'Tasks';
+    }
+
+    data_ids = JSON.stringify(parent_ids);
+    pparent_ids = JSON.stringify(pparent_ids);
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'parent_ids': data_ids ,'object_name': task, 'pparent_ids' : pparent_ids , 'parent_object_name': parent_object_name, 'parent_object_type': parent_object_type},
+        beforeSend: function(){
+            $('#panel_big').plainOverlay('show');
+        },
+        success: function(json){
+            $("#div_task_details").css({'display':'block'});
+            for (parent_id in json){
+                var mycol = [];
+                var mycolusers = [];
+                var task_id = [];
+		var parent_type = ''
+                $.each(json[parent_id], function (idx, obj) {
+		    if (!mycol[0]){
+			mycol[0] = obj.parent_name;
+			parent_type = obj.parent_type;
+		    }
+                    $('#tbl_task th').each(function(index) { 
+                        var task_name = this.innerHTML;
+                        if (obj.name == task_name){
+                            task_id[index] = obj.id; 
+                            mycol[index] = obj.status; 
+                            mycolusers[index] = obj.users; 
+                        }
+                    });
+                });
+	    if (parent_name && parent_name != mycol[0]){
+		mycol[0] = parent_name + '<br>' + mycol[0] + '<br><small style="color:aqua">(' + parent_type + ')<small>';
+	    }
+            add_rows(mycol,parent_id,mycolusers,task_id);
+            }
+            $('#panel_big').plainOverlay('hide');
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
+}
+function editUserCell(context){
+
+    var OriginalContent = $(context).text();
+    OriginalContent = OriginalContent.split(',')
+    var row_stat = 'Users';
+   
+    var clone = $('#users_options').clone(true);
+    $clonedChosen = clone.find('select').clone().off()
+
+    $parentTd = $(context).closest('td');
+    $parentTd.empty().append($($clonedChosen).show("show"));
+
+    $select = $parentTd.find('select')
+    $select.chosen({width: "200px"})
+
+    $select.val(OriginalContent).trigger("liszt:updated");
+    $select.trigger("chosen:updated");
+
+    $select.trigger('chosen:open');
+    $select.on('chosen:hiding_dropdown', function () {
+        users = $select.val();
+	user_text = '---';
+	if (users){
+	    user_text = users.join();
+	}
+        change_status(user_text,context,row_stat)
+        change_multiple(user_text,context,row_stat);
+    });
+
+}
+
+function editCell(context){
+
+    var OriginalContent = $(context).text();
+    var row_stat = 'Status';
+
+    var clone = $('#status_options').clone(true);
+    $clonedChosen = clone.find('select').clone().off()
+
+    $parentTd = $(context).closest('td');
+    $parentTd.empty().append($($clonedChosen).show("show"));
+
+    $select = $parentTd.find('select')
+    $select.chosen({width: "150px"})
+
+    $select.val(OriginalContent).trigger("liszt:updated");
+    $select.trigger("chosen:updated");
+
+    $select.trigger('chosen:open');
+    $select.on('chosen:hiding_dropdown', function () {
+        status_text = $(this).val(); 
+        change_status(status_text,context,row_stat)
+        change_multiple(status_text,context,row_stat);
+    });
+
+}
+
+function change_status(status_text,context,row_stat){
+
+    org_val = $(context).attr('data-org-val');
+    label = status_text.replace(/ /g,"_").toLowerCase();
+    col_data = '<span class="label label-'+label+'">'+status_text+'</span>'
+    if (row_stat == 'Users'){
+        col_data = '<span class="label label-default">'+status_text+'</span>'
+    }
+    $(context).html(col_data);
+    if (org_val == status_text){
+        $(context).find('input:hidden[name=modifiedRow]').remove();
+        if (!($(context).parent('tr').find('td input:hidden[name=modifiedRow]').length)){
+            $(context).parent('tr').removeAttr('style');
+        };
+    }else{
+        $(context).append('<input type="hidden" name="modifiedRow" value="'+row_stat+'" />');
+        $(context).parent('tr').css({'background-color':'#52436F'});
+        $("#save_changes").css({'background-color':'#52436F'});
+    }
+
+}
+
+function change_multiple(status_text,context,row_stat){
+
+    var idx = $(context).index();
+    idx--;
+
+    $('#tbl_task tr.selected').each(function(){
+        cell = $(this).find('td:eq('+idx+')');
+        change_status(status_text,cell,row_stat)
+    });
+
+}
+
+$("#undo").click(function(){
+    removeSelections();
+});
+
+function removeSelections(){
+
+    $('#tbl_task td input:hidden[name=modifiedRow]').each(function(){
+        row_stat = this.value;
+        org_val = $(this).closest('td').attr('data-org-val');
+        $("#save_changes").css({'background-color':'#555555'});
+        $(this).parent().parent().removeAttr('style');
+
+        label = org_val.replace(/ /g,"_").toLowerCase();
+        col_data = '<span class="label label-'+label+'">'+org_val+'</span>'
+        if(row_stat == 'Users'){
+            col_data = '<span class="label label-default">'+org_val+'</span>'
+        }
+        $(this).parent().html(col_data);
+    });
+       $('#tbl_task tr.selected').each(function(){
+                $(this).removeClass("selected");
+        });
+}
+
+
+$("#save_changes").click(function(){
+
+    var data_array = [];
+    var proj_id = $("#selectProject").val();
+    var object_type = $("#selectObject").val();
+
+    $('#tbl_task td input:hidden[name=modifiedRow]').each(function(){
+        var row_stat = this.value;
+        var valueToPush = [];
+        var col=$(this).closest('td');
+        var col_idx = col.index();
+        var row=$(this).closest('tr');
+        var row_val = col.attr('data-task-id');
+        var th_name = col.attr('title');
+        var row_note = col.attr('data-task-note');
+        var row_parent_id = col.attr('data-parent-id');
+        var row_org_val = col.attr('data-org-val');
+
+        valueToPush[0] = col.text(); // status name or username
+        valueToPush[1] = row_val; // task id
+        valueToPush[2] = th_name; // title attribute in <td>
+        valueToPush[3] = row_stat; // Status or User
+        valueToPush[4] = row_note; // note
+        valueToPush[5] = row_parent_id; // parent id
+        valueToPush[6] = proj_id; // parent id
+        valueToPush[7] = object_type; // object_type
+        valueToPush[8] = row_org_val; // original value
+
+        data_array.push(valueToPush);
+        col.attr('data-org-val',col.text());
+    });
+    if (data_array.length != 0){ 
+        save_changes(data_array); 
+        removeSelections();
+    }
+
+});
+function save_changes(data_array) {
+    data = JSON.stringify(data_array);
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'object_name': 'Save Changes', 'data_list': data},
+        beforeSend: function(){
+	    $('#panel_big').plainOverlay('show');
+        },
+        success: function(json){
+            $.each(json, function (idx, obj) {
+            });
+        
+            noty({
+                text: 'Your changes were saved',
+                layout: 'topCenter',
+                closeWith: ['click', 'hover'],
+                type: 'success'
+            });
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
+    $('#panel_big').plainOverlay('hide');
+}
+$("#search").keyup(function(){
+    _this = this;
+    // Show only matching TR, hide rest of them
+   if ($(this).val() === ''){
+        $(this).css({"border-color": "#333"})
+    }else{
+        $(this).css({"border-color": "#5897fb"})
+    }
+    $.each($("#tbl_task tbody tr"), function(idx) {
+        if($(this).text().toLowerCase().indexOf($(_this).val().toLowerCase()) === -1)
+            $(this).hide();
+        else
+            $(this).show();                
+        });
+}); 
+
+$("#search_version").keyup(function(){
+    _this = this;
+    // Show only matching TR, hide rest of them
+   if ($(this).val() === ''){
+        $(this).css({"border-color": "#333"})
+    }else{
+        $(this).css({"border-color": "#5897fb"})
+    }
+    $.each($("#tbl_versions tbody tr"), function(idx) {
+        if($(this).text().toLowerCase().indexOf($(_this).val().toLowerCase()) === -1)
+            $(this).hide();
+        else
+            $(this).show();                
+        });
+}); 
+function demoFromHTML() {
+    update()
+}
+
+function update() {
+            var doc = new jsPDF();
+            var elem = $('#tbl_task');
+            var res = doc.autoTableHtmlToJson(elem);
+            doc.autoTable(res.columns, res.data, {startY: 20});
+
+        doc.save('table.pdf');
+    }
+
+function sortOrder(header){
+    var table = $('#tbl_task');
+    
+    $(header)
+        .wrapInner('<span title="sort this column"/>')
+        .each(function(){
+            
+            var th = $(this),
+                thIndex = th.index(),
+                inverse = false;
+            
+            th.click(function(){
+                
+                table.find('td').filter(function(){
+                    
+                    return $(this).index() === thIndex;
+                    
+                }).sortElements(function(a, b){
+                    
+                    return $.text([a]) > $.text([b]) ?
+                        inverse ? -1 : 1
+                        : inverse ? 1 : -1;
+                    
+                }, function(){
+                    
+                    return this.parentNode; 
+                    
+                });
+                
+                inverse = !inverse;
+                    
+            });
+                
+        });
+}
+
+function toggle_note(param) {
+    id = $(param).find('option:selected').attr('id');
+    category = $(param).val();
+    category = category.replace(/ /g,"_");
+    cat_id = "category-"+category+"-"+id
+    all_cat_id = "category-"
+    $('[id^="'+cat_id+'"]').css({'display':'block'});
+    $('[id^="'+all_cat_id+'"]').each(function(index){
+        this_id = $(this).attr('id')
+        var patt = new RegExp(cat_id);
+        var match = patt.test(this_id);
+        if (!match){
+            $(this).css({"display":"none"});
+        }
+    })
+}
+
+function editArtistCell(context){
+
+    var OriginalContent = $(context).text();
+    OriginalContent = OriginalContent.replace(/^\s+/ig,'');
+    OriginalContent = OriginalContent.replace(/\s+$/ig,'');
+    var row_stat = 'Status';
+
+    var task_id = $(context).attr('data-task-id');
+
+    var clone = $('#selectStatus').clone(true);
+    clone.css({"background-color":"#444"});
+
+    clone.val(OriginalContent).trigger("liszt:updated");
+    clone.trigger("chosen:updated");
+    $(context).html(clone.show("show"));
+
+    clone.focus();
+    clone.blur(function () {
+        status_text = $(this).val(); 
+        change_status(status_text,context,row_stat);
+        change_multiple(status_text,context,row_stat);
+    });
+}
+function toggle_view(context){
+    act_id = $(context).attr('id');
+    id = act_id.split('-')[1]
+    a_val = $(context).val();
+    $('#reject_note-'+id).val('');
+    $('#reject_note_accordion-'+id).fadeOut(350);
+    $('#reject_notepad-'+id).fadeOut(350);
+    if (a_val == 'View'){
+	show_version_notes(context);
+	$('#reject_note_accordion-'+id).fadeIn(350);
+    }else if (a_val == 'Reject'){
+	$('#reject_notepad-'+id).fadeIn(350);
+    }
+}
+function toggle_linkview(context){
+    act_id = $(context).attr('id');
+    id = act_id.split('-')[1]
+    a_val = $(context).val();
+    $('#link_reject_note-'+id).val('');
+    $('#link_reject_note_accordion-'+id).fadeOut(350);
+    $('#link_reject_notepad-'+id).fadeOut(350);
+    if (a_val == 'View'){
+	show_linkversion_notes(context);
+	$('#link_reject_note_accordion-'+id).fadeIn(350);
+    }else if (a_val == 'Reject'){
+	$('#link_reject_notepad-'+id).fadeIn(350);
+    }
+}
+function show_versions(context){
+    attr_id = $(context).attr('id');
+    id = attr_id.split('-')[1]
+
+    act_val = $('#selectView-'+id).val()
+    dept_val = $('#selectDepartment-'+id).val()
+    atype_val = $('#selectAssetType-'+id).val()
+
+    if (dept_val == ''){
+	alert("Please select department");
+	return null;
+    }else if (atype_val == ''){
+	alert("Please select asset type");
+	return null;
+    }
+
+    var col=$(context).closest('td');
+    task_id = col.attr('data-task-id');
+    
+    $select_elem = $('#selectVersion-'+id)
+    load_versions(task_id,dept_val,atype_val,$select_elem,'')
+
+}
+
+function show_linkversions(context){
+    attr_id = $(context).attr('id');
+    id = attr_id.split('-')[1];
+
+    act_val = $('#selectLinkView-'+id).val();
+    dept_val = $('#selectLinkDepartment-'+id).val();
+    atype_val = $('#selectLinkAssetType-'+id).val();
+
+    if (dept_val == ''){
+	alert("Please select department");
+	return null;
+    }else if (atype_val == ''){
+	alert("Please select asset type");
+	return null;
+    }
+
+    build_val = $('#selectLinkDepartment-'+id).attr('data-asset-build');
+    $select_elem = $('#selectLinkVersion-'+id)
+    load_versions('',dept_val,atype_val,$select_elem,build_val)
+
+}
+function load_versions(task_id,dept,asset_type,$select_elem,asset_build) {
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'task_id': task_id ,'object_name': 'Versions', 'asset_type': asset_type , 'department': dept, 'asset_build': asset_build},
+        beforeSend: function(){
+        },
+        success: function(json){
+	    $select_elem.empty();
+	    $select_elem.append('<option value="">Select Version</option>');
+            $.each(json, function (idx, obj) {
+		$select_elem.append('<option value="'+obj.id+'">'+obj.name+'</option>');
+            });
+	    $select_elem.trigger("chosen:updated");
+	    $select_elem.trigger("liszt:updated");
+	    $select_elem.data("chosen").destroy().chosen();
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
+}
+
+function show_version_notes(context){
+    attr_id = $(context).attr('id');
+    id = attr_id.split('-')[1]
+    ver_id = $('#selectVersion-'+id).val();
+    if (ver_id == ''){
+	alert("Please select version !!");
+	return null;
+    }
+    $('#reject_note_accordion-'+id).html('');
+//    $('#reject_note_accordion-'+id).accordion();
+    version_notes(ver_id,id);
+}
+
+function version_notes(ver_id,id) {
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'object_name': 'Version Note', 'ver_id': ver_id},
+        beforeSend: function(){
+        },
+        success: function(json){
+            $.each(json, function (idx, obj) {
+		add_version_notes(obj,id,idx);
+            });
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
+}
+
+function add_version_notes(obj,id,idx){
+
+note_author = obj.note_author;
+note_head = obj.note_head;
+note_replies = obj.replies;
+note_category = obj.note_category;
+note_date = obj.note_date;
+note_id = obj.note_id;
+++idx;
+pid = id
+id = pid+'_'+idx;
+
+notehead = '\
+    <div class="panel panel-default" id="note_category-'+id+'">\
+	<div class="panel-heading">\
+	    <i class="glyphicon glyphicon-envelope"></i>&nbsp;&nbsp;\
+	    <span class="label2 label-'+note_category+'">'+note_category+'</span>\
+	    <a data-toggle="collapse" data-parent="#reject_note_accordion-'+pid+'" href="#note_collapse-'+id+'" style="text-decoration: none;">\
+	    <span class="label label-default" style="width:63%">'+note_author+' : '+note_head+'</span></a>\
+	    <span class="label2 label-info">'+note_date+'</span>\
+	</div>\
+    </div>\
+';
+notebody = '\
+    <div id="note_collapse-'+id+'" class="panel-collapse collapse">\
+	<div class="panel-body" style="padding: 0px;">\
+	    <div class="box" style="overflow:auto; height:195px; margin: 10px;">';
+    replies = '';
+    for (index in note_replies){
+	replies = replies + '<p>'+note_replies[index]+'</p>';
+    }
+body2 = replies + '\
+	    </div>\
+';
+
+notetail = '\
+    <div id="reject_notepad-'+id+'" style="display:block">\
+        <div class="box" style="margin: 10px;">\
+            <table>\
+                <tr>\
+                    <td>\
+                        <textarea cols=90 rows=2 data-note-id="'+note_id+'" id="reply_ver_note_text-'+id+'" required="" style="color:black;"></textarea>\
+                    </td>\
+                    <td>\
+                        <button id="reply_ver_note-'+id+'" class="btn btn-inverse btn-default btn-lg" onclick="reply_ver_note(this)">Reply</button>\
+                    </td>\
+                </tr>\
+            </table>\
+        </div>\
+    </div>\
+';
+notetailend = '\
+    </div>\
+</div>\
+';
+$('#reject_note_accordion-'+pid).append(notehead+notebody+body2+notetail+notetailend);
+}
+
+function reply_ver_note(context){
+
+    attr_id = $(context).attr('id');
+    id = attr_id.split('-')[1];
+    reply_text = $('#reply_ver_note_text-'+id).val();
+    if (reply_text == ''){
+	alert("Give some reply !!!");
+	return null;
+    }
+    note_id = $('#reply_ver_note_text-'+id).attr('data-note-id');
+    reply_note(reply_text,note_id);
+    $('#reply_ver_note_text-'+id).val('');
+    location.reload();
+}
+
+function show_linkversion_notes(context){
+    attr_id = $(context).attr('id');
+    id = attr_id.split('-')[1]
+    ver_id = $('#selectLinkVersion-'+id).val();
+    if (ver_id == ''){
+	alert("Please select version !!");
+	return null;
+    }
+    $('#link_reject_note_accordion-'+id).html('');
+    link_version_notes(ver_id,id);
+}
+
+function link_version_notes(ver_id,id) {
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'object_name': 'Version Note', 'ver_id': ver_id},
+        beforeSend: function(){
+        },
+        success: function(json){
+            $.each(json, function (idx, obj) {
+		add_linkversion_notes(obj,id,idx);
+            });
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
+}
+
+function add_linkversion_notes(obj,id,idx){
+
+note_author = obj.note_author;
+note_head = obj.note_head;
+note_replies = obj.replies;
+note_category = obj.note_category;
+note_date = obj.note_date;
+note_id = obj.note_id;
+++idx;
+pid = id
+id = pid+'_'+idx;
+
+notehead = '\
+    <div class="panel panel-default" id="link_note_category-'+id+'">\
+	<div class="panel-heading">\
+	    <i class="glyphicon glyphicon-envelope"></i>&nbsp;&nbsp;\
+	    <span class="label2 label-'+note_category+'">'+note_category+'</span>\
+	    <a data-toggle="collapse" data-parent="#link_reject_note_accordion-'+pid+'" href="#link_note_collapse-'+id+'" style="text-decoration: none;">\
+	    <span class="label label-default" style="width:63%">'+note_author+' : '+note_head+'</span></a>\
+	    <span class="label2 label-info">'+note_date+'</span>\
+	</div>\
+    </div>\
+';
+notebody = '\
+    <div id="link_note_collapse-'+id+'" class="panel-collapse collapse">\
+	<div class="panel-body" style="padding: 0px;">\
+	    <div class="box" style="overflow:auto; height:195px; margin: 10px;">';
+    replies = '';
+    for (index in note_replies){
+	replies = replies + '<p>'+note_replies[index]+'</p>';
+    }
+body2 = replies + '\
+	    </div>\
+';
+
+notetail = '\
+    <div id="link_reject_notepad-'+id+'" style="display:block">\
+        <div class="box" style="margin: 10px;">\
+            <table>\
+                <tr>\
+                    <td>\
+                        <textarea cols=90 rows=2 data-note-id="'+note_id+'" id="link_reply_ver_note_text-'+id+'" required="" style="color:black;"></textarea>\
+                    </td>\
+                    <td>\
+                        <button id="link_reply_ver_note-'+id+'" class="btn btn-inverse btn-default btn-lg" onclick="link_reply_ver_note(this)">Reply</button>\
+                    </td>\
+                </tr>\
+            </table>\
+        </div>\
+    </div>\
+';
+notetailend = '\
+    </div>\
+</div>\
+';
+$('#link_reject_note_accordion-'+pid).append(notehead+notebody+body2+notetail+notetailend);
+}
+
+function link_reply_ver_note(context){
+
+    attr_id = $(context).attr('id');
+    id = attr_id.split('-')[1];
+    reply_text = $('#link_reply_ver_note_text-'+id).val();
+    if (reply_text == ''){
+	alert("Give some reply !!!");
+	return null;
+    }
+    note_id = $('#link_reply_ver_note_text-'+id).attr('data-note-id');
+    reply_note(reply_text,note_id);
+    $('#link_reply_ver_note_text-'+id).val('');
+    location.reload();
+}
+
+function reply_note(reply_text,note_id) {
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'object_name': 'Reply Note', 'note_id': note_id, 'reply_text': reply_text},
+        beforeSend: function(){
+        },
+        success: function(json){
+            $.each(json, function (idx, obj) {
+            });
+        
+            noty({
+                text: 'Reply has been given ...',
+                layout: 'topCenter',
+                closeWith: ['click', 'hover'],
+                type: 'success'
+            });
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
+}
+function add_note(context){
+
+    attr_id = $(context).attr('id');
+    id = attr_id.split('-')[1]
+    ver_id = $('#selectVersion-'+id).val();
+    note = $('#reject_note-'+id).val();
+    if (ver_id == ''){
+	alert("Please select version !!");
+	return null;
+    }
+    if (note == ''){
+	alert("Note is empty !!");
+	return null;
+    }
+    var col = $('#selectVersion-'+id).closest('td');
+    task_name =	col.attr('data-task-name');
+    note = task_name+' : '+note;
+    save_note(note,ver_id);
+    $('#reject_notepad-'+id).fadeOut(350);
+}
+
+function add_linknote(context){
+
+    attr_id = $(context).attr('id');
+    id = attr_id.split('-')[1]
+    ver_id = $('#selectLinkVersion-'+id).val();
+    note = $('#link_reject_note-'+id).val();
+    if (ver_id == ''){
+	alert("Please select version !!");
+	return null;
+    }
+    if (note == ''){
+	alert("Note is empty !!");
+	return null;
+    }
+    var col = $('#selectLinkVersion-'+id).closest('td');
+    task_name =	col.attr('data-task-name');
+    note = task_name+' : '+note;
+    save_note(note,ver_id);
+    $('#link_reject_notepad-'+id).fadeOut(350);
+}
+function save_note(note,ver_id) {
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'object_name': 'User Note', 'note': note, 'ver_id': ver_id},
+        beforeSend: function(){
+        },
+        success: function(json){
+            $.each(json, function (idx, obj) {
+            });
+        
+            noty({
+                text: 'Note has been posted',
+                layout: 'topCenter',
+                closeWith: ['click', 'hover'],
+                type: 'success'
+            });
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
+}
+
+$(function() {
+
+    $('[data-popup-open]').on('click', function(e)  {
+        var targeted_popup_class = jQuery(this).attr('data-popup-open');
+        $('[data-popup="' + targeted_popup_class + '"]').fadeIn(350);
+        e.preventDefault();
+    });
+
+
+    $('[data-popup-close]').on('click', function(e)  {
+        var targeted_popup_class = jQuery(this).attr('data-popup-close');
+        $('[data-popup="' + targeted_popup_class + '"]').fadeOut(350);
+
+        e.preventDefault();
+    });
+});
+
+/*
+$('#selectProject').change(function(){
+    var proj_id = $("#selectProject").val();
+    if (!proj_id){
+        alert("Please select valid project !!");
+        return null;
+    }
+    $('#all_ftp_shots').attr('checked',false);
+    var obj_name = 'FtpSequence';
+    load_obj_name(obj_name,'');
+});
+*/
+
+
+function refresh_shots(){
+
+    var obj_name = 'FtpShot';
+    seqs = $('#selectFtpSequence').val();
+    selected_shots = $("#selectFtpShot").val();
+    for (i in seqs){
+	selectedValue = seqs[i]
+	load_ftp_shots(obj_name,selectedValue,selected_shots);
+    }
+}
+
+function refresh_asset_builds(){
+
+    var obj_name = 'FtpAsset';
+    selected_shots = $("#selectFtpAsset").val();
+    load_ftp_shots(obj_name,'',selected_shots);
+}
+function load_ftp_shots(obj_name,parent_id,selected_shots) {
+
+    var project = $('#selectProject').val();
+    if (!project){
+        alert("Please select valid project !!")
+        return null
+    }
+
+    var client_final_combo = $("#selectFtpAssetName").val();
+    var select_type = ''
+    var $div_name = ''
+    var $select_elem = ''
+    var task_name = ''
+    var status_name = ''
+    var shots_exist = [];
+
+    if (obj_name == 'FtpShot'){
+	$select_elem = $("#selectFtpShot");
+        $div_name = $("#div_shot_name");
+        shots_exist = $("#selectFtpShot").val();
+	task_name = $("#selectShotFtpDepartment").val();
+	status_name = $("#selectFtpStatus").val();
+    }else if (obj_name == 'FtpAsset'){
+	$select_elem = $("#selectFtpAsset");
+        $div_name = $("#div_asset_name");
+	task_name = $("#selectAssetFtpDepartment").val();
+	status_name = $("#selectFtpStatus").val();
+        select_type = $("#selectFtpType").val();
+    }else{
+        return null
+    }
+
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'proj_id': project ,'object_name': obj_name , 'object_type' : select_type, 'parent_id' : parent_id, 'task_name': task_name, 'status_name': status_name, 'upload_for':client_final_combo},
+        beforeSend: function(){
+	    $select_elem.empty();
+            $div_name.css({'display':'block'});
+        },
+        success: function(json){
+            $.each(json, function (idx, obj) {
+		opt_text = ''
+		opt_id = obj.id
+                if(parent_id){
+		    opt_text = obj.parent_name+'_'+obj.name
+                }else{
+		    opt_text = obj.name
+                }
+		$select_elem.append('<option value="'+opt_id+'">' + opt_text + '</option>');
+		if (selected_shots){
+		    shot_idx = selected_shots.indexOf(opt_id)
+		    if (shot_idx > -1){
+			if (obj_name == 'FtpShot'){
+			    $("#selectFtpShot option[value='"+selected_shots[shot_idx]+"']").prop('selected', true);
+			}else if (obj_name == 'FtpAsset'){
+			    $("#selectFtpAsset option[value='"+selected_shots[shot_idx]+"']").prop('selected', true);
+			}
+		    }
+		}
+            });
+            $select_elem.trigger("chosen:updated");
+            $select_elem.trigger("liszt:updated");
+            $select_elem.data("chosen").destroy().chosen();
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
+}
+
+function load_ftp_asset_type(parent_id) {
+
+    $select_elem = $('#selectFtpAssetType');
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'parent_id' : parent_id, 'object_name': 'Ftp Asset Type'},
+        beforeSend: function(){
+	    $select_elem.empty();
+	    $select_elem.append('<option value="">Select one ...</option>');
+        },
+        success: function(json){
+            $.each(json, function (idx, obj) {
+		$select_elem.append('<option value="'+obj.name+'">' + obj.name + '</option>');
+            });
+            $select_elem.trigger("chosen:updated");
+            $select_elem.trigger("liszt:updated");
+            $select_elem.data("chosen").destroy().chosen();
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
+}
+
+function load_client_version(name) {
+
+    var object_name = '';
+    var id = $("#selectProject").val();
+    var project_name = $("#selectProject option[value='"+id+"']").text()
+    var component_select = $("#selectComponent").val();
+    var obj_name = $("#selectClientObject").val();
+    var asset_build_type = $("#selectClientType").val();
+    
+    if (component_select == 'Internal'){
+        object_name = 'client_version';
+    }
+    else if (component_select == 'Client'){
+        object_name = 'client_side_versions';
+    }
+
+    $select_elem = $('#selectClientVersion');
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'project_name': project_name, 'parent_name' : name, 'object_name': object_name, 'task_prefer': obj_name, 'build_type': asset_build_type},
+        beforeSend: function(){
+	    $select_elem.empty();
+//	    $select_elem.append('<option value="">Select one ...</option>');
+        },
+        success: function(json){
+            $.each(json, function (idx, obj) {
+		$select_elem.append('<option value="'+obj.version_path+'">' + obj.version_name + '</option>');
+            });
+            $select_elem.trigger("chosen:updated");
+            $select_elem.trigger("liszt:updated");
+            $select_elem.data("chosen").destroy().chosen();
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
+}
+function load_ftp_asset_name(parent_id) {
+
+    asset_type = $('#selectFtpAssetType').val();
+    if(!asset_type){
+	alert("Please select valid asset type !!!");
+	return null;
+    }
+
+    $select_elem = $('#selectFtpAssetName');
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'parent_id' : parent_id, 'object_name': 'Ftp Asset Name', 'asset_type': asset_type},
+        beforeSend: function(){
+	    $select_elem.empty();
+	    $select_elem.append('<option value="">Select one ...</option>');
+        },
+        success: function(json){
+            $.each(json, function (idx, obj) {
+		$select_elem.append('<option value="'+obj.name+'">' + obj.name + '</option>');
+            });
+            $select_elem.trigger("chosen:updated");
+            $select_elem.trigger("liszt:updated");
+            $select_elem.data("chosen").destroy().chosen();
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
+}
+function load_ftp_components(parent_id,dept) {
+
+    asset_name = $('#selectFtpAssetName').val();
+    if(!asset_name){
+	alert("Please select valid asset name !!!");
+	return null;
+    }
+
+    $select_elem = $('#selectFtpExt');
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'parent_id' : parent_id, 'object_name': 'Ftp Component', 'asset_name': asset_name, 'department': dept},
+        beforeSend: function(){
+	    $select_elem.empty();
+	    $select_elem.append('<option value="">Select one ...</option>');
+        },
+        success: function(json){
+            $.each(json, function (idx, obj) {
+		$select_elem.append('<option value="'+obj.name+'">' + obj.name + '</option>');
+            });
+            $select_elem.trigger("chosen:updated");
+            $select_elem.trigger("liszt:updated");
+            $select_elem.data("chosen").destroy().chosen();
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
+}
+
+$('#selectFtpAssetName').change(function(){
+
+    obj = $('#selectFtpObject').val();
+    parent_id = ''
+    values = ''
+    dept = ''
+
+    upload_notes();
+    $('#selectFtpVersionSide').val('').trigger("liszt:updated").trigger("chosen:updated");
+
+    if (obj == 'Sequence'){
+	values = $('#selectFtpShot').val();
+	dept = $('#selectShotFtpDepartment').val();
+    }else if (obj == 'Asset Build'){
+	values = $('#selectFtpAsset').val();
+	dept = $('#selectAssetFtpDepartment').val();
+    }
+
+    if(!dept){
+	alert("Please select valid department !!!");
+	return null;
+    }
+
+    if (values){
+	parent_id = values[0];
+    }else{
+	alert("Please select "+obj);
+	return null;
+    }
+    load_ftp_components(parent_id,dept);
+});
+/*
+$('#selectFtpAssetName').change(function(){
+
+    $("#extended_div").css("display", "block");
+
+    upload_notes()
+
+    $('#selectFtpVersionSide').val('').trigger("liszt:updated").trigger("chosen:updated");
+    asset_name = $(this).val();
+    if (!asset_name){
+	alert("Please select valid asset name !!!");
+	$('#div_ext_name').css({'display':'none'});
+	return null;
+    }
+    $('#div_ext_name').css({'display':'block'})
+    $select_elem = $('#selectFtpExt');
+    $select_elem.empty();
+    if (asset_name == 'final' && $('#selectFtpStatus').val() == 'Client') {
+        $select_elem.append('<option value="exr">exr</option>');
+    }else if (asset_name == 'final') {
+        $select_elem.append('<option value="">Select Ext.</option>');
+        $select_elem.append('<option value="exr">exr</option>');
+        $select_elem.append('<option value="jpg">jpg</option>');
+        $select_elem.append('<option value="mov">mov</option>');
+	$('#selectFtpVersionSide').val('both').trigger("liszt:updated").trigger("chosen:updated");
+    }else if (asset_name == 'sequence') {
+        $select_elem.append('<option value="">Select Ext.</option>');
+        $select_elem.append('<option value="mov">mov</option>');
+        $select_elem.append('<option value="exr">exr</option>');
+    }else if (asset_name == 'static') {
+        $select_elem.append('<option value="jpg" selected>jpg</option>');
+    }else if (asset_name == 'geom') {
+        $select_elem.append('<option value="">Select Ext.</option>');
+        $select_elem.append('<option value="review_img">review_img</option>');
+        $select_elem.append('<option value="review_mov">review_mov</option>');
+    }else if (asset_name == 'review') {
+        $select_elem.append('<option value="mov" selected>mov</option>');
+    }
+    $select_elem.trigger("chosen:updated");
+    $select_elem.trigger("liszt:updated");
+    $select_elem.data("chosen").destroy().chosen();	
+
+    obj = $('#selectFtpObject').val();
+    if (obj == 'Sequence'){
+	refresh_shots()
+    }else if (obj == 'Asset Build'){
+	refresh_asset_builds()
+    }
+});
+*/
+function show_upload_version(){
+
+    $('#tbl_ftp_version tbody').empty();
+
+    proj = $('#selectProject').val();
+    stat = $('#selectFtpStatus').val();
+    ass = $('#selectFtpAssetName').val();
+    ext = $('#selectFtpExt').val();
+    side = $('#selectFtpVersionSide').val();
+    copy_opt = $('input[name="optradio"]:checked').val();
+    dest_path = $('#dest_path').val();
+    dest_path = dest_path.replace(/\s/g,'');
+   
+
+    if (!proj){
+	alert("Please select project !!!");
+	return null;
+    } else if (!stat){
+	alert("Please select status !!!");
+	return null;
+    } else if (!ass){
+	alert("Please select asset name !!!");
+	return null;
+    } else if (!ext){
+	alert("Please select Components !!!");
+	return null;
+    }
+//    else if (!copy_opt){
+//	alert("Please check copy or symlink !!!");
+//	return null;
+//    }
+    else if (!dest_path){
+	alert("Please valid destination path !!!");
+	return null;
+    }
+
+    var data_array = [];
+    proj_name = $("#selectProject option[value='"+proj+"']").text();
+    obj = $('#selectFtpObject').val();
+    
+    if (obj == 'Sequence'){
+	dept = $('#selectShotFtpDepartment').val();
+	seq = $('#selectFtpSequence').val();
+	shot = $('#selectFtpShot').val();
+	if (!dept){
+	    alert("Please select department !!!");
+	    return null;
+	} else if (!seq){
+	    alert("Please select Sequence !!!");
+	    return null;
+	} else if (!shot){
+	    alert("Please select shot !!!");
+	    return null;
+	} else if ($("#selectShotFtpDepartment").val() == 'Lighting' && !side){
+	    alert("Please select side !!!");
+	    return null;
+	}
+	for (i in shot){
+	    value = shot[i];
+	    shot_name = $("#selectFtpShot option[value='"+value+"']").text();
+	    str_ver = proj_name+'_'+shot_name+':'+value+'|'+stat+'|'+dept+'|'+ass+'|'+ext+'|'+side;
+	    data_array.push(str_ver);
+	}
+    }else if (obj == 'Asset Build'){
+	dept = $('#selectAssetFtpDepartment').val();
+	type = $('#selectFtpType').val();
+	asset = $('#selectFtpAsset').val();
+	if (!dept){
+	    alert("Please select department !!!");
+	    return null;
+	} else if (!type){
+	    alert("Please select Asset Type !!!");
+	    return null;
+	} else if (!asset){
+	    alert("Please select Asset Build !!!");
+	    return null;
+	}
+	for (i in asset){
+	    value = asset[i];
+	    asset_name = $("#selectFtpAsset option[value='"+value+"']").text();
+	    str_ver = proj_name+'_'+asset_name+':'+value+'|'+stat+'|'+dept+'|'+ass+'|'+ext;
+	    data_array.push(str_ver);
+	}
+    }
+    load_ftp_versions(data_array);
+}
+
+
+function load_ftp_versions(data_array) {
+
+    data_array = JSON.stringify(data_array);
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'data_array': data_array ,'object_name': 'FTP Versions' },
+        beforeSend: function(){
+            $('#panel_big').plainOverlay('show');
+        },
+        success: function(json){
+                $.each(json, function (idx, obj) {
+		    add_version_rows(idx, obj);
+                });
+            $('#panel_big').plainOverlay('hide');
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
+}
+
+function add_version_rows(idx,obj){
+
+    var obj_name = $("#selectObject").val();
+    var table = $('#tbl_ftp_version tbody');
+    row = $(table[0].insertRow(-1));
+    ver = obj.version
+//    updated_version = ver+
+    camera_angle = obj.camera_angle
+    ass = $('#selectFtpAssetName').val();
+    obj_name = obj.obj_name
+    upload_status = obj.status
+    approved_version_number = obj.approved_version_number
+    trimmed_version = obj.trimmed_version
+    linked_path = obj.linked_path
+    version_id = obj.version_id
+    task_assignees = obj.assignees
+    source_path = obj.source_path
+
+    check_box = ''
+    list_ver = ver.split(',')
+    if (list_ver.length > 1){
+	check_box = '<span id="cb'+idx+'"/>';
+    }else if (upload_status == 'No version found'){
+        check_box = '<span id="cb'+idx+'"/>';
+    }else if (upload_status == 'Source folder not available'){
+        check_box = '<span id="cb'+idx+'"/>';
+    }else if (upload_status == 'Sequence version not yet approved by client'){
+        check_box = '<span id="cb'+idx+'"/>';
+    }else if (upload_status == "More than one version's status is Internal Approved"){
+        check_box = '<span id="cb'+idx+'"/>';
+    }
+    else{
+	check_box = '<input type="checkbox" id="cb'+idx+'" data-td-ver = "'+ver+':'+approved_version_number+':'+version_id+':'+source_path+'"/>';
+    }
+    version = ver.replace(/,/g, "</br>"); 
+    if (!(upload_status == 'Ready to upload')){
+        var cell = $("<td id='check_box_1'>"+check_box+"</td><td>"+obj_name+"</td><td>"+trimmed_version+"</td><td>"+approved_version_number+"<td style='color:red;'>"+upload_status+"</td><td>"+task_assignees+"</td>");
+    }
+    else{
+        var cell = $("<td id='check_box_1'>"+check_box+"</td><td>"+obj_name+"</td><td>"+trimmed_version+"</td><td>"+approved_version_number+"<td style='color:rgb(66, 206, 82);'>"+upload_status+"</td><td>"+task_assignees+"</td>");
+    }
+
+    row.append(cell);
+
+}
+
+$('#upload_ftp').click(function(){
+    var ftp_version = []
+    side = $('#selectFtpVersionSide').val();
+    upload_status = $('#selectFtpStatus').val();
+    copy_opt = 'symlink'
+    dest_path = $('#dest_path').val();
+    dest_path = dest_path.replace(/\s/g,'');
+    var listy = []
+    if (dest_path.slice(0,2) == 'Z:'){
+        var dest_path_1 = dest_path.split('\\');
+    }
+    else {
+        var dest_path_1 = dest_path.split('/');
+
+    }
+
+    obj = $('#selectFtpObject').val();
+    var dept = '';
+    if (obj == 'Sequence'){
+	dept = $('#selectShotFtpDepartment').val();
+    }else if (obj == 'Asset Build'){
+	dept = $('#selectAssetFtpDepartment').val();
+    }
+    $('tbody tr td input[type="checkbox"]').each(function(){
+	if($(this).prop('checked')){
+	    ftp_version.push($(this).attr('data-td-ver'));
+	}
+    });
+    $('tbody tr td input[type="checkbox"]').each(function(){
+	if(!($(this).prop('checked'))){
+	    alert("Select files after clicking on 'Show' button")
+	    return null
+	}
+    });
+    upload_files(ftp_version,side,copy_opt,dest_path_1,upload_status,dept)
+
+});
+
+
+function upload_files(data_array,side,copy_opt,dest_path,upload_status,dept) {
+    var client_final_combo = $('#selectFtpAssetName').val()
+    data_dest = JSON.stringify(dest_path);
+    data_array = JSON.stringify(data_array);
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'data_array': data_array ,'object_name': 'FTP Upload', 'destination':data_dest, 'prefer':copy_opt, 'side':side, 'upload_status':upload_status, 'client_final_combo': client_final_combo, 'department':dept},
+        beforeSend: function(){
+            $('#panel_big').plainOverlay('show');
+        },
+        success: function(json){
+		var status_ver = '';
+                $.each(json, function (idx, obj) {
+		    status_ver = obj.status;
+                });
+            $('#panel_big').plainOverlay('hide');
+                    noty({
+                            text: status_ver,
+                            layout: 'topCenter',
+                            closeWith: ['click', 'hover'],
+                            type: 'success'
+			});
+		setTimeout(location.reload.bind(location), 3500);
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
+}
+$('#selectFtpStatus').change(function(){
+    upload_notes()
+});
+
+function upload_notes(){
+
+    if ($('#selectFtpStatus').val() == 'Internal'){
+          $('#upload_tips').html('<span style="font-weight:bold; font-size:21px;text-decoration:underline">Status Convention to be followed-</span></br> Task status : Pending Internal Review , Version Status : Ready to review');
+    }else if ($('#selectFtpAssetName').val() == 'final' && $('#selectFtpStatus').val() == 'Client') {
+        $('#upload_tips').html('<span style="font-weight:bold; font-size:21px;text-decoration:underline">Status Convention to be followed-</span></br> Task status : Client Approved , Version Status : Client Approved');
+    }else {
+        $('#upload_tips').html('<span style="font-weight:bold; font-size:21px;text-decoration:underline">Status Convention to be followed-</span></br>Task status , Version Status : Internal Approved');
+    }
+}
+
+$('#allftpcb').change(function(){
+    if($(this).prop('checked')){
+        $('tbody tr td input[type="checkbox"]').each(function(){
+            $(this).prop('checked', true);
+        });
+    }else{
+        $('tbody tr td input[type="checkbox"]').each(function(){
+            $(this).prop('checked', false);
+        });
+    }
+});
+
+function show_model(context) {
+    my_id = $(context).closest('td').attr('data-task-id');
+    data_id = $(context).closest('td').attr('data-id');
+    obj_name = $('#selectObject').val();
+    if (obj_name == 'Shot Asset Build'){
+	obj_name = 'Asset Build';
+    }
+//    if (data_id){
+//	obj_name = 'Task';
+//    }
+
+    load_my_details(my_id,obj_name);
+    load_asset_versions(my_id,obj_name);
+
+    $('#myModal').modal('show');
+}
+
+function load_my_details(my_id,my_type) {
+
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'my_id': my_id , 'my_type': my_type, 'object_name': 'Show My Details' },
+        beforeSend: function(){
+//            $('#panel_big').plainOverlay('show');
+        },
+        success: function(json){
+                $.each(json, function (idx, obj) {
+		    add_my_details(idx, obj);
+                });
+//            $('#panel_big').plainOverlay('hide');
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
+}
+
+function load_asset_versions(my_id,my_type){
+    
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'my_id': my_id , 'my_type': my_type, 'object_name': 'Show Asset Versions' },
+        beforeSend: function(){
+//            $('#panel_big').plainOverlay('show');
+	    remove_rows($('#tbl_versions'));
+        },
+        success: function(json){
+                $.each(json, function (idx, obj) {
+		    add_version_details(idx, obj);
+                });
+//            $('#panel_big').plainOverlay('hide');
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
+}
+
+function toggle_parent_note(param) {
+//    id = $(param).find('option:selected').attr('id');
+    category = $(param).val();
+    category = category.replace(/ /g,"_");
+//    cat_id = "category-"+category+"-"+id
+    cat_id = "category-"+category
+    all_cat_id = "category-"
+    $('[id="'+cat_id+'"]').css({'display':'block'});
+    $('[id^="'+all_cat_id+'"]').each(function(index){
+        this_id = $(this).attr('id')
+//        var patt = new RegExp(cat_id);
+//        var match = patt.test(this_id);
+        if(cat_id == all_cat_id){
+            $(this).css({"display":"block"});
+        }else if (this_id != cat_id){
+            $(this).css({"display":"none"});
+	}
+
+    })
+}
+
+function add_my_details(idx, obj){
+    $('#selectNoteCategory').val('').trigger("chosen:updated");
+    html = '<h3>'+obj.name+'</h3><label>'+obj.object_type+' ('+obj.type_name+')</label></br><small>'+obj.link_path+'</small>';
+    $('#modal_header').html(html)
+    len_notes = obj.notes_list.length;
+    modal_body = '';
+    if (len_notes > 0){
+	for (i in obj.notes_list){
+	    note_author = obj.notes_list[i].note_author;
+	    note_category = obj.notes_list[i].note_category;
+	    note_date = obj.notes_list[i].note_date;
+	    note_head = obj.notes_list[i].note_head;
+	    note_head = note_head.replace('\n','<br>');
+	    reply = ''
+		if (obj.notes_list[i].replies.length > 0){
+		    reply = '<hr>'
+		    for (j in obj.notes_list[i].replies){
+			my_reply = obj.notes_list[i].replies[j];
+			r_array = my_reply.split('||');
+			reply = reply + '<p>'+r_array[0]+'<span class="label" style="float:right;">'+r_array[1]+'</span></p>'
+		    }
+		}
+	    modal_body = modal_body + '\
+			 <div class="box row" id="category-'+note_category+'"> \
+			 <span class="label label-info">'+note_author+'</span>\
+			 <span class="label label-'+note_category+'" style="width\:62%">'+note_category+'</span> \
+			 <span class="label label-info" style="float\:right;">'+note_date+'</span>\
+			 <p>'+note_head+'</p>\
+			 '+reply+'\
+			 </div>\
+			 '
+	}   
+    }else{
+	modal_body = 'There is no notes ...'
+    }
+
+    $('#note_details').html(modal_body)
+}
+
+function add_version_details(idx, obj){
+
+    $table = $('#tbl_versions tbody');
+    add_version_row($table,obj)   
+}
+
+function add_version_row($table,obj){
+
+    label_status = obj.status_name.replace(/ /g,"_").toLowerCase();
+    row = '\
+	  <tr> \
+	  <td>'+obj.version_name+'</td> \
+	  <td class="center">'+obj.asset_type+'</td> \
+	  <td data-task-id="" data-org-val="'+obj.status_name+'" data-parent-id="7093f732-91d0-11e6-ba04-001e67d20c13" data-id="show_status" ondblclick="editCell(this)">\
+	    <span class="label label-'+label_status+'">'+obj.status_name+'</span></td>\
+	  <td class="center">'+obj.published_on+'</td> \
+	  <td class="center">'+obj.published_by+'</td> \
+	  </tr> \
+	'
+    $table.append(row)
+}
+

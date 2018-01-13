@@ -1,0 +1,206 @@
+{
+ "Asset Build": {
+  "Environment": [
+   "Modeling",
+   "CFX",
+   "Texturing",
+   "PreLighting"
+  ],
+  "Set": [
+   "Set Dressing",
+   "Proxy Set",
+   "PreLighting"
+  ],
+  "FX": [
+   "FX"
+  ],
+  "Character": [
+   "Modeling",
+   "Blend Shape",
+   "Fur Shape",
+   "Sim Modeling",
+   "Rigging",
+   "Layout Rig",
+   "CFX",
+   "Crowd",
+   "Texturing",
+   "Anim Texture",
+   "Rig Test",
+   "PreLighting"
+  ],
+  "Prop": [
+   "Modeling",
+   "Blend Shape",
+   "Fur Shape",
+   "Foliage",
+   "Sim Modeling",
+   "Rigging",
+   "Layout Rig",
+   "CFX",
+   "Texturing",
+   "Anim Texture",
+   "PreLighting"
+  ],
+  "Vehicle": [
+   "Modeling",
+   "Blend Shape",
+   "Fur Shape",
+   "Sim Modeling",
+   "Rigging",
+   "Layout Rig",
+   "CFX",
+   "Texturing",
+   "Anim Texture",
+   "PreLighting"
+  ]
+ },
+ "Shot": {
+  "Static shot": [
+   "Layout",
+   "Blocking",
+   "Animation",
+   "Anim Tech Check",
+   "Shot Finaling",
+   "Cloth",
+   "Shave Hair",
+   "FX",
+   "PreLighting",
+   "Render",
+   "Lighting",
+   "Matte Painting",
+   "Crowd",
+   "Stereo Render",
+   "Stereo Comp",
+   "Set Dressing",
+   "Layout Stereo",
+   "Animation Stereo",
+   "Final Animation Stereo"
+  ],
+  "All Asset Build": [
+   "Modeling",
+   "Blend Shape",
+   "Fur Shape",
+   "Sim Modeling",
+   "Rigging",
+   "Layout Rig",
+   "CFX",
+   "Crowd",
+   "Texturing",
+   "Anim Texture",
+   "PreLighting",
+   "Rig Test",
+   "Set Dressing",
+   "Proxy Set"
+  ]
+ },
+ "Sequence": {
+  "Sequence": [
+   "Editing",
+   "Lighting",
+   "Matte Painting",
+   "Previz"
+  ]
+ },
+ "All Shot": {
+  "Task": [
+   "Layout",
+   "Blocking",
+   "Animation",
+   "Anim Tech Check",
+   "Shot Finaling",
+   "Cloth",
+   "Shave Hair",
+   "FX",
+   "PreLighting",
+   "Render",
+   "Lighting",
+   "Matte Painting",
+   "Crowd",
+   "Stereo Render",
+   "Stereo Comp",
+   "Set Dressing",
+   "Layout Stereo",
+   "Animation Stereo",
+   "Final Animation Stereo"
+  ],
+  "Asset Type": [
+   "Face Rig",
+   "Review",
+   "Image Sequence",
+   "proxy",
+   "Anim Rig",
+   "Setdressing",
+   "Curve",
+   "Master Rig",
+   "Uv Map",
+   "Cache",
+   "Camera",
+   "Geometry",
+   "Stand In",
+   "camera",
+   "fur",
+   "Upload",
+   "Configuration",
+   "Anim Data",
+   "Sourceimages",
+   "Audio",
+   "Shaders",
+   "Script",
+   "Work",
+   "Textures",
+   "Scene"
+  ]
+ },
+ "Shot Asset Build": {
+  "Generic": [
+   "Layout Stereo",
+   "Animation Stereo",
+   "Final Animation Stereo"
+  ]
+ },
+ "All Asset Build": {
+  "Task": [
+   "Modeling",
+   "Blend Shape",
+   "Fur Shape",
+   "Sim Modeling",
+   "Rigging",
+   "Layout Rig",
+   "CFX",
+   "Crowd",
+   "Texturing",
+   "Anim Texture",
+   "PreLighting",
+   "Rig Test",
+   "Set Dressing",
+   "Proxy Set"
+  ],
+  "Asset Type": [
+   "Face Rig",
+   "Review",
+   "Image Sequence",
+   "proxy",
+   "Anim Rig",
+   "Setdressing",
+   "Curve",
+   "Master Rig",
+   "Uv Map",
+   "Cache",
+   "Camera",
+   "Geometry",
+   "Stand In",
+   "camera",
+   "fur",
+   "Upload",
+   "Configuration",
+   "Anim Data",
+   "Sourceimages",
+   "Audio",
+   "Shaders",
+   "Script",
+   "Work",
+   "Textures",
+   "Scene"
+  ]
+ }
+}
