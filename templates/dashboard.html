@@ -1,51 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>{{user_id}}</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- The styles -->
-  <link id="bs-css" href="/static/css/bootstrap-cerulean.min.css" rel="stylesheet">
-  <link href='/static/css/charisma-app.css' rel="stylesheet">
-  <link href='/static/bower_components/chosen/chosen.min.css' rel='stylesheet'>
-  <link href='/static/bower_components/responsive-tables/responsive-tables.css' rel='stylesheet'>
-  <link href='/static/css/jquery.noty.css' rel='stylesheet'>
-  <link href='/static/css/noty_theme_default.css' rel='stylesheet'>
-  <link href='/static/css/animate.min.css' rel='stylesheet'>
-  <link href='/static/css/bootstrap-datepicker.min.css' rel='stylesheet'>
-  <link href='/static/css/theme-dark-all.css' rel='stylesheet'>
-    <link rel="stylesheet" type="text/css" href="/static/css/daterangepicker.css" />
-
-  <!-- jQuery -->
-  <script src="/static/bower_components/jquery/jquery.min.js"></script>
-</head>
-
+{% include "header.html" %}
 <body>
-<!-- topbar starts -->
-<div class="navbar navbar-default" role="navigation">
-  <div class="navbar-inner">
-    <a class="navbar-brand toggle_right" id="toggle_right" style="display:block"><i class="glyphicon glyphicon-chevron-right"
-                                                                       style="float:left;font-size: 18px;"></i></a>
-    <a class="navbar-brand toggle_left" id="toggle_left" style="display:none"><i class="glyphicon glyphicon-chevron-left"
-                                                                    style="float:left;font-size: 18px;"></i></a>
-
-    <a class="navbar-brand" href="http://atom">
-      <!--            <img alt="" src="/static/img/atom01.jpg" class="hidden-xs"/>
-      <span>A.T.O.M</span> -->
-      <img alt="" src="/static/img/assemblage.png" class="hidden-xs" style="width: 280px;"/>
-    </a>
-    <div class="btn-group pull-right theme-container animated tada">
-      <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-        <span class="hidden-sm hidden-xs"><i class="glyphicon glyphicon-user"></i>&nbsp; {{user_id}}</span>
-        <span class="caret"></span>
-      </button>
-      <ul class="dropdown-menu">
-        <li><a href="/logout"> LOGOUT</a></li>
-      </ul>
-    </div>
-  </div>
-</div>
-<!-- topbar ends -->
+{% include "top_bar.html" %}
 <div class="ch-container">
   <div class="row">
   </div>
