@@ -22,7 +22,8 @@
       <div class="sidebar-nav">
         <div class="nav-canvas">
           <ul class="nav nav-pills nav-stacked main-menu">
-	    <li class="nav-header"><img class="dashboard-avatar" alt="" src="http://192.168.1.18/Employees/{{emp_code}}.jpg"></li>
+            <li class="nav-header"><img class="dashboard-avatar" alt=""
+                                        src="http://192.168.1.18/Employees/{{emp_code}}.jpg"></li>
             <li class="nav-header">Main</li>
             {% if data.user_role == 'Supervisor' %}
             <li class="active" id="mgm_dashboard_page"><a class="ajax-link" href="/mgm_dashboard"><i
@@ -92,7 +93,8 @@
             <div class="box-header well">
               <h2><i class="glyphicon glyphicon-info-sign"></i> &nbsp; Report : Sequence</h2>
               <div class="box-icon">
-                <button class="btn btn-inverse btn-default btn-xs" id="download_user_task" onclick="$('#tbl_sequence').table2excel({filename: 'sequence_details',exclude: '.noExl'});">
+                <button class="btn btn-inverse btn-default btn-xs" id="download_user_task"
+                        onclick="$('#tbl_sequence').table2excel({filename: 'sequence_details',exclude: '.noExl'});">
                   <i class="glyphicon glyphicon-save icon-white"></i></button>
               </div>
             </div>
@@ -105,13 +107,13 @@
                   <th>Shots</th>
                   <th>Status</th>
                   {% for obj_name,task_name in task_temp_data.items %}
-                    {% for type,task_list in task_name.items %}
-                      {% if type == 'Static shot' %}
-                        {% for task in task_list %}
-                          <th>{{ task }}</th>
-                        {% endfor %}
-                      {% endif %}
-                    {% endfor %}
+                  {% for type,task_list in task_name.items %}
+                  {% if type == 'Static shot' %}
+                  {% for task in task_list %}
+                  <th>{{ task }}</th>
+                  {% endfor %}
+                  {% endif %}
+                  {% endfor %}
                   {% endfor %}
 
                 </tr>
@@ -122,7 +124,8 @@
             <div class="box-header well">
               <h2><i class="glyphicon glyphicon-info-sign"></i> &nbsp; Report : Asset Build</h2>
               <div class="box-icon">
-                <button class="btn btn-inverse btn-default btn-xs" id="download_asset_build" onclick="$('#tbl_asset_build').table2excel({filename: 'asset_build_details',exclude: '.noExl'});">
+                <button class="btn btn-inverse btn-default btn-xs" id="download_asset_build"
+                        onclick="$('#tbl_asset_build').table2excel({filename: 'asset_build_details',exclude: '.noExl'});">
                   <i class="glyphicon glyphicon-save icon-white"></i></button>
               </div>
             </div>
@@ -135,13 +138,13 @@
                   <th>Total</th>
                   <th>Status</th>
                   {% for obj_name,task_name in task_temp_data.items %}
-                    {% for type,task_list in task_name.items %}
-                      {% if type == 'All Asset Build' %}
-                        {% for task in task_list %}
-                          <th>{{ task }}</th>
-                        {% endfor %}
-                      {% endif %}
-                    {% endfor %}
+                  {% for type,task_list in task_name.items %}
+                  {% if type == 'All Asset Build' %}
+                  {% for task in task_list %}
+                  <th>{{ task }}</th>
+                  {% endfor %}
+                  {% endif %}
+                  {% endfor %}
                   {% endfor %}
 
                 </tr>
@@ -154,7 +157,8 @@
         </div>
       </div>
     </div>
-
+  </div>
+</div>
 </body>
 {% include "footer.html" %}
 </html>

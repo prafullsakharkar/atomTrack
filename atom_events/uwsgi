@@ -1,0 +1,123 @@
+#!/bin/bash
+
+# chkconfig: 2345 95 20
+# description: This application was developed by me and is tested on this server
+# processname: uwsgi
+
+### BEGIN INIT INFO
+# Provides:                 uwsgi process id
+# Required-Start:           $EVENT
+# Required-Stop:            $EVENT
+# Short-Description:        Start and stop uwsgi service.
+# Description:              This module help nginx to call django application
+# Date-Creation:            Monday, September 25 2017 11:47 AM
+# Date-Last-Modification:   -
+# Author:                   Prafull Sakharkar
+### END INIT INFO
+
+# Variables
+PGREP=/usr/bin/pgrep
+ZERO=0
+SEARCH="uwsgi"
+EVENT=" --emperor /etc/uwsgi/vassals --daemonize /var/log/uwsgi-emperor.log --pidfile /var/run/uwsgi-emperor.pid"
+UWSGI=/usr/local/bin/uwsgi
+PID="/var/run/uwsgi-emperor.pid"
+
+# Start the SEARCH
+start() {
+    #Verify if the service is running
+    if [[ -f $PID && -e /proc/`cat $PID` ]]
+    then
+        echo "The service is already running"
+    else
+        #Run the ftrack event file service
+        $UWSGI $EVENT > /dev/null 2>&1 &
+        echo -en "Starting uwsgi service ..."
+        #sleep time before the service verification
+        i=5
+        while [ $i -ne 0 ]
+        do
+            sleep 1
+            echo -en '.'
+            ((i--))
+        done
+        #Verify if the service is running
+        if [[ -f $PID && -e /proc/`cat $PID` ]]
+        then
+            echo -e "\t\t\t[ \e[92mOK\e[0m ]"
+#            echo "Service was successfully started"
+        else
+            echo -e "\t\t\t[ \e[91mFAILED\e[0m ]"
+#            echo "Failed to start service"
+        fi
+    fi
+    echo
+}
+
+# Stop the SEARCH
+stop() {
+    #Verify if the service is running
+    if [[ -f $PID && -e /proc/`cat $PID` ]]
+    then
+        #Kill the pid of java with the service name
+        $UWSGI --stop /var/run/uwsgi-emperor.pid
+#        kill -9 $($PGREP -f $SEARCH)
+        echo -en "Stopping uwsgi service ..."
+        #Sleep time before the service verification
+        i=5
+        while [ -e /proc/`cat $PID` ]
+        do
+            sleep 1
+            echo -en '.'
+            ((i--))
+        done
+        #Verify if the service is running
+        if [[ -f $PID && -e /proc/`cat $PID` ]]
+        then
+            echo -e "\t\t\t[ \e[91mFAILED\e[0m ]"
+#            echo "Failed to stop service"
+        else
+            echo -e "\t\t\t[ \e[92mOK\e[0m ]"
+#            echo "Service was successfully stopped"
+        fi
+    else
+        echo "The service is already stopped"
+    fi
+    echo
+}
+
+# Verify the status of ftrack event
+status() {
+    echo -en "Checking status of Ftrack event ..."
+    #Verify if the service is running
+    if [[ -f $PID && -e /proc/`cat $PID` ]]
+    then
+        echo -e "\t\t\t[ \e[92mRUNNING\e[0m ]"
+#        echo "Service is running"
+    else
+        echo -e "\t\t\t[ \e[91mSTOPPED\e[0m ]"
+#        echo "Service is stopped"
+    fi
+    echo
+}
+
+# Main logic
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    status)
+        status
+        ;;
+    restart|reload)
+        stop
+        start
+        ;;
+  *)
+    echo $"Usage: $0 {start|stop|status|restart|reload}"
+    exit 1
+esac
+exit 0

@@ -21,7 +21,8 @@
       <div class="sidebar-nav">
         <div class="nav-canvas">
           <ul class="nav nav-pills nav-stacked main-menu">
-	    <li class="nav-header"><img class="dashboard-avatar" alt="" src="http://192.168.1.18/Employees/{{emp_code}}.jpg"></li>
+            <li class="nav-header"><img class="dashboard-avatar" alt=""
+                                        src="http://192.168.1.18/Employees/{{emp_code}}.jpg"></li>
             <li class="nav-header">Main</li>
             {% if data.user_role == 'Supervisor' %}
             <li id="mgm_dashboard_page"><a class="ajax-link" href="/mgm_dashboard"><i
@@ -144,46 +145,47 @@
         </div>
       </div>
 
-    <!-- Model start -->
-	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-                 data-backdrop="static" data-keyboard="false" aria-hidden="true">
+      <!-- Model start -->
+      <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+           data-backdrop="static" data-keyboard="false" aria-hidden="true">
 
-                <div class="modal-dialog modal-md">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal">×</button>
-                            <div id="modal_header">
-                                <div id="task_details_loader" style="text-align: center;"><h3>Reject Note</h3></div>
-                            </div>
-                        </div>
-                        <div class="modal-body">
-                            <div class="box">
-                                <table>
-                                    <tr>
-                                        <td style="width: 100%;">
+        <div class="modal-dialog modal-md">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal">×</button>
+              <div id="modal_header">
+                <div id="task_details_loader" style="text-align: center;"><h3>Reject Note</h3></div>
+              </div>
+            </div>
+            <div class="modal-body">
+              <div class="box">
+                <table>
+                  <tr>
+                    <td style="width: 100%;">
                                             <textarea id="task_reject_note" rows="5" cols="20"
                                                       placeholder="Write a note..."
                                                       class="x-form-field x-form-text x-form-textarea"
                                                       autocomplete="off" style="width: 100%; height: 48px;"></textarea>
-                                        </td>
-                                        <td>
-                                            <button class="btn btn-inverse btn-default btn-lg" id="btn_note_reject"
-                                                    style="width: 60px;">
-                                                <i class="glyphicon glyphicon-send icon-white"></i></button>
-                                        </td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    <!--
-                                    <div class="modal-footer">
-                                        <a href="#" class="btn btn-default" data-dismiss="modal">Close</a>
-                                        <a href="#" class="btn btn-primary" data-dismiss="modal">Save changes</a>
-                                    </div>
-                    -->
-                </div>
-<!-- model end -->
+                    </td>
+                    <td>
+                      <button class="btn btn-inverse btn-default btn-lg" id="btn_note_reject"
+                              style="width: 60px;">
+                        <i class="glyphicon glyphicon-send icon-white"></i></button>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+          <!--
+                          <div class="modal-footer">
+                              <a href="#" class="btn btn-default" data-dismiss="modal">Close</a>
+                              <a href="#" class="btn btn-primary" data-dismiss="modal">Save changes</a>
+                          </div>
+          -->
+        </div>
+        <!-- model end -->
+      </div>
     </div>
   </div>
 </div>
