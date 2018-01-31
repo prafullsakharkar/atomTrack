@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+{% include "header.html" %}
+<body>
+{% include "top_bar.html" %}
+<div class="ch-container">
+  <div class="row">
+    <noscript>
+      <div class="alert alert-block col-md-12">
+        <h4 class="alert-heading">Warning!</h4>
+
+        <p>You need to have <a href="http://en.wikipedia.org/wiki/JavaScript" target="_blank">JavaScript</a>
+          enabled to use this site.</p>
+      </div>
+    </noscript>
+  </div>
+
+  <div class="row">
+    <!-- leftside menu start -->
+    <div class="col-sm-1" id="task_menu1" style="display:none">
+      <div class="sidebar-nav">
+        <div class="nav-canvas">
+          <ul class="nav nav-pills nav-stacked main-menu">
+            <li class="nav-header"><img class="dashboard-avatar" alt=""
+                                        src="http://192.168.1.18/Employees/{{emp_code}}.jpg"></li>
+            <li class="nav-header">Main</li>
+            {% if data.user_role == 'Supervisor' %}
+            <li id="mgm_dashboard_page"><a class="ajax-link" href="/mgm_dashboard"><i
+              class="glyphicon glyphicon-dashboard"></i>&nbsp;&nbsp;<span> Management</span></a></li>
+            <li><a class="ajax-link" href="/dashboard"><i class="glyphicon glyphicon-dashboard"></i>&nbsp;&nbsp;<span> Dashboard</span></a>
+            </li>
+            {% endif %}
+            <li><a class="ajax-link" href="/tasks"><i
+              class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;<span> To Do List</span></a>
+            </li>
+            <li><a class="ajax-link" href="/status"><i
+              class="glyphicon glyphicon-th"></i><span>&nbsp;&nbsp; Task Status</span></a>
+            </li>
+            {% if data.user_role == 'Co-ordinator' or data.user_role == 'Supervisor' %}
+            <li class="active"><a class="ajax-link" href="/review"><i class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;<span> Review Tasks</span></a>
+            <li><a class="ajax-link" href="/ftp"><i class="glyphicon glyphicon-cloud-upload"></i>&nbsp;&nbsp;<span> FTP Upload</span></a>
+            </li>
+            {% endif %}
+            <li class="accordion">
+              <a href="#"><i class="glyphicon glyphicon-plus"></i><span>&nbsp;&nbsp; Create Entities</span></a>
+              <ul class="nav nav-pills nav-stacked">
+                <li><a href="#">Project</a></li>
+                <li><a href="#">Sequence</a></li>
+                <li><a href="#">Shot</a></li>
+                <li><a href="#">Asset Build</a></li>
+                <li><a href="#">Task</a></li>
+              </ul>
+            </li>
+
+          </ul>
+        </div>
+      </div>
+    </div>
+    <!-- leftside menu start -->
+
+    <div class="col-at-12" id="panel_big">
+      <ul class="breadcrumb">
+        <li>
+          <a href="#">Main</a>
+        </li>
+        <li>
+          <a href="#">Create Entities</a>
+        </li>
+      </ul>
+      <div class="sidebar-nav">
+        <div class="box-content row">
+          <!--<div class="box col-at-11">-->
+          <!--<div class="col-at-sm-3" style="display:block;">-->
+          <!--<div class="controls">-->
+          <!--<label class="control-label" for="selectReviewProject">Projects : &nbsp;</label>-->
+          <!--<select id="selectReviewProject" data-rel="chosen" style="width: 122px;">-->
+          <!--<option value="">All</option>-->
+          <!--{% for proj,id in data.projects.items %}-->
+          <!--<option value="{{ proj }}">{{ proj }}</option>-->
+          <!--{% endfor %}-->
+          <!--</select>-->
+          <!--</div>-->
+          <!--</div>-->
+          <!--<div class="col-at-2" style="float: left;">-->
+          <!--<input data-errorqtip="" aria-invalid="false" id="search"-->
+          <!--data-qtip="Type to filter on task name or description"-->
+          <!--placeholder="Type to search ..." class="x-form-field x-form-text x-form-empty-field"-->
+          <!--autocomplete="off" type="text">-->
+          <!--&nbsp; &nbsp;<label id="table_row_count"></label>-->
+          <!--</div>-->
+          <!--<div class="box-icon" style="float: right;">-->
+          <!--<button class="btn btn-inverse btn-default btn-sm" id="refresh"-->
+          <!--onClick="window.location.href=window.location.href">-->
+          <!--<i class="glyphicon glyphicon-refresh icon-white"></i></button>-->
+          <!--<button class="btn btn-inverse btn-default btn-sm" id="download_user_task">-->
+          <!--<i class="glyphicon glyphicon-save icon-white"></i></button>-->
+          <!--</div>-->
+          <!--</div>-->
+          <div class="col-at-12">
+            <div class="box" style="overflow:auto; overflow-y:auto; height:778px"
+                 id="div_entity_details">
+
+              <div class="box col-md-3" style="text-align: center;font-size: 20px;height: 180px;">
+                <br><br>
+                <button class="btn btn-primary btn-lg">Create Project +</button>
+              </div>
+              {% for proj,id in data.projects.items %}
+              <div class="box col-md-3" style="text-align: center;font-size: 20px;height: 180px;">
+                <br>
+                <div class="col-md-6">Name</div>
+                <div class="col-md-6">{{ proj|upper }}</div>
+                <br><br>
+                <div class="col-md-6">
+                  <button class="btn btn-primary btn-sm" onclick="get_entity_data('{{ id }}', '{{ proj }}', 'Project', 'Asset Build')">Asset Build</button>
+                </div>
+                <div class="col-md-6">
+                  <button class="btn btn-primary btn-sm" onclick="get_entity_data('{{ id }}', '{{ proj }}', 'Project', 'Sequence')">Sequence</button>
+                </div>
+              </div>
+              {% endfor %}
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Model start -->
+      <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+           data-backdrop="static" data-keyboard="false" aria-hidden="true">
+
+        <div class="modal-dialog modal-md">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal">×</button>
+              <div id="modal_header">
+                <div id="task_details_loader" style="text-align: center;"><h3>Reject Note</h3></div>
+              </div>
+            </div>
+            <div class="modal-body">
+              <div class="box">
+                <table>
+                  <tr>
+                    <td style="width: 100%;">
+                      <textarea id="task_reject_note" rows="5" cols="20"
+                                placeholder="Write a note..."
+                                class="x-form-field x-form-text x-form-textarea"
+                                autocomplete="off" style="width: 100%; height: 48px;"></textarea>
+                    </td>
+                    <td>
+                      <button class="btn btn-inverse btn-default btn-lg" id="btn_note_reject"
+                              style="width: 60px;">
+                        <i class="glyphicon glyphicon-send icon-white"></i></button>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+          <!--
+                          <div class="modal-footer">
+                              <a href="#" class="btn btn-default" data-dismiss="modal">Close</a>
+                              <a href="#" class="btn btn-primary" data-dismiss="modal">Save changes</a>
+                          </div>
+          -->
+        </div>
+        <!-- model end -->
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+{% include "footer.html" %}
+</html>

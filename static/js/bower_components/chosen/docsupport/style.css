@@ -30,6 +30,7 @@ footer { color: #999; padding-top: 40px; font-size: 0.8em; text-align: center; }
 body { font-family: sans-serif; font-size: 1em; }
 
 p { margin: 0 0 .7em; max-width: 700px; }
+table+p { margin-top: 1em; }
 
 h2 { border-bottom: 1px solid #ccc; font-size: 1.2em; margin: 3em 0 1em 0; font-weight: bold;}
 h3 { font-weight: bold; }
@@ -200,4 +201,19 @@ i { font-style: italic; }
   margin-left: -27px;
   padding-left: 27px;
   text-decoration: none;
+}
+
+.select,
+.chosen-select,
+.chosen-select-no-single,
+.chosen-select-no-results,
+.chosen-select-deselect,
+.chosen-select-rtl,
+.chosen-select-width {
+  width: 350px;
+}
+
+.jquery-version-refer {
+  margin-top: 40px;
+  font-style: italic;
 }

@@ -38,6 +38,11 @@
     "columns": [
       "Lighting",
       "Render",
+      "CFX",
+      "FX",
+      "Cloth",
+      "Shot Finaling",
+      "Shave Hair",
       "PreLighting"
     ],
     "group": "Production",
@@ -49,8 +54,11 @@
   "vibhor.tyagi": {
     "role": "Co-ordinator",
     "columns": [
+      "Lighting",
       "Render",
-      "Lighting"
+      "CFX",
+      "FX",
+      "PreLighting"
     ],
     "group": "Production",
     "name": "vibhor.tyagi",
@@ -95,22 +103,19 @@
       "FX"
     ]
   },
-  "abhijit.gohil": {
+  "vijay.nathawat": {
     "role": "Co-ordinator",
     "columns": [
       "Modeling",
       "Rigging",
-      "Texturing",
-      "Matte Painting",
       "Blend Shape",
       "Fur Shape",
-      "Sim Modeling",
-      "Layout Rig",
+      "Proxy Set",
       "Set Dressing",
-      "Proxy Set"
+      "Sim Modeling"
     ],
     "group": "Production",
-    "name": "abhijit.gohil",
+    "name": "vijay.nathawat",
     "departments": [
       "Modeling",
       "Blend Shape",
@@ -173,7 +178,7 @@
     ]
   },
   "prafull.sakharkar": {
-    "role": "Supervisor",
+    "role": "Co-ordinator",
     "columns": [
       "Animation",
       "Animation Stereo",
@@ -196,9 +201,9 @@
       "Modeling",
       "PreLighting",
       "Proxy Set",
+      "Set Dressing",
       "Render",
       "Rigging",
-      "Set Dressing",
       "Shave Hair",
       "Shot Finaling",
       "Sim Modeling",
@@ -271,10 +276,8 @@
     "columns": [
       "Lighting",
       "Render",
-      "FX",
       "Shot Finaling",
       "Cloth",
-      "CFX",
       "Shave Hair"
     ],
     "group": "Production",
@@ -284,7 +287,7 @@
     ]
   },
   "swapnil.khotkar": {
-    "role": "Co-ordinator",
+    "role": "Supervisor",
     "columns": [],
     "group": "Production",
     "name": "swapnil.khotkar",
@@ -333,6 +336,7 @@
     "role": "Co-ordinator",
     "columns": [
       "Shot Finaling",
+      "Layout",
       "Animation",
       "Blocking",
       "Cloth",
@@ -344,8 +348,8 @@
     "name": "atif.khan",
     "departments": []
   },
-  "aazim.mohammad": {
-    "role": "Co-ordinator",
+  "kunal.jamdade": {
+    "role": "Supervisor",
     "columns": [
       "Animation",
       "Animation Stereo",
@@ -376,7 +380,7 @@
       "Texturing"
     ],
     "group": "Sup",
-    "name": "aazim.mohammad",
+    "name": "kunal.jamdade",
     "departments": [
       "Lighting",
       "FX"
@@ -450,6 +454,7 @@
     "columns": [
       "Rig Test",
       "Layout",
+      "Previz",
       "Animation"
     ],
     "group": "Production",
@@ -554,6 +559,7 @@
       "Anim Texture",
       "Blend Shape",
       "Blocking",
+      "Foliage",
       "CFX",
       "Previz",
       "Cloth",

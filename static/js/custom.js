@@ -717,7 +717,7 @@ function load_obj_name(obj_name,parent_id) {
             });
             $select_elem.trigger("chosen:updated");
             $select_elem.trigger("liszt:updated");
-            $select_elem.data("chosen").destroy().chosen();
+            $select_elem.data("chosen").destroy().chosen({search_contains:true});
         },
         error: function(error){
             console.log("Error:");
@@ -1946,6 +1946,7 @@ function create_version_note(version_id){
     $textarea_id = $('#text_version_note');
     var note_text = $textarea_id.val().trim();
     var note_category = $('#selectVersionNoteCategory').val();
+
     if (!(note_text.length && version_id)){
 	alert("invalid note ...");
 	return null;
@@ -2870,6 +2871,7 @@ function show_model(context) {
     load_asset_versions(task_id,obj_name,last_row,task);
 
     // 4. Version Notes Tab
+    $('#note_attach').val('');
     $('#version_note_details').html('');
     version_notes(task_id,obj_name,last_row,ver_note_task);
 
@@ -3078,7 +3080,7 @@ function create_new_note(task_id, note_text, note_category, note_for, $div_eleme
     });
     $textarea_id.val('');
     note_author = $div_element.attr('data-user-id').toLowerCase();
-    note_date = new Date().format('m-d-Y h:i');
+    note_date = new Date().toLocaleFormat('%F %T');
     note_head = note_text;
     note_category = note_category.replace(' ','_');
     my_note = '\
@@ -3126,7 +3128,7 @@ function reply_to_note(my_note_id){
     });
     $textarea_id.val('');
     user = $('#note_details').attr('data-user-id').toLowerCase();
-    current_date = new Date().format('m-d-Y h:i');
+    current_date = new Date().toLocaleFormat('%F %T');
     my_reply = '<p>'+user+' :- '+reply_text+'<span class="label" style="float:right;">'+current_date+'</span></p>';
     $('#note_replies-'+my_note_id).append(my_reply);
 
@@ -3350,18 +3352,6 @@ function toggle_asset_type(param) {
         });
 }
 
-$('#selectReviewProject').change(function(){
-    _this = this
-//    remove_rows("#tbl_task");
-    $.each($("#tbl_task tbody tr"), function(idx) {
-        if($(this).text().toLowerCase().indexOf($(_this).val().toLowerCase()) === -1)
-            $(this).hide();
-        else
-            $(this).show();
-        });
-
-});
-
 $('#download_user_task').click(function(){
     $("#tbl_task").table2excel({
 	exclude: ".noExl",
@@ -3378,12 +3368,12 @@ $('#download_task_status').click(function(){
     });
 });
 
-function insert_db_note(note_text, note_category, object_id, change_status, users, task_path){
+function insert_db_note(note_text, note_category, object_id, change_status, users, task_path, version){
 
     $.ajax({
 	type: "POST",
 	url: "/callajax/",
-	data: {"object_name": "DB Note", "note_text": note_text, "note_category": note_category, "task_id": object_id, "users": users, "task_path": task_path, "change_status": change_status},
+	data: {"object_name": "DB Note", "note_text": note_text, "note_category": note_category, "task_id": object_id, "users": users, "task_path": task_path, "change_status": change_status, "version":version},
 	success: function(json){
 	},
 	error: function(error){
@@ -3392,12 +3382,12 @@ function insert_db_note(note_text, note_category, object_id, change_status, user
     });
 
 }
-function add_task_note(note, note_category, object_id, note_for){
+function add_task_note(note, note_category, object_id, note_for, attach_files){
 
     $.ajax({
 	type: "POST",
 	url: "/callajax/",
-	data: {"object_name": "Create Note", "note_text": note, "note_category": note_category, "task_id": object_id, "note_for": note_for},
+	data: {"object_name": "Create Note", "note_text": note, "note_category": note_category, "task_id": object_id, "note_for": note_for, "attach_files": attach_files},
 	success: function(json){
 	    noty({
                 text: 'Note added successfully ...',
@@ -3434,6 +3424,41 @@ function object_status_change(new_status, old_status, object_id, status_for){
 
 }
 
+function attach_files(){
+    $("#fileupload").click();
+}
+
+$("#fileupload").fileupload({
+    dataType: 'json',
+    sequentialUploads: true,
+    url: '/callajax/',
+
+    start: function (e) {
+      $(".progress").css({"display":"block"});
+    },
+
+    stop: function (e) {
+      $(".progress-bar").css({"width": "0%"});
+      $(".progress-bar").text("0%");
+      $(".progress").css({"display":"none"});
+    },
+
+    progressall: function (e, data) {
+      var progress = parseInt(data.loaded / data.total * 100, 10);
+      var strProgress = progress + "%";
+      $(".progress-bar").css({"width": strProgress});
+      $(".progress-bar").text(strProgress);
+    },
+
+    done: function (e, data) {
+      if (data.result.is_valid) {
+        $("#gallery tbody").append(
+          "<tr><td style='text-align:left'><a href='" + data.result.url + "'>" + data.result.name + "</a></td><td style='width: 10%;'><button type='button' class='btn btn-inverse btn-default btn-xs' onclick='$(this).parent().parent().remove()'><span class='glyphicon glyphicon-remove'></span></button></td></tr>");
+      }
+    }
+
+  });
+
 function approve_task(param){
     $tr = $(param).closest('tr');
     $td_status = $tr.find('td[data-td=status]');
@@ -3451,15 +3476,21 @@ function approve_task(param){
         change_status_label = 'ready_to_publish';
     }
     object_id = $tr.attr('data-task-id');
+    version_id = $tr.attr('data-version-id');
+    object_type = $tr.attr('data-object-type');
 
     if (object_id){
     // changing status here
 	object_status_change(change_status, my_status ,object_id, 'Task');
 
+	if (version_id){
+	    object_status_change(change_status, my_status ,version_id, 'AssetVersion');
+	}
+
 	$td_status.html('<span class="label label-'+change_status_label+'">'+change_status+'</span>');
 	$td_status.attr('data-org-val',change_status);
 
-	my_date = new Date().format('m-d-Y h:i:s');
+	my_date = new Date().toLocaleFormat('%F %T');
 	$td_date.html('<strong>'+my_date+'</strong>');
     
 	$(param).css({'display':'none'});
@@ -3480,7 +3511,12 @@ function reject_task(param){
     $td_task_path = $tr.find('td[data-td=task_path]');
     var task_path = $td_task_path.text().trim();
 
+    $td_version = $tr.find('td[data-td=version]');
+    var version = $td_version.text();
+
     object_id = $tr.attr('data-task-id');
+    version_id = $tr.attr('data-version-id');
+    object_type = $tr.attr('data-object-type');
 
     change_status = '';
     change_status_label = '';
@@ -3489,7 +3525,7 @@ function reject_task(param){
     if (my_status == 'Pending Client Review'){
 	change_status = 'Client Reject';
 	change_status_label = 'client_reject';
-	note_category = 'Client';
+	note_category = 'Client feedback';
     }else if (my_status == 'Pending Internal Review'){
 	change_status = 'Internal Reject';
 	change_status_label = 'internal_reject';
@@ -3497,28 +3533,41 @@ function reject_task(param){
     }
 
     $('#task_reject_note').val('');
-    var $newModal = $("#myModal").clone();;
+    var $newModal = $("#myModal").clone();
     $newModal.modal('show');
 
     $newModal.on('click', '#btn_note_reject', function(e){
 	e.preventDefault();
 
-	var note_text = $(this).closest('tr').find('textarea[id=task_reject_note]').val().trim();
+	var note_text = $(this).parent().find('textarea[id=task_reject_note]').val().trim();
 	if (!(note_text.length && object_id)){
 	    alert("invalid note ...");
 	    return null;
 	}
 
+	var attachments = [];
+	$(this).parent().find('table[id=gallery] tr td a').each(function(){
+	    href = $(this).attr('href');
+	    attachments.push(href);
+	});
+
+	attach_files = JSON.stringify(attachments);
+	
 	object_status_change(change_status, my_status , object_id, 'Task');
 
-	add_task_note(note_text, note_category, object_id, 'Task');
+	if (version_id){
+	    object_status_change(change_status, my_status , version_id, 'AssetVersion');
+	    add_task_note(note_text, note_category, version_id, 'AssetVersion', attach_files);
+	}else{
+	    add_task_note(note_text, note_category, object_id, 'Task', attach_files);
+	}
 
-	insert_db_note(note_text, note_category, object_id, change_status, users, task_path);
+	insert_db_note(note_text, note_category, object_id, change_status, users, task_path, version);
 
 	$td_status.html('<span class="label label-'+change_status_label+'">'+change_status+'</span>');
 	$td_status.attr('data-org-val',change_status);
 
-	my_date = new Date().format('m-d-Y h:i:s');
+	my_date = new Date().toLocaleFormat('%F %T');
 	$td_date.html('<strong>'+my_date+'</strong>');
     
 	$(param).css({'display':'none'});
@@ -4218,8 +4267,101 @@ function show_artist_tasks(){
 
     });
 }
+$('#selectReviewProject').change(function(){
+    show_review_tasks();
+});
 
+function show_review_tasks(){
 
+    project = $('#selectReviewProject').val();
+    if(!project){
+	    alert("Please select valid project !!!");
+    }
+
+    $.ajax({
+	type: "POST",
+	url: "/callajax/",
+	data : {'object_name': 'Review Tasks', 'project': project},
+	beforeSend: function(){
+	    remove_rows('#tbl_task');
+        },
+	success: function(json){
+	    $.each(json,function(idx,obj){
+	        table_row = '\
+	    <tr data-task-id="'+obj.task_id+'" data-version-id="'+obj.version_id+'" data-object-type="'+obj.object_type+'">\
+                  <td><strong>'+obj.project+'</strong></td>\
+                  <td><strong>'+obj.task+'</strong></td>\
+                  <td style="width:300px;" data-task-id="'+obj.task_id+'" data-td="task_path"><strong>'+obj.path+'</strong></td>\
+                  <td data-td="version"><strong>'+obj.version+'</strong></td>\
+                  <td data-td="users"><strong>'+obj.users+'</strong></td>\
+                  <td title="'+obj.task+'" data-task-id="'+obj.task_id+'" data-org-val="'+obj.ftrack_status+'" data-td="status">\
+                    <span class="label label-'+obj.status_label+'">'+obj.ftrack_status+'</span>\
+                  </td>\
+                  <td data-td="modified_date"><strong>'+obj.updated_on+'</strong></td>\
+                  <td>\
+                    <button class="btn btn-inverse btn-success btn-sm" id="task_approved" style="color: black;" onclick="approve_task(this)">\
+                      <i class="glyphicon glyphicon-thumbs-up"></i>&nbsp;&nbsp;Approve </button>\
+                    <button class="btn btn-inverse btn-danger btn-sm" id="task_reject" style="color: black;" onclick="reject_task(this)">\
+                      <i class="glyphicon glyphicon-thumbs-down"></i>&nbsp;&nbsp;Reject </button>\
+                  </td>\
+                </tr>';
+            $('#tbl_task tbody').append(table_row);
+	    });
+	},
+	error: function(error){
+	    console.log("Error:"+error);
+	}
+
+    });
+}
+/*
+function get_entity_data(entity_id,entity_type){
+
+    if(!entity_id || !entity_type){
+	alert("Not Valid !!!");
+	return null;
+    }
+
+    $.ajax({
+	type: "POST",
+	url: "/callajax/",
+	data : {'object_name': 'Entity Details', 'entity_id': entity_id, 'entity_type': entity_type},
+	beforeSend: function(){
+	    $('#div_entity_details').html('');
+        },
+	success: function(json){
+	    entity_data = '\
+		<div class="box col-md-3" style="text-align: center;font-size: 20px;height: 180px;">\
+                <br><br>\
+                <button class="btn btn-primary btn-lg">Create '+ entity_type +' +</button>\
+              </div>\
+	    ';
+	    $.each(json,function(idx,obj){
+		entity_data = entity_data + '\
+		    <div class="box col-md-3" style="text-align: center;font-size: 20px;height: 180px;">\
+                <br>\
+                <div class="col-md-6">Name</div>\
+                <div class="col-md-6">{{ proj|upper }}</div>\
+                <br><br>\
+                <div class="col-md-6">\
+                  <button class="btn btn-primary btn-sm" onclick="get_entity_data("'++'", "'++'")">Asset Build</button>\
+                </div>\
+                <div class="col-md-6">\
+                  <button class="btn btn-primary btn-sm" onclick="get_entity_data('{{ id }}', 'Sequence')">Sequence</button>\
+                </div>\
+              </div>\
+		';
+
+	    });
+            $('#div_entity_details').append(entity_data);
+	},
+	error: function(error){
+	    console.log("Error:"+error);
+	}
+
+    });
+}
+*/
 
 function secondsTimeSpanToHMS(s) {
     var h = Math.floor(s/3600); //Get whole hours

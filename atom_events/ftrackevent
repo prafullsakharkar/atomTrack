@@ -1,1 +1,133 @@
-/ASE/01prj/NXP/programmer/prafull.sakharkar/Final/ftrack_event/ftrackevent
+#!/bin/bash
+
+# chkconfig: 2345 95 20
+# description: This application was developed by me and is tested on this server
+# processname: ftrackevent
+
+### BEGIN INIT INFO
+# Provides:                 ftrack event search word
+# Required-Start:           $EVENT
+# Required-Stop:            $EVENT
+# Short-Description:        Start and stop ftrack service.
+# Description:              -
+# Date-Creation:            Wednesday, July 12 2017 07:31 PM
+# Date-Last-Modification:   -
+# Author:                   - 
+### END INIT INFO
+
+# Variables
+PGREP=/usr/bin/pgrep
+ZERO=0
+SEARCH="daily_backup_task_event"
+EVENT="/ASE/01prj/NXP/app/ftrack_event/daily_backup_task_event_v00.py"
+PYTHON=/ASE/01prj/NXP/code/python/.pyenv/shims/python
+
+export PYTHONPATH="$PYTHONPATH:/ASE/01prj/NXP/code/python/lib/python2.7/site-packages/:/ASE/01prj/NXP/code/python:/ASE/01prj/NXP/code/python/ftrack/python-api:/ASE/01prj/NXP/code/ase_tools:/ASE/01prj/NXP/code/bin/:/ASE/01prj/NXP/code/extra_pkg/site-packages"
+
+# Start the SEARCH
+start() {
+    #Verify if the service is running
+    $PGREP -f $SEARCH > /dev/null
+    VERIFIER=$?
+    if [ $ZERO = $VERIFIER ]
+    then
+        echo "The service is already running"
+    else
+        #Run the ftrack event file service
+        $PYTHON $EVENT > /dev/null 2>&1 &
+        echo -en "Starting Ftrack event ..."
+        #sleep time before the service verification
+        i=5
+        while [ $i -ne 0 ]
+        do
+            sleep 1
+            echo -en '.'
+            ((i--))
+        done
+        #Verify if the service is running
+	$PGREP -f $SEARCH > /dev/null
+        VERIFIER=$?
+        if [ $ZERO = $VERIFIER ]
+        then
+            echo -e "\t\t\t[ \e[92mOK\e[0m ]"
+#            echo "Service was successfully started"
+        else
+            echo -e "\t\t\t[ \e[91mFAILED\e[0m ]"
+#            echo "Failed to start service"
+        fi
+    fi
+    echo
+}
+
+# Stop the SEARCH
+stop() {
+    #Verify if the service is running
+    $PGREP -f $SEARCH > /dev/null
+    VERIFIER=$?
+    if [ $ZERO = $VERIFIER ]
+    then
+        #Kill the pid of java with the service name
+        kill -9 $($PGREP -f $SEARCH)
+        echo -en "Stopping Ftrack event ..."
+        #Sleep time before the service verification
+        i=5
+        while [ $i -ne 0 ]
+        do
+            sleep 1
+            echo -en '.'
+            ((i--))
+        done
+        #Verify if the service is running
+        $PGREP -f $SEARCH  > /dev/null
+        VERIFIER=$?
+        if [ $ZERO = $VERIFIER ]
+        then
+            echo -e "\t\t\t[ \e[91mFAILED\e[0m ]"
+#            echo "Failed to stop service"
+        else
+            echo -e "\t\t\t[ \e[92mOK\e[0m ]"
+#            echo "Service was successfully stopped"
+        fi
+    else
+        echo "The service is already stopped"
+    fi
+    echo
+}
+
+# Verify the status of ftrack event
+status() {
+    echo -en "Checking status of Ftrack event ..."
+    #Verify if the service is running
+    $PGREP -f $SEARCH > /dev/null
+    VERIFIER=$?
+    if [ $ZERO = $VERIFIER ]
+    then
+        echo -e "\t\t\t[ \e[92mRUNNING\e[0m ]"
+#        echo "Service is running"
+    else
+        echo -e "\t\t\t[ \e[91mSTOPPED\e[0m ]"
+#        echo "Service is stopped"
+    fi
+    echo
+}
+
+# Main logic
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    status)
+        status
+        ;;
+    restart|reload)
+        stop
+        start
+        ;;
+  *)
+    echo $"Usage: $0 {start|stop|status|restart|reload}"
+    exit 1
+esac
+exit 0

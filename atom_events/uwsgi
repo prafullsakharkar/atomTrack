@@ -19,7 +19,7 @@
 PGREP=/usr/bin/pgrep
 ZERO=0
 SEARCH="uwsgi"
-EVENT=" --emperor /etc/uwsgi/vassals --daemonize /var/log/uwsgi-emperor.log --pidfile /var/run/uwsgi-emperor.pid"
+EVENT=" --emperor /etc/uwsgi/vassals --daemonize /var/log/uwsgi/uwsgi-emperor.log --pidfile /var/run/uwsgi-emperor.pid"
 UWSGI=/usr/local/bin/uwsgi
 PID="/var/run/uwsgi-emperor.pid"
 
