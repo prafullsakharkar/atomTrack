@@ -26,6 +26,7 @@ from pprint import pprint
 from .forms import AttachmentForm
 from .models import Attachment
 
+
 # from django.core.urlresolvers import reverse
 # from django.shortcuts import render_to_response
 # from django.template import RequestContext
@@ -131,7 +132,7 @@ class Activity:
 
     def ajax_call(self, request):
         """
-        Establishes a connection on server on url='callajax/' and accepts the dictionary based on object name from Jquery
+        Establishes a connection on server on url='callajax/' and accepts the dictionary based on object name
         :param request: Requests a response from server url
         :return: returns a dictionary containing required data
         """
@@ -301,16 +302,17 @@ class Activity:
                     entity_id = request.POST.get('entity_id')
                     entity_type = request.POST.get('entity_type')
                     data = self.get_entity_data(entity_id, entity_type)
-	   
-	    if request.FILES:
-		data = self.attach_files(request)
 
-#            pprint(data)
+            if request.FILES:
+                data = self.attach_files(request)
+
+            #            pprint(data)
             data = json.dumps(data)
             return HttpResponse(data, content_type="application/json")
-#            return JsonResponse(data)
 
-    def getUserDetails(self):
+    #            return JsonResponse(data)
+
+    def get_user_details(self):
 
         json_data = {}
         if os.path.isfile(self.employee_details_jfile):
@@ -324,7 +326,7 @@ class Activity:
 
     def get_user_columns(self, username):
 
-        json_data = {}
+        # json_data = {}
         if os.path.isfile(self.user_details_jfile):
             data_file = open(self.user_details_jfile, 'r')
             try:
@@ -333,12 +335,11 @@ class Activity:
                 data_file.close()
 
             if (username in json_data) and (
-                    json_data[username]['role'] == 'Supervisor' or json_data[username][
-                'role'] == 'Co-ordinator'):
+                    json_data[username]['role'] == 'Supervisor' or json_data[username]['role'] == 'Co-ordinator'):
                 self.user_role = json_data[username]['role']
                 self.users_columns = (',').join(json_data[username]['columns'])
 
-    def getProjects(self):
+    def get_projects(self):
         """
         gets the list of projects from ftrack
         :return:
@@ -421,7 +422,8 @@ class Activity:
         elif status_name == 'DI':
             check_status = 'Review Approved'
 
-        # print 'SHOT:','Task where name is "%s" and parent.parent.id is "%s" and status.name is "%s"' % (task_name, sequence_id, check_status)
+        # print 'SHOT:','Task where name is "%s" and parent.parent.id is "%s" and status.name is "%s"'
+        # % (task_name, sequence_id, check_status)
 
         task = self.session.query('Task where name is "%s" and parent.parent.id is "%s" and status.name is "%s"' % (
             task_name, sequence_id, check_status)).all()
@@ -687,7 +689,7 @@ class Activity:
             tasks['parent_id'] = parent_id
             if self.stereo_object:
                 #                tasks['parent_id'] = task['parent']['id']
-                tasks['parent_id'] = link[-3]['id']
+                tasks['parent_id'] = task['link'][-3]['id']
             users = []
             for resource in task['assignments']:
                 users.append(resource['resource']['username'])
@@ -792,7 +794,6 @@ class Activity:
 
     def task_query(self, parent_id=''):
 
-        objTask = ''
         session = ase_session.Session()
         query = ''
         if (self.stereo_object == 1) and (self.object_name == 'Shot'):
@@ -804,8 +805,8 @@ class Activity:
         elif self.object_name == 'Asset Build':
             query = 'Task where project.id is "%s" and parent.type.name is "%s"' % (parent_id, self.object_type)
 
-        objTask = session.query(query)
-        return objTask
+        obj_task = session.query(query)
+        return obj_task
 
     def task_status(self, request):
 
@@ -821,9 +822,9 @@ class Activity:
 
         task_hash = {}
         projects = {}
-        self.projects = self.getProjects()
+        self.projects = self.get_projects()
 
-        self.getUserDetails()
+        self.get_user_details()
         task_hash['emp_code'] = 'blank'
         if username in self.employee_details:
             task_hash['emp_code'] = self.employee_details[username]['emp_code']
@@ -935,7 +936,7 @@ class Activity:
 
         obj_notes = task_obj['notes'][start_row:last_row]
 
-        note_list = self.getNoteData(obj_notes)
+        note_list = self.get_note_data(obj_notes)
 
         return note_list
 
@@ -975,7 +976,7 @@ class Activity:
             details['object_type'] = my_obj['object_type']['name']
             details['link_path'] = link_path
 
-            details['notes_list'] = self.getNoteData(my_obj['notes'])
+            details['notes_list'] = self.get_note_data(my_obj['notes'])
 
         details_list.append(details)
 
@@ -1001,7 +1002,7 @@ class Activity:
 
         task_key = ''
         if task:
-            task_key = "and task.name is '%s'" % (task)
+            task_key = "and task.name is '%s'" % task
 
         my_query = "AssetVersion where %s is '%s' %s order by date desc" % (parent_id, my_id, task_key)
 
@@ -1259,10 +1260,10 @@ class Activity:
             my_object = self.session.query(query).first()
             my_object['status'] = obj_status
 
-	    if status_for == 'AssetVersion':
-		project = my_object['task']['project']['name']
-	    else:
-		project = my_object['project']['name']
+            if status_for == 'AssetVersion':
+                project = my_object['task']['project']['name']
+            else:
+                project = my_object['project']['name']
 
         self.session.commit()
 
@@ -1283,11 +1284,11 @@ class Activity:
 
     def insert_db_note(self, note_text, note_category, object_id, change_status, users, task_path, pub_version):
 
-	if not task_path:
-	    return False
-	
-	proj = task_path.split(':')[0].lower()
-        collection = self.mongo_database['%s_notes' %(proj)]
+        if not task_path:
+            return False
+
+        proj = task_path.split(':')[0].lower()
+        collection = self.mongo_database['%s_notes' % (proj)]
 
         search_key = dict()
         search_key['ftrack_id'] = object_id
@@ -1339,35 +1340,34 @@ class Activity:
                 my_obj = self.session.query(query).first()
                 obj_note = my_obj.create_note(note, user, category=obj_cat)
 
-		if attach_files:
-		    attach_files = json.loads(attach_files)
-		    server_location = self.session.query(
-			'Location where name is "ftrack.server"'
-		    ).one()
-		    for each_file in attach_files:
-			file_name = os.path.basename(each_file)
-			file_path = PROJ_BASE_DIR + '/' + each_file
-			# Create component and name it "My file".
-			component = self.session.create_component(
-			    file_path,
-			    data={'name': file_name},
-			    location=server_location
-			)
+                if attach_files:
+                    attach_files = json.loads(attach_files)
+                    server_location = self.session.query(
+                        'Location where name is "ftrack.server"'
+                    ).one()
+                    for each_file in attach_files:
+                        file_name = os.path.basename(each_file)
+                        file_path = PROJ_BASE_DIR + '/' + each_file
+                        # Create component and name it "My file".
+                        component = self.session.create_component(
+                            file_path,
+                            data={'name': file_name},
+                            location=server_location
+                        )
 
-			# Attach the component to the note.
-			self.session.create(
-			    'NoteComponent',
-			    {'component_id': component['id'], 'note_id': obj_note['id']}
-			)
-			
-			# Delete uploaded files after adding
-			for attach in Attachment.objects.all():
-			    if attach.file.name == each_file:
-				attach.file.delete()
-				attach.delete()
+                        # Attach the component to the note.
+                        self.session.create(
+                            'NoteComponent',
+                            {'component_id': component['id'], 'note_id': obj_note['id']}
+                        )
+
+                        # Delete uploaded files after adding
+                        for attach in Attachment.objects.all():
+                            if attach.file.name == each_file:
+                                attach.file.delete()
+                                attach.delete()
 
                 self.session.commit()
-
 
     def addNote(self, note_for, object_id, note, note_category):
         if note != 'None':
@@ -1408,7 +1408,7 @@ class Activity:
             #	    for j in xrange(first_row, last_row):
             for i in query:
                 if i['notes']:
-                    note_list = note_list + self.getNoteData(i['notes'])
+                    note_list = note_list + self.get_note_data(i['notes'])
 
         len_notes = len(note_list)
 
@@ -1422,20 +1422,20 @@ class Activity:
         #	pprint(note_list)
         return note_data
 
-    def getRejectVersionNotes(self, task_id):
-        if task_id:
-            note_data = {}
-            obj_ass_ver = self.session.query(
-                'AssetVersion where task_id is "%s" and status.name is "Internal Reject"' % (task_id))
-            for ass_ver in obj_ass_ver:
-                note_list = []
-                version = ass_ver['link'][-1]['name']
-                asset_type_name = ass_ver['asset']['type']['name'].replace(' ', '_')
-                key = asset_type_name + '__' + version
-                note_list = self.getNoteData(ass_ver['notes'])
-                note_data[key] = note_list
-
-            return note_data
+    # def getRejectVersionNotes(self, task_id):
+    #     if task_id:
+    #         note_data = {}
+    #         obj_ass_ver = self.session.query(
+    #             'AssetVersion where task_id is "%s" and status.name is "Internal Reject"' % (task_id))
+    #         for ass_ver in obj_ass_ver:
+    #             note_list = []
+    #             version = ass_ver['link'][-1]['name']
+    #             asset_type_name = ass_ver['asset']['type']['name'].replace(' ', '_')
+    #             key = asset_type_name + '__' + version
+    #             note_list = self.get_note_data(ass_ver['notes'])
+    #             note_data[key] = note_list
+    #
+    #         return note_data
 
     def allStatus(self):
 
@@ -1521,11 +1521,11 @@ class Activity:
 
         task_hash['statuses'] = statuses
 
-        self.getUserDetails()
+        self.get_user_details()
         task_hash['emp_code'] = 'blank'
         if username in self.employee_details:
             task_hash['emp_code'] = self.employee_details[username]['emp_code']
-        self.projects = self.getProjects()
+        self.projects = self.get_projects()
         task_hash['user_id'] = username.upper()
         task_hash['first_name'] = user['first_name']
         task_hash['data'] = {'projects': self.projects, 'user_role': self.user_role, 'all_tasks': self.all_tasks,
@@ -1537,20 +1537,17 @@ class Activity:
         else:
             return render(request, 'artist_tasks.html', task_hash)
 
-    
     def attach_files(self, request):
-	username = request.user.username
-	time.sleep(1)
-	data = dict()
-	form = AttachmentForm(request.POST, request.FILES)
-	if form.is_valid():
-	    photo = form.save()
-	    data = {'is_valid': True, 'name': photo.file.name, 'url': photo.file.url}
-	else:
-	    data = {'is_valid': False}
-	return data
-
-
+        username = request.user.username
+        # time.sleep(1)
+        data = dict()
+        form = AttachmentForm(request.POST, request.FILES)
+        if form.is_valid():
+            photo = form.save()
+            data = {'is_valid': True, 'name': photo.file.name, 'url': photo.file.url}
+        else:
+            data = {'is_valid': False}
+        return data
 
     def review_tasks(self, request):
         username = request.user.username
@@ -1570,16 +1567,16 @@ class Activity:
         # Get task details
         task_hash = {}
 
-	project = 'ice'
+        project = 'ice'
 
         task_list = self.get_review_tasks(username, project)
         task_hash['tasks'] = task_list
 
-        self.getUserDetails()
+        self.get_user_details()
         task_hash['emp_code'] = 'blank'
         if username in self.employee_details:
             task_hash['emp_code'] = self.employee_details[username]['emp_code']
-        self.projects = self.getProjects()
+        self.projects = self.get_projects()
         task_hash['user_id'] = username.upper()
         task_hash['first_name'] = user['first_name']
         task_hash['data'] = {'projects': self.projects, 'user_role': self.user_role, 'project': project}
@@ -1600,7 +1597,7 @@ class Activity:
         user = self.session.query('User where username is "%s"' % username).one()
         self.user = user
 
-	self.user_role = ''
+        self.user_role = ''
         self.get_user_columns(username)
 
         if not self.user_role or self.user_role not in ['Supervisor', 'Co-ordinator']:
@@ -1609,11 +1606,11 @@ class Activity:
         # Get task details
         task_hash = {}
 
-        self.getUserDetails()
+        self.get_user_details()
         task_hash['emp_code'] = 'blank'
         if username in self.employee_details:
             task_hash['emp_code'] = self.employee_details[username]['emp_code']
-        self.projects = self.getProjects()
+        self.projects = self.get_projects()
         task_hash['user_id'] = username.upper()
         task_hash['first_name'] = user['first_name']
 
@@ -1635,7 +1632,7 @@ class Activity:
         # Get task details
         task_hash = {}
 
-        self.projects = self.getProjects()
+        self.projects = self.get_projects()
 
         project = 'ice'
         duration = 'Monthly'
@@ -1660,7 +1657,7 @@ class Activity:
         #            task_hash['tash_graph_data'] = dashboard_data[0]['tash_graph_data']
         #            task_hash['status_graph_data'] = dashboard_data[0]['status_graph_data']
 
-        self.getUserDetails()
+        self.get_user_details()
         task_hash['emp_code'] = 'blank'
         if username in self.employee_details:
             task_hash['emp_code'] = self.employee_details[username]['emp_code']
@@ -1696,9 +1693,9 @@ class Activity:
         task_hash['task_temp_data'] = task_temp_data
         #        task_hash['sequence_data'] = self.get_sequence_data()
 
-        self.projects = self.getProjects()
+        self.projects = self.get_projects()
 
-        self.getUserDetails()
+        self.get_user_details()
         task_hash['emp_code'] = 'blank'
         if username in self.employee_details:
             task_hash['emp_code'] = self.employee_details[username]['emp_code']
@@ -1831,10 +1828,7 @@ class Activity:
         return data_list
 
     def get_entity_data(self, entity_id, entity_type):
-	pass
-
-
-
+        pass
 
     def defaultCheck(self, element):
         try:
@@ -1857,18 +1851,18 @@ class Activity:
         user_columns = self.users_columns.split(',')
 
         check_status = ["Pending Client Review"]
-#        check_status = ["Pending Internal Review", "Pending Client Review"]
+        #        check_status = ["Pending Internal Review", "Pending Client Review"]
         if self.user_role == 'Supervisor':
             check_status = ["Pending Internal Review"]
 
-        obj_col = self.mongo_database['%s_tasks' %(project)]
+        obj_col = self.mongo_database['%s_tasks' % (project)]
 
         data = obj_col.find({"name": {"$in": user_columns}, "ftrack_status": {"$in": check_status}}).sort(
-                "updated_on", -1)
+            "updated_on", -1)
 
         for each in data:
             task_details = dict()
-	    task_details['project'] = 'None'
+            task_details['project'] = 'None'
             task_details['task'] = 'None'
             task_details['path'] = 'None'
             task_details['ftrack_status'] = 'None'
@@ -1877,7 +1871,7 @@ class Activity:
             task_details['version'] = 'None'
             task_details['object_type'] = 'Task'
 
-	    ftrack_id = each['ftrack_id']
+            ftrack_id = each['ftrack_id']
 
             if 'path' in each:
                 path = each['path']
@@ -1888,13 +1882,14 @@ class Activity:
                 task_details['path'] = path
                 task_details['task_id'] = each['ftrack_id']
 
-		query = 'AssetVersion where task_id is "%s" and task.name is "%s" and status.name is "Pending Client Review"' % (ftrack_id, task)
-		obj_versions = self.session.query(query).first()
-		if obj_versions:
-		    task_details['version'] = obj_versions['_link'][-1]['name']
-		    task_details['object_type'] = 'AssetVersion'
-		    task_details['version_id'] = obj_versions['id']
-	    
+                query = 'AssetVersion where task_id is "%s" and task.name is "%s" and status.name is "Pending Client Review"' % (
+                    ftrack_id, task)
+                obj_versions = self.session.query(query).first()
+                if obj_versions:
+                    task_details['version'] = obj_versions['_link'][-1]['name']
+                    task_details['object_type'] = 'AssetVersion'
+                    task_details['version_id'] = obj_versions['id']
+
             if 'name' in each:
                 task_details['task_name'] = each['name']
             if 'updated_on' in each:
@@ -2024,7 +2019,7 @@ class Activity:
         startdate = datetime.datetime.strptime(str(first), '%Y-%m-%d %H:%M:%S')
         enddate = datetime.datetime.strptime(str(last), '%Y-%m-%d %H:%M:%S')
 
-        self.getUserDetails()
+        self.get_user_details()
 
         print startdate, enddate
 
@@ -2250,7 +2245,7 @@ class Activity:
 
         return task_user_details
 
-    def getNoteData(self, objNotes):
+    def get_note_data(self, objNotes):
         note_list = []
         for note in objNotes:
             noteid = note['id']
@@ -2336,10 +2331,10 @@ class Activity:
             return HttpResponseRedirect('/login/')
 
         ftp_hash = {}
-        self.projects = self.getProjects()
+        self.projects = self.get_projects()
         self.get_user_columns(username)
 
-        self.getUserDetails()
+        self.get_user_details()
         ftp_hash['emp_code'] = 'blank'
         if username in self.employee_details:
             ftp_hash['emp_code'] = self.employee_details[username]['emp_code']
@@ -2357,12 +2352,12 @@ class Activity:
     def get_ftp_versions(self, data_array=''):
         """
         Gets the list of all the versions whose status are been set as per the requirement on Compout Upload tool
-        :param data_array: List in which each item is a combined format of all the selections based on the Compout Upload
+        :param data_array: List in which each item is a combined format of all the selections based on the Comp Upload
          For eg: ["aaj_080_0010:642629a4-91d3-11e6-b6f4-001e67d20c13_Client_Lighting_final_exr_both"]
         :return: returns a list which carries ample number of dictionaries consisting of versions from ftrack whose
         files are avaialble on 'ASE' folder system
         """
-        if not (data_array):
+        if not data_array:
             return False
 
         import ase_prod_srv

@@ -60,7 +60,6 @@
       </ul>
 
 
-
       <div class="sidebar-nav">
         <div class="box-content row">
           <div class="box col-at-11">
@@ -69,11 +68,11 @@
                 <label class="control-label" for="selectReviewProject">Projects : &nbsp;</label>
                 <select id="selectReviewProject" data-rel="chosen" style="width: 122px;">
                   {% for proj,id in data.projects.items %}
-		    {% if data.project == proj %}
-			<option value="{{ proj }}" selected>{{ proj }}</option>
-		    {% else %}
-			<option value="{{ proj }}">{{ proj }}</option>
-		    {% endif %}
+                  {% if data.project == proj %}
+                  <option value="{{ proj }}" selected>{{ proj }}</option>
+                  {% else %}
+                  <option value="{{ proj }}">{{ proj }}</option>
+                  {% endif %}
                   {% endfor %}
                 </select>
               </div>
@@ -111,7 +110,8 @@
                 </thead>
                 <tbody>
                 {% for data in tasks %}
-                <tr data-task-id='{{ data.task_id }}' data-version-id='{{ data.version_id }}' data-object-type='{{ data.object_type }}'>
+                <tr data-task-id='{{ data.task_id }}' data-version-id='{{ data.version_id }}'
+                    data-object-type='{{ data.object_type }}'>
                   <td>
                     <strong>{{ data.project }}</strong>
                   </td>
@@ -165,36 +165,28 @@
               <button type="button" class="close" data-dismiss="modal">×</button>
               <div id="modal_header">
                 <div id="task_details_loader" style="text-align: center;"><h3>Reject Note</h3></div>
-<div class="box">
-                <tableclass="table">
-                  <tr>
-                    <td style="width: 100%;" colspan=2>
-                      <textarea id="task_reject_note" rows="5" cols="20"
-                                                      placeholder="Write a note..."
-                                                      class="x-form-field x-form-text x-form-textarea"
-                                                      autocomplete="off" style="width: 100%; height: 48px;"></textarea>
-</td>
-</tr>
-<td>
-                <button type="button" title="Attach file here ..." class="btn btn-inverse btn-default btn-xs" style="float: left;margin-right: 5px;" onclick="attach_files()"><span class="glyphicon glyphicon-plus"></span></button>
-<div class="progress" style="display:none"><div class="progress-bar" role="progressbar" style="width: 0%;">0%</div></div>
-                    </td>
-                    <td style="width: 10%;">
-                      <button class="btn btn-inverse btn-default btn-xs" id="btn_note_reject" title="Add Comment"
-                              style="width: 60px;float: right;">
-                        <i class="glyphicon glyphicon-send icon-white"></i></button>
-    <input id="fileupload" type="file" name="file" multiple
-           style="display: none;"
-           data-form-data='{"csrfmiddlewaretoken": "{{ csrf_token }}"}'>
-                    </td>
-                  </tr>
-		    <tr>
-		    <td>
-		    <table id="gallery" class="table"><tbody></tbody></table>
-		    </td>
-		    </tr>
-                </table>
-              </div>
+
+                <div class="box">
+                  <textarea id="task_reject_note" rows="5" cols="20"
+            placeholder="Write a note..."
+            class="x-form-field x-form-text x-form-textarea"
+            autocomplete="off" style="width: 100%; height: 48px;"></textarea>
+                  <button type="button" title="Attach file here ..." class="btn btn-inverse btn-default btn-xs"
+                          style="float: left;margin-right: 5px;" onclick="attach_media_files(this)"><span
+                    class="glyphicon glyphicon-plus"></span></button>
+                  <div class="progress" style="display:none">
+                    <div class="progress-bar" role="progressbar" style="width: 0%;">0%</div>
+                  </div>
+                  <button class="btn btn-inverse btn-default btn-xs" id="btn_note_reject" title="Add Comment"
+                          style="width: 60px;float: right;">
+                    <i class="glyphicon glyphicon-send icon-white"></i></button>
+                  <input id="fileupload" type="file" name="file" multiple
+                         style="display: none;"
+                         data-form-data='{"csrfmiddlewaretoken": "{{ csrf_token }}"}'>
+                  <table id="gallery" class="table">
+                    <tbody></tbody>
+                  </table>
+                </div>
 
               </div>
             </div>

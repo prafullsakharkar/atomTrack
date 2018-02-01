@@ -4,594 +4,592 @@
 <body>
 {% include "top_bar.html" %}
 <div class="ch-container">
-    <div class="row">
+  <div class="row">
+  </div>
+  <!--/span-->
+  <!-- left menu ends -->
+
+  <noscript>
+    <div class="alert alert-block col-md-12">
+      <h4 class="alert-heading">Warning!</h4>
+
+      <p>You need to have <a href="http://en.wikipedia.org/wiki/JavaScript" target="_blank">JavaScript</a>
+        enabled to use this site.</p>
     </div>
-    <!--/span-->
-    <!-- left menu ends -->
-
-    <noscript>
-        <div class="alert alert-block col-md-12">
-            <h4 class="alert-heading">Warning!</h4>
-
-            <p>You need to have <a href="http://en.wikipedia.org/wiki/JavaScript" target="_blank">JavaScript</a>
-                enabled to use this site.</p>
-        </div>
-    </noscript>
-    <div class="row">
-        <div class="col-sm-1" id="task_menu1" style="display:none">
-            <div class="sidebar-nav">
-                <div class="nav-canvas">
-                    <ul class="nav nav-pills nav-stacked main-menu">
-			<li class="nav-header"><img class="dashboard-avatar" alt="" src="http://192.168.1.18/Employees/{{emp_code}}.jpg"></li>
-                        <li class="nav-header">Main</li>
-                        {% if data.user_role == 'Supervisor' %}
-			<li id="mgm_dashboard_page"><a class="ajax-link" href="/mgm_dashboard"><i
+  </noscript>
+  <div class="row">
+    <!-- Left side menu -->
+    <div class="col-sm-1" id="task_menu1" style="display:none">
+      <div class="sidebar-nav">
+        <div class="nav-canvas">
+          <ul class="nav nav-pills nav-stacked main-menu">
+            <li class="nav-header"><img class="dashboard-avatar" alt=""
+                                        src="http://192.168.1.18/Employees/{{emp_code}}.jpg"></li>
+            <li class="nav-header">Main</li>
+            {% if data.user_role == 'Supervisor' %}
+            <li id="mgm_dashboard_page"><a class="ajax-link" href="/mgm_dashboard"><i
               class="glyphicon glyphicon-dashboard"></i>&nbsp;&nbsp;<span> Management</span></a></li>
-                        <li><a class="ajax-link" href="/dashboard"><i class="glyphicon glyphicon-dashboard"></i>&nbsp;&nbsp;<span> Dashboard</span></a>
-                        </li>
-                        {% endif %}
-                        <li><a class="ajax-link" href="/tasks"><i
-                                class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;<span> To Do List</span></a></li>
-                        <li class="active"><a class="ajax-link" href="/status"><i
-                                class="glyphicon glyphicon-th"></i><span>&nbsp;&nbsp; Task Status</span></a></li>
-                        {% if data.user_role == 'Co-ordinator' or data.user_role == 'Supervisor' %}
-                        <li><a class="ajax-link" href="/review"><i
-                                class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;<span> Review Tasks</span></a>
-                        <li><a class="ajax-link" href="/ftp"><i class="glyphicon glyphicon-cloud-upload"></i>&nbsp;&nbsp;<span> FTP Upload</span></a>
-                        </li>
-                        {% endif %}
-
-
-                    </ul>
-                </div>
-            </div>
+            <li><a class="ajax-link" href="/dashboard"><i class="glyphicon glyphicon-dashboard"></i>&nbsp;&nbsp;<span> Dashboard</span></a>
+            </li>
+            {% endif %}
+            <li><a class="ajax-link" href="/tasks"><i
+              class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;<span> To Do List</span></a></li>
+            <li class="active"><a class="ajax-link" href="/status"><i
+              class="glyphicon glyphicon-th"></i><span>&nbsp;&nbsp; Task Status</span></a></li>
+            {% if data.user_role == 'Co-ordinator' or data.user_role == 'Supervisor' %}
+            <li><a class="ajax-link" href="/review"><i
+              class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;<span> Review Tasks</span></a>
+            <li><a class="ajax-link" href="/ftp"><i class="glyphicon glyphicon-cloud-upload"></i>&nbsp;&nbsp;<span> FTP Upload</span></a>
+            </li>
+            {% endif %}
+          </ul>
         </div>
-
-        <div class="col-at-12" id="panel_big">
-            <ul class="breadcrumb">
-                <li>
-                    <a href="#">Main</a>
-                </li>
-                <li>
-                    <a href="#">Task Status</a>
-                </li>
-            </ul>
-            <div class="sidebar-nav">
-                <div class="box-content row">
-                    <div class="box col-at-11">
-                        <input type="hidden" id="user_columns" value="{{data.columns}}"/>
-                        <div class="col-at-2">
-                            <div class="controls">
-                                <label class="control-label" for="displayOptions">Display : &nbsp;</label>
-                                <select id="displayOptions" data-rel="chosen" style="width: 122px;">
-                                    <option value="Status" selected="selected">Status</option>
-                                    <option value="Chart">Chart</option>
-                                    <option value="Status Count">Status Count</option>
-                                </select>
-                            </div>
-                            <!--
-                                    <label class="control-label">&nbsp;
-                                        <input type="checkbox" id="show_task_chart" value=""> &nbsp; Chart
-                                    </label>
-                            -->
-                        </div>
-                        <div class="col-at-2">
-                            <div class="controls">
-                                <label class="control-label" >Projects : &nbsp;</label>
-                                <select id="selectProject" data-rel="chosen" style="width: 122px;">
-                                    <option value="">Select Project</option>
-                                    {% for proj,id in data.projects.items %}
-                                    <option value="{{id}}">{{proj}}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="controls" id="status_options" style="display:none">
-                                <select id="selectStatus" data-rel="chosen" data-placeholder="Select one...">
-
-                                    {% for status in statuses %}
-					{% if status.name == 'In progress' %} 
-					    <option value="{{status.name}}" disabled>{{status.name}}</option>
-					{% else %}
-					    <option value="{{status.name}}">{{status.name}}</option>
-					{% endif %}
-                                    {% endfor %}
-
-                                </select>
-                            </div>
-                            <div class="controls" id="users_options" style="display:none">
-                                <select id="selectUsers" data-rel="chosen" multiple
-                                        data-placeholder="Select one...">
-
-                                    {% for user in users %}
-                                    <option value="{{user}}">{{user}}</option>
-                                    {% endfor %}
-
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-at-2">
-                            <div class="controls">
-                                <label class="control-label" for="selectObject">Objects : &nbsp;</label>
-                                <select id="selectObject" data-rel="chosen">
-                                    <option value="">Select Object</option>
-                                    {% for obj_name in task_temp_data %}
-                                    {% if obj_name == 'Sequence' or obj_name == 'Asset Build' or obj_name == 'Shot' or obj_name == 'Shot Asset Build' %}
-                                    <option value="{{obj_name}}">{{obj_name}}</option>
-                                    {% endif %}
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-at-2" id="div_type_name" style="display: none;">
-                            <div class="controls">
-                                <label class="control-label" for="selectType" id="type_name">Types :
-                                    &nbsp;&nbsp;</label>
-                                <select id="selectType" data-rel="chosen">
-                                    <option value="">Select Type</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-lg-4" id="div_asset_name" style="display: none;">
-                            <div class="controls">
-                                <label class="control-label" for="selectAsset" id="asset_name">&nbsp;Asset Build
-                                    : </label>
-                                <select id="selectAsset" data-rel="chosen" multiple style="width:70%">
-                                    <option value="">Select Asset Build</option>
-                                </select>
-                                <label class="control-label">
-                                    <input type="checkbox" id="all_assets" value="select_all">&nbsp;All
-                                </label>
-                            </div>
-                        </div>
-                        <div class="col-at-3" id="div_sequence_name" style="display: none;">
-                            <div class="controls">
-                                <label class="control-label" for="selectSequence" id="sequence_name">Sequence :
-                                    &nbsp;</label>
-                                <select id="selectSequence" data-rel="chosen" multiple style="width:68%">
-                                    <option value="">Select Sequence</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-lg-3" id="div_shot_name" style="display: none;">
-                            <div class="controls">
-                                <label class="control-label" for="selectShot" id="shot_name">&nbsp;Shots : </label>&nbsp;
-                                <select id="selectShot" data-rel="chosen" multiple style="width:70%">
-                                    <option value="">Select Shot</option>
-                                </select>
-                                <label class="control-label">&nbsp;
-                                    <input type="checkbox" id="all_shots" value="select_all"> &nbsp; All
-                                </label>
-
-                            </div>
-                        </div>
-                        <div class="col-at-1">
-                            <div class="controls">
-                                <button class="btn btn-inverse btn-default btn-sm" id="save_changes">
-                                    <i class="glyphicon glyphicon-floppy-save icon-white"></i>&nbsp;&nbsp;Save
-                                </button>&nbsp;
-                                <button class="btn btn-inverse btn-default btn-sm" id="undo">
-                                    <i class="glyphicon glyphicon-hand-left icon-white"></i>&nbsp;&nbsp;Undo
-                                </button>
-                            </div>
-                        </div>
-                        <div class="col-at-5" style="float: right;">
-                            <label id="table_row_count"></label>&nbsp; &nbsp;
-                            <input data-errorqtip="" aria-invalid="false" id="search"
-                                   data-qtip="Type to filter on task name or description"
-                                   placeholder="Type to filter..." class="x-form-field x-form-text x-form-empty-field"
-                                   autocomplete="off" type="text">
-                            <button title="Reload Tasks" class="btn btn-inverse btn-default btn-sm" id="refresh"
-                                    onclick="reload_tasks(1)">
-                                <i class="glyphicon glyphicon-refresh icon-white"></i></button>
-                            <!--                            <button title="Download" class="btn btn-inverse btn-default btn-sm" id="dwn_task_status" onClick ="$('#tbl_task').tableExport({filename: 'super-secret-data',type:'excel',escape:'false'});"> -->
-                            <button title="Download" class="btn btn-inverse btn-default btn-sm" id="dwn_task_status">
-                                <i class="glyphicon glyphicon-save icon-white"></i></button>
-                        </div>
-                    </div>
-                    <div class="col-at-12">
-                        <div class="box" style="overflow:auto; overflow-y:auto; height:688px"
-                             id="div_task_details">
-                        </div>
-                        <div class="box" style="overflow:auto; overflow-y:auto; height:688px; display:none;"
-                             id="task_status_chart">
-                        </div>
-                        <div class="box" style="overflow:auto; overflow-y:auto; height:453px; ; display:none;"
-                             id="div_status_count_details">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-1" id="task_menu" style="display:none">
-            <div class="sidebar-nav">
-                <div class="box-content row">
-                    <div class="col-md-12">
-                        <span class="label label-ttasks">Toggle Tasks</span>
-                        <br>
-                        {% for obj_name,task_name in task_temp_data.items %}
-                        {% for type,task_list in task_name.items %}
-                        {% if type == 'Static shot' %}
-                        <div class="controls" id="div_shot_task_checkbox" style="display: none;padding: 10px;">
-                            {% for task in task_list %}
-                            {% with c=forloop.counter|add:forloop.counter %}
-                            <p>
-                                <input type="checkbox" id="shot_check_id{{ c }}" value="{{task}}"> {{task}}
-                            </p>
-                            {% endwith %}
-                            {% endfor %}
-                            {% else %}
-                            {% if type == 'All Asset Build' %}
-                            <div class="controls" id="div_shot_asset_build_task_checkbox"
-                                 style="display: none;padding: 10px;">
-                                {% for task in task_list %}
-                                {% with c=forloop.counter|add:forloop.counter %}
-                                <p>
-                                    <input type="checkbox" id="shot_asset_check_id{{ c }}" value="{{task}}"> {{task}}
-                                </p>
-                                {% endwith %}
-                                {% endfor %}
-                                {% else %}
-                                <div class="controls" id="div_{{type}}_checkbox" style="display: none;padding: 10px">
-                                    {% for task in task_list %}
-                                    {% with c=forloop.counter|add:forloop.counter %}
-                                    <p>
-                                        <input type="checkbox" id="{{type}}_check_id{{ c }}" value="{{task}}"> {{task}}
-                                    </p>
-                                    {% endwith %}
-                                    {% endfor %}
-                                    {% endif %}
-                                    {% endif %}
-                                </div>
-                                {% endfor %}
-                                {% endfor %}
-                            </div>
-                        </div>
-                        <div class="box-content row">
-                            <div class="col-md-12">
-                                <span class="label label-telements">Toggle Element</span>
-                                <br/>
-                                <div class="controls" id="div_elements_checkbox">
-                                    <p>
-                                        <input type="checkbox" id="show_status" checked> Show Status
-                                    </p>
-                                    <p>
-                                        <input type="checkbox" id="show_assignee" checked> Show Assignee
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-
-                <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-                     data-backdrop="static" data-keyboard="false" aria-hidden="true">
-
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <button type="button" class="close" data-dismiss="modal">×</button>
-                                <div id="modal_header">
-                                    <div id="task_details_loader" style="text-align: left;"><img
-                                            src="/static/img/loading.gif"></div>
-                                </div>
-                            </div>
-                            <div class="modal-body">
-                                <div class="container">
-                                    <div class="row">
-                                        <div class="col-md-9">
-                                            <!-- Nav tabs -->
-                                            <div class="card">
-                                                <ul class="nav nav-tabs" role="tablist">
-                                                    <li role="presentation" class="active">
-                                                        <a href="#my_notes"
-                                                                                              aria-controls="my_notes"
-                                                                                              role="tab"
-                                                                                              data-toggle="tab">
-                                                            Notes
-                                                        </a>
-                                                    </li>
-                                                    <li role="presentation">
-                                                        <a href="#my_links"
-                                                                               aria-controls="my_links " role="tab"
-                                                                               data-toggle="tab">
-                                                            Links
-                                                        </a>
-                                                    </li>
-                                                    <li role="presentation">
-                                                        <a href="#my_versions"
-                                                                               aria-controls="my_versions" role="tab"
-                                                                               data-toggle="tab">
-                                                            Versions
-                                                        </a>
-                                                    </li>
-                                                    <li role="presentation">
-                                                        <a href="#my_version_notes"
-                                                                               aria-controls="my_version_notes"
-                                                                               role="tab" data-toggle="tab">
-                                                            Version
-                                                        Notes
-                                                        </a>
-                                                    </li>
-                                                </ul>
-
-                                                <!-- Tab panes -->
-                                                <div class="tab-content">
-                                                    <div role="tabpanel" class="tab-pane active" id="my_notes">
-                                                        <div class="box">
-                                                            <div class="controls">
-                                                                <span>&nbsp;Tasks</span>
-                                                                <select id="selectNoteTask" data-rel="chosen"
-                                                                        style="width: 140px;">
-                                                                    <option value="">None</option>
-                                                                    {% for task in data.all_tasks %}
-                                                                    <option value="{{ task }}">{{ task }}</option>
-                                                                    {% endfor %}
-                                                                </select>&nbsp;&nbsp;
-                                                                <span>Category : </span>
-                                                                <select id="selectNoteCategory" data-rel="chosen"
-                                                                        data-placeholder="Select one..."
-                                                                        style="width:130px !important;"
-                                                                        onchange="toggle_parent_note(this)">
-                                                                    <option value="">All</option>
-                                                                    <option value="None">None</option>
-                                                                    <option value="Internal">Internal</option>
-                                                                    <option value="Client feedback">Client
-                                                                        feedback
-                                                                    </option>
-                                                                    <option value="Client">Client</option>
-                                                                </select>
-                                                                {% if data.user_role == 'Co-ordinator' or data.user_role == 'Supervisor' %}
-                                                                <table>
-                                                                    <tr>
-                                                                        <td style="width: 100%;">
-                                                                            <textarea id="text_artist_note" rows="4"
-                                                                                      cols="20"
-                                                                                      placeholder="Write a note..."
-                                                                                      class="x-form-field x-form-text x-form-textarea"
-                                                                                      autocomplete="off"
-                                                                                      style="width: 100%; height: 48px;"></textarea>
-                                                                        </td>
-                                                                        <td>
-                                                                            <button class="btn btn-inverse btn-default btn-lg"
-                                                                                    id="btn_note_create"
-                                                                                    style="width: 60px;">
-                                                                                <i class="glyphicon glyphicon-send icon-white"></i>
-                                                                            </button>
-                                                                        </td>
-                                                                    </tr>
-                                                                </table>
-                                                                {% endif %}
-
-                                                            </div>
-                                                        </div>
-                                                        <div id="task_notes_loader" style="text-align: center;"><img
-                                                                src="/static/img/loading.gif"></div>
-                                                        <div class="box"
-                                                             style="overflow:auto; overflow-y:auto; height:500px;"
-                                                             id="note_details" data-user-id="{{user_id}}"></div>
-                                                    </div>
-
-                                                    <div role="tabpanel" class="tab-pane" id="my_links">
-                                                        <div id="task_link_loader" style="text-align: center;"><img
-                                                                src="/static/img/loading.gif"></div>
-                                                        <div class="box"
-                                                             style="overflow:auto; overflow-y:auto; height:624px;"
-                                                             id="link_details"></div>
-                                                    </div>
-
-                                                    <div role="tabpanel" class="tab-pane" id="my_versions">
-                                                        <div class="box">
-                                                            <div class="controls">
-                                                                <span>&nbsp;Tasks</span>
-                                                                <select id="selectTask" data-rel="chosen"
-                                                                        style="width: 140px;">
-                                                                    <option value="">All</option>
-                                                                    {% for task in data.all_tasks %}
-                                                                    <option value="{{ task }}">{{ task }}</option>
-                                                                    {% endfor %}
-                                                                </select>&nbsp;&nbsp;
-                                                                <span>Asset Types : </span>
-                                                                <select id="selectAssetTypes" data-rel="chosen"
-                                                                        data-placeholder="Select one..."
-                                                                        style="width:130px !important;"
-                                                                        onchange="toggle_asset_type(this)">
-                                                                    <option value="">All</option>
-                                                                    {% for type in asset_types %}
-                                                                    <option value="{{type}}">{{type}}</option>
-                                                                    {% endfor %}
-                                                                </select>
-								<div style="float: right;">
-                                                                <input data-errorqtip="" aria-invalid="false"
-                                                                       id="search_version"
-                                                                       data-qtip="Type to filter on task name or description"
-                                                                       placeholder="Type to filter..."
-                                                                       class="x-form-field x-form-text x-form-empty-field"
-                                                                       autocomplete="off" type="text"
-                                                                       >&nbsp;
-                                                                                        <button class="btn btn-inverse btn-default btn-sm" id="save_ver_changes" title="Save Changes">
-                                                                                            <i class="glyphicon glyphicon-floppy-save icon-white"></i></button>&nbsp;
-                                                                                        <button class="btn btn-inverse btn-default btn-sm" id="undo_ver" title="Undo Changes">
-                                                                                            <i class="glyphicon glyphicon-hand-left icon-white"></i></button>
-								</div>
-                                                            </div>
-                                                        </div>
-                                                        <div id="version_loader" style="text-align: center;"><img
-                                                                src="/static/img/loading.gif"></div>
-                                                        <div class="box"
-                                                             style="overflow:auto; overflow-y:auto; height:572px;"
-                                                             id="version_details">
-                                                            <table class="table table-striped" id="tbl_versions">
-                                                                <thead>
-                                                                <tr>
-                                                                    <th onclick="sortOrder(this)"><i
-                                                                            class="glyphicon glyphicon-sort-by-alphabet"></i>&nbsp;
-                                                                        Name
-                                                                    </th>
-                                                                    <th>Type</th>
-                                                                    <th>Status</th>
-                                                                    <th>Published On</th>
-                                                                    <th>Published by</th>
-                                                                </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
-                                                    </div>
-
-                                                    <div role="tabpanel" class="tab-pane" id="my_version_notes">
-                                                        <div class="box">
-                                                            <div class="controls">
-                                                                <select id="selectVersionTask" data-rel="chosen"
-                                                                        style="width: 140px;"
-                                                                        onchange="show_versions(this)">
-                                                                    <option value="">Select Task</option>
-                                                                    {% for task in data.all_tasks %}
-                                                                    <option value="{{ task }}">{{ task }}</option>
-                                                                    {% endfor %}
-                                                                </select>&nbsp;&nbsp;
-                                                                <select id="selectVersionTaskAssetTypes"
-                                                                        data-rel="chosen"
-                                                                        style="width: 140px;"
-                                                                        onchange="show_versions(this)">
-                                                                    <option value="">Select Asset Type</option>
-                                                                    {% for type in asset_types %}
-                                                                    <option value="{{type}}">{{type}}</option>
-                                                                    {% endfor %}
-                                                                </select>&nbsp;&nbsp;
-                                                                <select id="selectTaskVersion" data-rel="chosen"
-                                                                        style="width: 240px;">
-                                                                    <option value="">Select Version</option>
-                                                                </select>&nbsp;&nbsp;
-                                                                <span>Category :</span>&nbsp;&nbsp;
-                                                                <select id="selectVersionNoteCategory" data-rel="chosen"
-                                                                        data-placeholder="Select one..."
-                                                                        style="width:130px !important;"
-                                                                        onchange="toggle_parent_note(this)">
-                                                                    <option value="">All</option>
-                                                                    <option value="None">None</option>
-                                                                    <option value="Internal">Internal</option>
-                                                                    <option value="Client feedback">Client
-                                                                        feedback
-                                                                    </option>
-                                                                    <option value="Client">Client</option>
-                                                                </select>
-                                                                {% if data.user_role == 'Co-ordinator' or data.user_role == 'Supervisor' %}
-                                                                <table>
-                                                                    <tr>
-                                                                        <td style="width: 100%;">
-                                                                            <textarea id="text_version_note" rows="4"
-                                                                                      cols="20"
-                                                                                      placeholder="Write a note..."
-                                                                                      class="x-form-field x-form-text x-form-textarea"
-                                                                                      autocomplete="off"
-                                                                                      style="width: 100%; height: 48px;"></textarea>
-                                                                        </td>
-                                                                        <td>
-                                                                            <button class="btn btn-inverse btn-default btn-lg"
-                                                                                    id="btn_version_note_create"
-                                                                                    style="width: 60px;">
-                                                                                <i class="glyphicon glyphicon-send icon-white"></i>
-                                                                            </button>
-                                                                        </td>
-                                                                    </tr>
-<!--
-								    <tr>
-<td>
-    <input id="note_attach" name="note_attach" type="file" class="file" multiple 
-        data-show-upload="true" data-show-caption="true" data-msg-placeholder="Select {files} for upload...">
-</td>
-								    </tr>
--->
-                                                                </table>
-                                                                {% endif %}
-
-                                                            </div>
-                                                        </div>
-                                                        <div id="task_version_notes_loader"
-                                                             style="text-align: center; display: none;"><img
-                                                                src="/static/img/loading.gif"></div>
-                                                        <div class="box"
-                                                             style="overflow:auto; overflow-y:auto; height:500px;"
-                                                             id="version_note_details" data-user-id="{{user_id}}"></div>
-                                                    </div>
-
-
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!--
-                                        <div class="modal-footer">
-                                            <a href="#" class="btn btn-default" data-dismiss="modal">Close</a>
-                                            <a href="#" class="btn btn-primary" data-dismiss="modal">Save changes</a>
-                                        </div>
-                        -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- task count Model-->
-            <div class="modal fade" id="mytaskcount" tabindex="-1" role="dialog" aria-labelledby="myChartModalLabel"
-                 data-backdrop="static" data-keyboard="false" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal">×</button>
-                            <div class="container">
-                                <div class="col-md-6">
-                                    <div class="col-md-4">
-                                        <label>Project:&nbsp;</label>
-                                        <label data-id="project"></label>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label>Objects:&nbsp;</label>
-                                        <label data-id="objects"></label>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label>Types/Sequences:&nbsp;</label>
-                                        <label data-id="sequences"></label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-body">
-                            <div style="float: right;">
-                                <input data-errorqtip="" aria-invalid="false" id="search_value"
-                                       table_name="status_count_table"
-                                       data-qtip="Type to filter on task name or description"
-                                       placeholder="Type to filter..."
-                                       class="x-form-field x-form-text x-form-empty-field" autocomplete="off"
-                                       type="text">
-                                <button title="Download" class="btn btn-inverse btn-default btn-sm"
-                                        id="dwn_task_count_status">
-                                        <!-- onClick="$('#status_count_table').tableExport({filename: 'status_count_table',type:'excel',escape:'false'});"> -->
-                                    <i class="glyphicon glyphicon-save icon-white"></i></button>
-                            </div>
-                            <div style="width:100%;overflow:auto; overflow-y:auto; height:750px;">
-
-                                <table class='table-hover table-condensed table-bordered' id='status_count_table'
-                                       style="width:100%;">
-                                    <thead>
-                                    <tr>
-                                        <th>Task Name</th>
-                                        <th>Task</th>
-                                        <th>User</th>
-                                        <th>Status</th>
-                                    </tr>
-                                    </thead>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+
+    <div class="col-at-12" id="panel_big">
+      <ul class="breadcrumb">
+        <li>
+          <a href="#">Main</a>
+        </li>
+        <li>
+          <a href="#">Task Status</a>
+        </li>
+      </ul>
+      <div class="sidebar-nav">
+        <div class="box-content row">
+          <div class="box col-at-11">
+            <input type="hidden" id="user_columns" value="{{data.columns}}"/>
+            <div class="col-at-2">
+              <div class="controls">
+                <label class="control-label" for="displayOptions">Display : &nbsp;</label>
+                <select id="displayOptions" data-rel="chosen" style="width: 122px;">
+                  <option value="Status" selected="selected">Status</option>
+                  <option value="Chart">Chart</option>
+                  <option value="Status Count">Status Count</option>
+                </select>
+              </div>
+              <!--
+                      <label class="control-label">&nbsp;
+                          <input type="checkbox" id="show_task_chart" value=""> &nbsp; Chart
+                      </label>
+              -->
+            </div>
+            <div class="col-at-2">
+              <div class="controls">
+                <label class="control-label">Projects : &nbsp;</label>
+                <select id="selectProject" data-rel="chosen" style="width: 122px;">
+                  <option value="">Select Project</option>
+                  {% for proj,id in data.projects.items %}
+                  <option value="{{id}}">{{proj}}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="controls" id="status_options" style="display:none">
+                <select id="selectStatus" data-rel="chosen" data-placeholder="Select one...">
+
+                  {% for status in statuses %}
+                  {% if status.name == 'In progress' %}
+                  <option value="{{status.name}}" disabled>{{status.name}}</option>
+                  {% else %}
+                  <option value="{{status.name}}">{{status.name}}</option>
+                  {% endif %}
+                  {% endfor %}
+
+                </select>
+              </div>
+              <div class="controls" id="users_options" style="display:none">
+                <select id="selectUsers" data-rel="chosen" multiple
+                        data-placeholder="Select one...">
+
+                  {% for user in users %}
+                  <option value="{{user}}">{{user}}</option>
+                  {% endfor %}
+
+                </select>
+              </div>
+            </div>
+            <div class="col-at-2">
+              <div class="controls">
+                <label class="control-label" for="selectObject">Objects : &nbsp;</label>
+                <select id="selectObject" data-rel="chosen">
+                  <option value="">Select Object</option>
+                  {% for obj_name in task_temp_data %}
+                  {% if obj_name == 'Sequence' or obj_name == 'Asset Build' or obj_name == 'Shot' or obj_name == 'Shot Asset Build' %}
+                  <option value="{{obj_name}}">{{obj_name}}</option>
+                  {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="col-at-2" id="div_type_name" style="display: none;">
+              <div class="controls">
+                <label class="control-label" for="selectType" id="type_name">Types :
+                  &nbsp;&nbsp;</label>
+                <select id="selectType" data-rel="chosen">
+                  <option value="">Select Type</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-lg-4" id="div_asset_name" style="display: none;">
+              <div class="controls">
+                <label class="control-label" for="selectAsset" id="asset_name">&nbsp;Asset Build
+                  : </label>
+                <select id="selectAsset" data-rel="chosen" multiple style="width:70%">
+                  <option value="">Select Asset Build</option>
+                </select>
+                <label class="control-label">
+                  <input type="checkbox" id="all_assets" value="select_all">&nbsp;All
+                </label>
+              </div>
+            </div>
+            <div class="col-at-3" id="div_sequence_name" style="display: none;">
+              <div class="controls">
+                <label class="control-label" for="selectSequence" id="sequence_name">Sequence :
+                  &nbsp;</label>
+                <select id="selectSequence" data-rel="chosen" multiple style="width:68%">
+                  <option value="">Select Sequence</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-lg-3" id="div_shot_name" style="display: none;">
+              <div class="controls">
+                <label class="control-label" for="selectShot" id="shot_name">&nbsp;Shots : </label>&nbsp;
+                <select id="selectShot" data-rel="chosen" multiple style="width:70%">
+                  <option value="">Select Shot</option>
+                </select>
+                <label class="control-label">&nbsp;
+                  <input type="checkbox" id="all_shots" value="select_all"> &nbsp; All
+                </label>
+
+              </div>
+            </div>
+            <div class="col-at-1">
+              <div class="controls">
+                <button class="btn btn-inverse btn-default btn-sm" id="save_changes">
+                  <i class="glyphicon glyphicon-floppy-save icon-white"></i>&nbsp;&nbsp;Save
+                </button>&nbsp;
+                <button class="btn btn-inverse btn-default btn-sm" id="undo">
+                  <i class="glyphicon glyphicon-hand-left icon-white"></i>&nbsp;&nbsp;Undo
+                </button>
+              </div>
+            </div>
+            <div class="col-at-5" style="float: right;">
+              <label id="table_row_count"></label>&nbsp; &nbsp;
+              <input data-errorqtip="" aria-invalid="false" id="search"
+                     data-qtip="Type to filter on task name or description"
+                     placeholder="Type to filter..." class="x-form-field x-form-text x-form-empty-field"
+                     autocomplete="off" type="text">
+              <button title="Reload Tasks" class="btn btn-inverse btn-default btn-sm" id="refresh"
+                      onclick="reload_tasks(1)">
+                <i class="glyphicon glyphicon-refresh icon-white"></i></button>
+              <!--                            <button title="Download" class="btn btn-inverse btn-default btn-sm" id="dwn_task_status" onClick ="$('#tbl_task').tableExport({filename: 'super-secret-data',type:'excel',escape:'false'});"> -->
+              <button title="Download" class="btn btn-inverse btn-default btn-sm" id="dwn_task_status">
+                <i class="glyphicon glyphicon-save icon-white"></i></button>
+            </div>
+          </div>
+          <div class="col-at-12">
+            <div class="box" style="overflow:auto; overflow-y:auto; height:688px"
+                 id="div_task_details">
+            </div>
+            <div class="box" style="overflow:auto; overflow-y:auto; height:688px; display:none;"
+                 id="task_status_chart">
+            </div>
+            <div class="box" style="overflow:auto; overflow-y:auto; height:453px; ; display:none;"
+                 id="div_status_count_details">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-1" id="task_menu" style="display:none">
+      <div class="sidebar-nav">
+        <div class="box-content row">
+          <div class="col-md-12">
+            <span class="label label-ttasks">Toggle Tasks</span>
+            <br>
+            {% for obj_name,task_name in task_temp_data.items %}
+            {% for type,task_list in task_name.items %}
+            {% if type == 'Static shot' %}
+            <div class="controls" id="div_shot_task_checkbox" style="display: none;padding: 10px;">
+              {% for task in task_list %}
+              {% with c=forloop.counter|add:forloop.counter %}
+              <p>
+                <input type="checkbox" id="shot_check_id{{ c }}" value="{{task}}"> {{task}}
+              </p>
+              {% endwith %}
+              {% endfor %}
+              {% else %}
+              {% if type == 'All Asset Build' %}
+              <div class="controls" id="div_shot_asset_build_task_checkbox"
+                   style="display: none;padding: 10px;">
+                {% for task in task_list %}
+                {% with c=forloop.counter|add:forloop.counter %}
+                <p>
+                  <input type="checkbox" id="shot_asset_check_id{{ c }}" value="{{task}}"> {{task}}
+                </p>
+                {% endwith %}
+                {% endfor %}
+                {% else %}
+                <div class="controls" id="div_{{type}}_checkbox" style="display: none;padding: 10px">
+                  {% for task in task_list %}
+                  {% with c=forloop.counter|add:forloop.counter %}
+                  <p>
+                    <input type="checkbox" id="{{type}}_check_id{{ c }}" value="{{task}}"> {{task}}
+                  </p>
+                  {% endwith %}
+                  {% endfor %}
+                  {% endif %}
+                  {% endif %}
+                </div>
+                {% endfor %}
+                {% endfor %}
+              </div>
+            </div>
+            <div class="box-content row">
+              <div class="col-md-12">
+                <span class="label label-telements">Toggle Element</span>
+                <br/>
+                <div class="controls" id="div_elements_checkbox">
+                  <p>
+                    <input type="checkbox" id="show_status" checked> Show Status
+                  </p>
+                  <p>
+                    <input type="checkbox" id="show_assignee" checked> Show Assignee
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+             data-backdrop="static" data-keyboard="false" aria-hidden="true">
+
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">×</button>
+                <div id="modal_header">
+                  <div id="task_details_loader" style="text-align: left;"><img
+                    src="/static/img/loading.gif"></div>
+                </div>
+              </div>
+              <div class="modal-body">
+                <div class="container">
+                  <div class="row">
+                    <div class="col-md-9">
+                      <!-- Nav tabs -->
+                      <div class="card">
+                        <ul class="nav nav-tabs" role="tablist">
+                          <li role="presentation" class="active">
+                            <a href="#my_notes"
+                               aria-controls="my_notes"
+                               role="tab"
+                               data-toggle="tab">
+                              Notes
+                            </a>
+                          </li>
+                          <li role="presentation">
+                            <a href="#my_links"
+                               aria-controls="my_links " role="tab"
+                               data-toggle="tab">
+                              Links
+                            </a>
+                          </li>
+                          <li role="presentation">
+                            <a href="#my_versions"
+                               aria-controls="my_versions" role="tab"
+                               data-toggle="tab">
+                              Versions
+                            </a>
+                          </li>
+                          <li role="presentation">
+                            <a href="#my_version_notes"
+                               aria-controls="my_version_notes"
+                               role="tab" data-toggle="tab">
+                              Version
+                              Notes
+                            </a>
+                          </li>
+                        </ul>
+
+                        <!-- Tab panes -->
+                        <div class="tab-content">
+                          <div role="tabpanel" class="tab-pane active" id="my_notes">
+                            <div class="box">
+
+                              <span>&nbsp;Tasks</span>
+                              <select id="selectNoteTask" data-rel="chosen"
+                                      style="width: 140px;">
+                                <option value="">None</option>
+                                {% for task in data.all_tasks %}
+                                <option value="{{ task }}">{{ task }}</option>
+                                {% endfor %}
+                              </select>&nbsp;&nbsp;
+                              <span>Category : </span>
+                              <select id="selectNoteCategory" data-rel="chosen"
+                                      data-placeholder="Select one..."
+                                      style="width:130px !important;"
+                                      onchange="toggle_parent_note(this)">
+                                <option value="">All</option>
+                                <option value="None">None</option>
+                                <option value="Internal">Internal</option>
+                                <option value="Client feedback">Client
+                                  feedback
+                                </option>
+                                <option value="Client">Client</option>
+                              </select>
+                              {% if data.user_role == 'Co-ordinator' or data.user_role == 'Supervisor' %}
+                              <div class="box">
+                                <textarea id="text_artist_note" rows="5" cols="20"
+                            placeholder="Write a note..."
+                            class="x-form-field x-form-text x-form-textarea"
+                            autocomplete="off" style="width: 100%; height: 48px;"></textarea>
+                                <button type="button" title="Attach file here ..."
+                                        class="btn btn-inverse btn-default btn-xs" data-gallery="gallery_notes"
+                                        style="float: left;margin-right: 5px;" onclick="attach_media_files(this)"><span
+                                  class="glyphicon glyphicon-plus"></span></button>
+                                <div class="progress" style="display:none">
+                                  <div class="progress-bar" role="progressbar" style="width: 0%;">0%</div>
+                                </div>
+                                <button class="btn btn-inverse btn-default btn-xs" id="btn_note_create"
+                                        title="Add Comment"
+                                        style="width: 60px;float: right;">
+                                  <i class="glyphicon glyphicon-send icon-white"></i></button>
+                                <input id="fileupload" type="file" name="file" multiple
+                                       style="display: none;"
+                                       data-form-data='{"csrfmiddlewaretoken": "{{ csrf_token }}"}'>
+                                <table id="gallery_notes" class="table">
+                                  <tbody></tbody>
+                                </table>
+                              </div>
+                              {% endif %}
+                            </div>
+                            <div id="task_notes_loader" style="text-align: center;"><img
+                              src="/static/img/loading.gif"></div>
+                            <div class="box"
+                                 style="overflow:auto; overflow-y:auto; height:500px;"
+                                 id="note_details" data-user-id="{{user_id}}"></div>
+                          </div>
+
+                          <div role="tabpanel" class="tab-pane" id="my_links">
+                            <div id="task_link_loader" style="text-align: center;"><img
+                              src="/static/img/loading.gif"></div>
+                            <div class="box"
+                                 style="overflow:auto; overflow-y:auto; height:624px;"
+                                 id="link_details"></div>
+                          </div>
+
+                          <div role="tabpanel" class="tab-pane" id="my_versions">
+                            <div class="box">
+                              <div class="controls">
+                                <span>&nbsp;Tasks</span>
+                                <select id="selectTask" data-rel="chosen"
+                                        style="width: 140px;">
+                                  <option value="">All</option>
+                                  {% for task in data.all_tasks %}
+                                  <option value="{{ task }}">{{ task }}</option>
+                                  {% endfor %}
+                                </select>&nbsp;&nbsp;
+                                <span>Asset Types : </span>
+                                <select id="selectAssetTypes" data-rel="chosen"
+                                        data-placeholder="Select one..."
+                                        style="width:130px !important;"
+                                        onchange="toggle_asset_type(this)">
+                                  <option value="">All</option>
+                                  {% for type in asset_types %}
+                                  <option value="{{type}}">{{type}}</option>
+                                  {% endfor %}
+                                </select>
+                                <div style="float: right;">
+                                  <input data-errorqtip="" aria-invalid="false"
+                                         id="search_version"
+                                         data-qtip="Type to filter on task name or description"
+                                         placeholder="Type to filter..."
+                                         class="x-form-field x-form-text x-form-empty-field"
+                                         autocomplete="off" type="text">&nbsp;
+                                  <button class="btn btn-inverse btn-default btn-sm" id="save_ver_changes"
+                                          title="Save Changes">
+                                    <i class="glyphicon glyphicon-floppy-save icon-white"></i></button>&nbsp;
+                                  <button class="btn btn-inverse btn-default btn-sm" id="undo_ver" title="Undo Changes">
+                                    <i class="glyphicon glyphicon-hand-left icon-white"></i></button>
+                                </div>
+                              </div>
+                            </div>
+                            <div id="version_loader" style="text-align: center;"><img
+                              src="/static/img/loading.gif"></div>
+                            <div class="box"
+                                 style="overflow:auto; overflow-y:auto; height:572px;"
+                                 id="version_details">
+                              <table class="table table-striped" id="tbl_versions">
+                                <thead>
+                                <tr>
+                                  <th onclick="sortOrder(this)"><i
+                                    class="glyphicon glyphicon-sort-by-alphabet"></i>&nbsp;
+                                    Name
+                                  </th>
+                                  <th>Type</th>
+                                  <th>Status</th>
+                                  <th>Published On</th>
+                                  <th>Published by</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+
+                          <div role="tabpanel" class="tab-pane" id="my_version_notes">
+                            <div class="box">
+                              <div class="controls">
+                                <select id="selectVersionTask" data-rel="chosen"
+                                        style="width: 140px;"
+                                        onchange="show_versions(this)">
+                                  <option value="">Select Task</option>
+                                  {% for task in data.all_tasks %}
+                                  <option value="{{ task }}">{{ task }}</option>
+                                  {% endfor %}
+                                </select>&nbsp;&nbsp;
+                                <select id="selectVersionTaskAssetTypes"
+                                        data-rel="chosen"
+                                        style="width: 140px;"
+                                        onchange="show_versions(this)">
+                                  <option value="">Select Asset Type</option>
+                                  {% for type in asset_types %}
+                                  <option value="{{type}}">{{type}}</option>
+                                  {% endfor %}
+                                </select>&nbsp;&nbsp;
+                                <select id="selectTaskVersion" data-rel="chosen"
+                                        style="width: 240px;">
+                                  <option value="">Select Version</option>
+                                </select>&nbsp;&nbsp;
+                                <span>Category :</span>&nbsp;&nbsp;
+                                <select id="selectVersionNoteCategory" data-rel="chosen"
+                                        data-placeholder="Select one..."
+                                        style="width:130px !important;"
+                                        onchange="toggle_parent_note(this)">
+                                  <option value="">All</option>
+                                  <option value="None">None</option>
+                                  <option value="Internal">Internal</option>
+                                  <option value="Client feedback">Client
+                                    feedback
+                                  </option>
+                                  <option value="Client">Client</option>
+                                </select>
+                                {% if data.user_role == 'Co-ordinator' or data.user_role == 'Supervisor' %}
+                                <div class="box">
+                                  <textarea id="text_version_note" rows="5" cols="20"
+                            placeholder="Write a note..."
+                            class="x-form-field x-form-text x-form-textarea"
+                            autocomplete="off" style="width: 100%; height: 48px;"></textarea>
+                                  <button type="button" title="Attach file here ..."
+                                          class="btn btn-inverse btn-default btn-xs" data-gallery="gallery_versions"
+                                          style="float: left;margin-right: 5px;" onclick="attach_media_files(this)"><span
+                                    class="glyphicon glyphicon-plus"></span></button>
+                                  <div class="progress" style="display:none">
+                                    <div class="progress-bar" role="progressbar" style="width: 0%;">0%</div>
+                                  </div>
+                                  <button class="btn btn-inverse btn-default btn-xs" id="btn_version_note_create"
+                                          title="Add Comment"
+                                          style="width: 60px;float: right;">
+                                    <i class="glyphicon glyphicon-send icon-white"></i></button>
+                                  <input id="fileupload" type="file" name="file" multiple
+                                         style="display: none;"
+                                         data-form-data='{"csrfmiddlewaretoken": "{{ csrf_token }}"}'>
+                                  <table id="gallery_versions" class="table">
+                                    <tbody></tbody>
+                                  </table>
+                                </div>
+                                {% endif %}
+
+                              </div>
+                            </div>
+                            <div id="task_version_notes_loader"
+                                 style="text-align: center; display: none;"><img
+                              src="/static/img/loading.gif"></div>
+                            <div class="box"
+                                 style="overflow:auto; overflow-y:auto; height:500px;"
+                                 id="version_note_details" data-user-id="{{user_id}}"></div>
+                          </div>
+
+
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!--
+                            <div class="modal-footer">
+                                <a href="#" class="btn btn-default" data-dismiss="modal">Close</a>
+                                <a href="#" class="btn btn-primary" data-dismiss="modal">Save changes</a>
+                            </div>
+            -->
+          </div>
+        </div>
+      </div>
+
+      <!-- task count Model-->
+      <div class="modal fade" id="mytaskcount" tabindex="-1" role="dialog" aria-labelledby="myChartModalLabel"
+           data-backdrop="static" data-keyboard="false" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal">×</button>
+              <div class="container">
+                <div class="col-md-6">
+                  <div class="col-md-4">
+                    <label>Project:&nbsp;</label>
+                    <label data-id="project"></label>
+                  </div>
+                  <div class="col-md-4">
+                    <label>Objects:&nbsp;</label>
+                    <label data-id="objects"></label>
+                  </div>
+                  <div class="col-md-4">
+                    <label>Types/Sequences:&nbsp;</label>
+                    <label data-id="sequences"></label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-body">
+              <div style="float: right;">
+                <input data-errorqtip="" aria-invalid="false" id="search_value"
+                       table_name="status_count_table"
+                       data-qtip="Type to filter on task name or description"
+                       placeholder="Type to filter..."
+                       class="x-form-field x-form-text x-form-empty-field" autocomplete="off"
+                       type="text">
+                <button title="Download" class="btn btn-inverse btn-default btn-sm"
+                        id="dwn_task_count_status">
+                  <!-- onClick="$('#status_count_table').tableExport({filename: 'status_count_table',type:'excel',escape:'false'});"> -->
+                  <i class="glyphicon glyphicon-save icon-white"></i></button>
+              </div>
+              <div style="width:100%;overflow:auto; overflow-y:auto; height:750px;">
+
+                <table class='table-hover table-condensed table-bordered' id='status_count_table'
+                       style="width:100%;">
+                  <thead>
+                  <tr>
+                    <th>Task Name</th>
+                    <th>Task</th>
+                    <th>User</th>
+                    <th>Status</th>
+                  </tr>
+                  </thead>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 </body>
 {% include "footer.html" %}

@@ -1956,11 +1956,20 @@ function create_version_note(version_id){
 	return null;
     }
 
+    attachments = [];
+    $textarea_id.parent().find('table[id=gallery_versions] tr td a').each(function(){
+	href = $(this).attr('href');
+	attachments.push(href);
+    });
+
+    attach_files = JSON.stringify(attachments);
+
     note_task = '';
     note_for = 'AssetVersion';
     $div_element = $('#version_note_details');
-    create_new_note(version_id, note_text, note_category, note_for, $div_element, $textarea_id, note_task);
+    create_new_note(version_id, note_text, note_category, note_for, $div_element, $textarea_id, note_task, attach_files);
 
+    $textarea_id.parent().find('table[id=gallery_versions] tbody').html('');
 }
 
 function add_version_notes(obj,id,idx){
@@ -2868,6 +2877,9 @@ function show_model(context) {
     // 3. Versions Tab
     remove_rows($('#tbl_versions'));
 
+    $('#gallery_versions tbody').html('');
+    $('#gallery_notes tbody').html('');
+
     load_asset_versions(task_id,obj_name,last_row,task);
 
     // 4. Version Notes Tab
@@ -3046,20 +3058,29 @@ function create_a_note(task_id){
         obj_name = 'Task';
     }
 
+    attachments = [];
+    $textarea_id.parent().find('table[id=gallery_notes] tr td a').each(function(){
+	href = $(this).attr('href');
+	attachments.push(href);
+    });
+
+    attach_files = JSON.stringify(attachments);
     note_task = $('#selectNoteTask').val();
     
     note_for = obj_name;
     $div_element = $('#note_details');
-    create_new_note(task_id, note_text, note_category, note_for, $div_element, $textarea_id, note_task);
+    create_new_note(task_id, note_text, note_category, note_for, $div_element, $textarea_id, note_task, attach_files);
+
+    $textarea_id.parent().find('table[id=gallery_notes] tbody').html('');
 
 }
 
-function create_new_note(task_id, note_text, note_category, note_for, $div_element, $textarea_id, note_task){
+function create_new_note(task_id, note_text, note_category, note_for, $div_element, $textarea_id, note_task, attach_files){
 
     $.ajax({
         type:"POST",
         url:"/callajax/",
-        data: { 'object_name': 'Create Note', 'task_id': task_id, 'note_text': note_text, 'note_category': note_category, 'note_for': note_for, 'note_task': note_task},
+        data: { 'object_name': 'Create Note', 'task_id': task_id, 'note_text': note_text, 'note_category': note_category, 'note_for': note_for, 'note_task': note_task, "attach_files": attach_files},
         beforeSend: function(){
         },
         success: function(json){
@@ -3167,10 +3188,10 @@ function add_note_details(idx, obj){
 	    my_url = obj.note_components[k].url;
 	    file_type = obj.note_components[k].file_type;
 	    if (file_type == '.mov'){
-		component = component + ' <video src="'+my_url+'" webkit-playsinline playsinline data-video="'+my_url+'" loop muted autoplay id="note_video" class="video" height="80" width="auto" onclick="popup_video(this)">\
+		component = component + '&nbsp; <video src="'+my_url+'" webkit-playsinline playsinline data-video="'+my_url+'" loop muted autoplay id="note_video" class="video" height="80" onclick="popup_video(this)">\
 </video> ';
 	    }else{
-		component = component + '<a href="'+my_url+'"> <img src="'+my_url+'" height="80" width="auto"> </a>';
+		component = component + '&nbsp; <a href="'+my_url+'"> <img src="'+my_url+'" height="80" width="auto"> </a>';
 	    }
 	}
 	note_head = note_head + '<br>' + component;
@@ -3424,9 +3445,8 @@ function object_status_change(new_status, old_status, object_id, status_for){
 
 }
 
-function attach_files(){
+function attach_media_files(param){
     $("#fileupload").click();
-}
 
 $("#fileupload").fileupload({
     dataType: 'json',
@@ -3452,12 +3472,17 @@ $("#fileupload").fileupload({
 
     done: function (e, data) {
       if (data.result.is_valid) {
-        $("#gallery tbody").append(
+	my_gallery = $(param).attr('data-gallery');
+	if (!my_gallery){
+	    my_gallery = 'gallery';
+	}
+        $("#"+my_gallery+" tbody").append(
           "<tr><td style='text-align:left'><a href='" + data.result.url + "'>" + data.result.name + "</a></td><td style='width: 10%;'><button type='button' class='btn btn-inverse btn-default btn-xs' onclick='$(this).parent().parent().remove()'><span class='glyphicon glyphicon-remove'></span></button></td></tr>");
       }
     }
 
   });
+}
 
 function approve_task(param){
     $tr = $(param).closest('tr');
