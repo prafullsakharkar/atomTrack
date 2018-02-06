@@ -16,4 +16,5 @@ urlpatterns = [
 	url(r'^dashboard/', act.sup_dashboard, name='sup_dashboard'),
 	url(r'^mgm_dashboard/', act.mgm_dashboard, name='mgm_dashboard'),
 	url(r'^create/', act.create_entities, name='create_entities'),
+	url(r'^create_project_form/', act.create_project_form, name='create_project_form'),
 ]

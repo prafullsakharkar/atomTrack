@@ -5948,3 +5948,11 @@ a.thumbnail:hover,a.thumbnail:focus,a.thumbnail.active {
 .panel-primary .panel-heading,.panel-success .panel-heading,.panel-danger .panel-heading,.panel-warning .panel-heading,.panel-info .panel-heading {
 	border-color:#000
 }
+.rounded_border{
+            width: 450px;
+            background-color: #444;
+            border: 3px solid darkgrey;
+            border-radius: 13px;
+            border-width: 5px;
+            border-style: double;
+        }

@@ -23,8 +23,9 @@ from settings import BASE_DIR, PROJ_BASE_DIR
 
 from pprint import pprint
 
-from .forms import AttachmentForm
+from .forms import CreateProject, CreateSequence, CreateShot, CreateAsset, CreateTask, AttachmentForm
 from .models import Attachment
+
 
 
 # from django.core.urlresolvers import reverse
@@ -302,11 +303,246 @@ class Activity:
                     entity_id = request.POST.get('entity_id')
                     entity_type = request.POST.get('entity_type')
                     data = self.get_entity_data(entity_id, entity_type)
+                elif object_name == 'Project_Creation':
+                    flag_status = request.POST.get('flag_status')
+                    if flag_status == 'Update':
+                        project_name = request.POST.get('project_name')
+                        project_code = request.POST.get('project_code')
+                        start_date = request.POST.get('start_date')
+                        end_date = request.POST.get('end_date')
+                        workflow_schema = request.POST.get('workflow_schema')
+                        status = request.POST.get('status')
+                        scope = request.POST.get('scope')
+                        disk = request.POST.get('disk')
+                        project_folder = request.POST.get('project_folder')
+                        entity_name = request.POST.get('entity_name')
+                        resolution = request.POST.get('resolution')
+                        start_frame = request.POST.get('start_frame')
+                        fps = request.POST.get('fps')
+                        version = request.POST.get('version')
+                        client_label = request.POST.get('client_label')
+                    elif flag_status == 'create':
+                        project_name = request.POST.get('project_name')
+                        project_code = request.POST.get('project_code')
+                        start_date = request.POST.get('start_date')
+                        end_date = request.POST.get('end_date')
+                        workflow_schema = request.POST.get('workflow_schema')
+                        status = request.POST.get('status')
+                        scope = request.POST.get('scope')
+                        disk = request.POST.get('disk')
+                        project_folder = request.POST.get('project_folder')
+                        entity_name = request.POST.get('entity_name')
+                        resolution = request.POST.get('resolution')
+                        start_frame = request.POST.get('start_frame')
+                        fps = request.POST.get('fps')
+                        version = request.POST.get('version')
+                        client_label = request.POST.get('client_label')
+
+                    data = self.create_project(project_name, project_code, start_date, end_date,
+                                               workflow_schema, status, scope, disk, project_folder,
+                                               entity_name, resolution, start_frame, fps, version, client_label,
+                                               flag_status
+                                               )
+                elif object_name == 'Shot_Creation':
+                    flag_status = request.POST.get('flag_status')
+                    if flag_status == 'update':
+                        parent_object_type = 'None'
+                        task_template = 'None'
+                        shot_type = request.POST.get('shot_type')
+                        name = request.POST.get('name')
+                        description = request.POST.get('description')
+                        assigned_users = "None"
+                        status = request.POST.get('status')
+                        priority = request.POST.get('priority')
+                        scope = "None"
+                        entity_name = request.POST.get('entity_name')
+                        version = "None"
+                        frame_start = request.POST.get('frame_start')
+                        frame_end = request.POST.get('frame_end')
+                        key_shot = "None"
+                        key_frames = request.POST.get('key_frames')
+                        frame_handles = "None"
+                        prj_name = request.POST.get('prj_name')
+                        self.sequence_name = request.POST.get('sequence_name')
+                        old_shot_name = '' #request.POST.get('old_shot_name')
+                    else:
+                        parent_object_type = request.POST.get('parent_object_type')
+                        task_template = request.POST.get('task_template')
+                        shot_type = request.POST.get('shot_type')
+                        name = request.POST.get('name')
+                        description = request.POST.get('description')
+                        assigned_users = '' #request.POST.get('assigned_users')
+                        #assigned_users = assigned_users[:-1]
+                        status = request.POST.get('status')
+                        priority = request.POST.get('priority')
+                        scope = request.POST.get('scope')
+                        entity_name = request.POST.get('entity_name')
+                        version = request.POST.get('version')
+                        frame_start = request.POST.get('frame_start')
+                        frame_end = request.POST.get('frame_end')
+                        key_shot = request.POST.get('key_shot')
+                        key_frames = request.POST.get('key_frames')
+                        frame_handles = request.POST.get('frame_handles')
+                        prj_name = request.POST.get('prj_name')
+                        self.sequence_name = request.POST.get('sequence_name')
+                        old_shot_name = ''
+
+                    data = self.create_shot(parent_object_type, task_template, shot_type, name, description,
+                                            assigned_users, status, priority, scope, entity_name, version,
+                                            frame_start, frame_end, key_shot, key_frames, frame_handles,
+                                            prj_name, self.sequence_name, flag_status, old_shot_name,
+                                            )
+                elif object_name == 'Sequence_Creation':
+                    flag_status = request.POST.get('flag_status')
+                    if flag_status == 'update':
+                        parent_object_type = 'None'
+                        task_template = 'None'
+                        sequence_type = 'None'
+                        self.sequence_name = request.POST.get('new_sequence_name')
+                        description = request.POST.get('description')
+                        assigned_users = 'None'
+                        status = 'None'
+                        priority = 'None'
+                        scope = 'None'
+                        entity_name = request.POST.get('entity_name')
+                        version = 'None'
+                        prj_name = request.POST.get('prj_name')
+                        old_seq_name = '' #request.POST.get('old_seq_name')
+                    else:
+                        parent_object_type = request.POST.get('parent_object_type')
+                        task_template = request.POST.get('task_template')
+                        sequence_type = request.POST.get('sequence_type')
+                        self.sequence_name = request.POST.get('sequence_name')
+                        description = request.POST.get('description')
+                        assigned_users = request.POST.get('assigned_users')
+                        assigned_users = assigned_users[:-1]
+
+                        status = request.POST.get('status')
+                        priority = request.POST.get('priority')
+                        scope = request.POST.get('scope')
+                        entity_name = request.POST.get('entity_name')
+                        version = request.POST.get('version')
+                        prj_name = request.POST.get('prj_name')
+                        old_seq_name = ''
+
+                    data = self.create_sequence(parent_object_type, task_template, sequence_type, self.sequence_name,
+                                                description, assigned_users, status, priority, scope, entity_name,
+                                                version, prj_name, flag_status, old_seq_name
+                                                )
+                elif object_name == 'Asset_Creation':
+                    flag_status = request.POST.get('flag_status')
+                    if flag_status == 'update':
+                        asset_type = request.POST.get('asset_type')
+                        asset_name = request.POST.get('asset_name')
+                        asset_desc = request.POST.get('asset_desc')
+                        asset_status = request.POST.get('asset_status')
+                        asset_priority = request.POST.get('asset_priority')
+                        asset_entity_name = request.POST.get('asset_entity_name')
+                        asset_version = request.POST.get('asset_version')
+                        asset_client_label = request.POST.get('asset_client_label')
+                        asset_sub_category = request.POST.get('asset_sub_category')
+                        prj_name = request.POST.get('prj_name')
+                    else:
+                        asset_type = request.POST.get('asset_type')
+                        asset_name = request.POST.get('asset_name')
+                        asset_desc = request.POST.get('asset_desc')
+                        asset_status = request.POST.get('asset_status')
+                        asset_priority = request.POST.get('asset_priority')
+                        asset_entity_name = request.POST.get('asset_entity_name')
+                        asset_version = request.POST.get('asset_version')
+                        asset_client_label = request.POST.get('asset_client_label')
+                        asset_sub_category = request.POST.get('asset_sub_category')
+                        prj_name = request.POST.get('prj_name')
+
+                    data = self.create_asset(
+                        asset_type, asset_name, asset_desc, asset_status, asset_priority,
+                        asset_entity_name, asset_version, asset_client_label,
+                        asset_sub_category, prj_name, flag_status
+                    )
+                elif object_name == 'Task_Creation':
+                    flag_status = request.POST.get('flag_status')
+                    if flag_status == 'create':
+                        task_type = request.POST.get("task_type")
+                        task_name = request.POST.get('task_name')
+                        description = request.POST.get('description')
+                        assignee = request.POST.get('assignee')
+                        bid_days = request.POST.get('bid_days')
+                        task_status = request.POST.get('task_status')
+                        task_priority = request.POST.get('task_priority')
+                        start_date = request.POST.get('start_date')
+                        due_date = request.POST.get('due_date')
+                        task_scope = request.POST.get('task_scope')
+                        entity_name = request.POST.get('entity_name')
+                        project_name = request.POST.get("project_name")
+                        sequence_name = request.POST.get("sequence_name")
+                    else:
+                        task_type = request.POST.get("task_type")
+                        task_name = request.POST.get('task_name')
+                        description = request.POST.get('description')
+                        assignee = request.POST.get('assignee')
+                        bid_days = request.POST.get('bid_days')
+                        task_status = request.POST.get('task_status')
+                        task_priority = request.POST.get('task_priority')
+                        start_date = request.POST.get('start_date')
+                        due_date = request.POST.get('due_date')
+                        task_scope = request.POST.get('task_scope')
+                        entity_name = request.POST.get('entity_name')
+                        project_name = request.POST.get("project_name")
+                        sequence_name = request.POST.get("sequence_name")
+                    data = self.create_task(
+                        task_type, task_name, description, assignee, bid_days,
+                        task_status, task_priority, start_date, due_date,
+                        task_scope, entity_name, flag_status, project_name, sequence_name
+                    )
+
+                elif object_name == 'display_project_thumbnail_manner':
+                    project_name = ''
+                    project_ftrack_id = ''
+                    data = self.display_project_thumbnail_manner(project_name, project_ftrack_id)
+
+                elif object_name == 'display_sequence_details':
+                    project_name = request.POST.get('project_name')
+                    data = self.display_sequence_details(project_name, seq_parent_id='')
+                elif object_name == 'display_shot_details':
+                    data = self.display_shot_details(request.POST.get('seq_name'), request.POST.get('prj_name'))
+                elif object_name == 'display_asset_details':
+                    data = self.display_asset_details(request.POST.get('project_name'))
+                elif object_name == 'display_task_details':
+                    project_name = request.POST.get('project_name')
+                    name = request.POST.get('name')
+                    data = self.display_task_details(project_name, name)
+                elif object_name == 'get_details':
+                    flag = request.POST.get('flag')
+                    name = seq_name = shot_name = asset_name = ''
+                    if flag == 'project':
+                        name = request.POST.get('project_name')
+                        seq_name = request.POST.get("sequence_name")
+                        shot_name = request.POST.get("shot_name")
+                        asset_name = request.POST.get("asset_name")
+                    elif flag == 'sequence':
+                        name = request.POST.get('project_name')
+                        seq_name = request.POST.get("sequence_name")
+                        shot_name = request.POST.get("shot_name")
+                        asset_name = request.POST.get("asset_name")
+                    elif flag == 'shot':
+                        name = request.POST.get('project_name')
+                        seq_name = request.POST.get("sequence_name")
+                        shot_name = request.POST.get("shot_name")
+                        asset_name = request.POST.get("asset_name")
+                    elif flag == 'asset':
+                        name = request.POST.get('project_name')
+                        seq_name = request.POST.get("sequence_name")
+                        shot_name = request.POST.get("shot_name")
+                        asset_name = request.POST.get("asset_name")
+                    data = self.get_details_before_update(name, flag, seq_name, shot_name, asset_name)
+                elif object_name == 'Task_types':
+                    type_name = request.POST.get('type_name');
+                    data = self.get_task_types(type_name)
 
             if request.FILES:
                 data = self.attach_files(request)
 
-            #            pprint(data)
+            #pprint(data)
             data = json.dumps(data)
             return HttpResponse(data, content_type="application/json")
 
@@ -337,7 +573,7 @@ class Activity:
             if (username in json_data) and (
                     json_data[username]['role'] == 'Supervisor' or json_data[username]['role'] == 'Co-ordinator'):
                 self.user_role = json_data[username]['role']
-                self.users_columns = (',').join(json_data[username]['columns'])
+                self.users_columns = ','.join(json_data[username]['columns'])
 
     def get_projects(self):
         """
@@ -1006,8 +1242,6 @@ class Activity:
 
         my_query = "AssetVersion where %s is '%s' %s order by date desc" % (parent_id, my_id, task_key)
 
-        #	print my_query
-
         query = self.session.query(my_query)
 
         return query
@@ -1179,7 +1413,7 @@ class Activity:
 
         if task_name in self.stereo_tasks:
             obj_shot_asset = self.session.query(
-                'ShotAssetBuild where id is "%s" and name is "Stereo"' % (parent_id)).first()
+                'ShotAssetBuild where id is "%s" and name is "Stereo"' % parent_id).first()
             if obj_shot_asset:
                 obj_parent = obj_shot_asset
             else:
@@ -1606,6 +1840,12 @@ class Activity:
         # Get task details
         task_hash = {}
 
+	task_temp_data = self.getTasksTemplate()
+        asset_types = self.get_asset_types()
+
+        task_hash['task_temp_data'] = task_temp_data
+        task_hash['asset_types'] = asset_types
+
         self.get_user_details()
         task_hash['emp_code'] = 'blank'
         if username in self.employee_details:
@@ -1615,6 +1855,35 @@ class Activity:
         task_hash['first_name'] = user['first_name']
 
         task_hash['data'] = {'projects': self.projects, 'user_role': self.user_role}
+
+	statuses = self.allStatus()
+        list_statuses = list()
+        for ele in statuses:
+            list_statuses.append((ele['id'], ele['name']))
+
+	if request.method == "POST":
+            project_creation_form = CreateProject(request.POST)
+            shot_creation_form = CreateShot(request.POST)
+            sequence_creation_form = CreateSequence(request.POST)
+            asset_creation_form = CreateAsset(request.POST)
+            task_creation_form = CreateTask(request.POST, list_statuses)
+
+            if shot_creation_form.is_valid() and project_creation_form.is_valid() \
+                    and sequence_creation_form.is_valid() and asset_creation_form.is_valid()\
+                    and task_creation_form.is_valid():
+                return HttpResponseRedirect('create_entities.html')
+        else:
+            project_creation_form = CreateProject()
+            shot_creation_form = CreateShot()
+            sequence_creation_form = CreateSequence()
+            asset_creation_form = CreateAsset()
+            task_creation_form = CreateTask(list_statuses)
+
+	task_hash['shot_form'] = shot_creation_form
+	task_hash['project_form'] = project_creation_form
+	task_hash['sequence_form'] = sequence_creation_form
+	task_hash['asset_form'] = asset_creation_form
+	task_hash['task_form'] = task_creation_form
 
         return render(request, 'create_entities.html', task_hash)
 
@@ -2574,8 +2843,12 @@ class Activity:
             if not match:
                 success_dict = [{'status': 'Invalid Destination'}]
             else:
+                os.system("sshpass -p %s ssh -tty -o StrictHostKeyChecking=no pip@192.168.1.36 sudo chown -R pip:prod %s" % (
+                    self.password_str, destined))
                 os.system("sshpass -p %s ssh -tty -o StrictHostKeyChecking=no pip@192.168.1.36 sudo chmod 775 %s" % (
                     self.password_str, destined))
+
+                time.sleep(5)
                 import ase_prod_srv
                 self.ftp, self.sftp = ase_prod_srv.makeServerConnection()
                 for x in versions:
@@ -2741,10 +3014,6 @@ class Activity:
 
                     user_details['status'] = status
                     user_details['mailing_destination'] = mailing_destination
-
-                    os.system(
-                        "sshpass -p %s ssh -tty -o StrictHostKeyChecking=no pip@192.168.1.36 sudo chown -R pip:prod %s" % (
-                            self.password_str, destined))
 
                     self.user_details_log.append(user_details)
                     success_dict = [{'status': 'Upload Complete'}]
@@ -2985,3 +3254,639 @@ class Activity:
         s.sendmail(sender_mail, receiver_mail, msg.as_string())
         print "Mail Send from %s to %s" % (sender_mail, receiver_mail)
         s.quit()
+
+
+    '''
+        Author:- Kunal Jamdade
+        Following code creates project form,
+        shot form and sequence form
+        and then renders it to template file
+
+    '''
+    def create_project_form(self, request):
+        template_name = 'project_creation.html'
+
+        username = request.user.username
+        if not username:
+            return HttpResponseRedirect('/login/')
+        self.username = username
+
+        task_hash = {}
+        task_temp_data = self.getTasksTemplate()
+        asset_types = self.get_asset_types()
+
+        task_hash['task_temp_data'] = task_temp_data
+        task_hash['asset_types'] = asset_types
+
+        task_hash['data'] = {
+            'projects': self.get_projects(), 'columns': self.get_user_columns(username), 'all_tasks': self.all_tasks
+        }
+
+        statuses = self.allStatus()
+        list_statuses = list()
+        for ele in statuses:
+            list_statuses.append((ele['id'], ele['name']))
+        pprint(list_statuses)
+        if request.method == "POST":
+            project_creation_form = CreateProject(request.POST)
+
+            shot_creation_form = CreateShot(request.POST)
+            sequence_creation_form = CreateSequence(request.POST)
+            asset_creation_form = CreateAsset(request.POST)
+            task_creation_form = CreateTask(request.POST, list_statuses)
+
+            if shot_creation_form.is_valid() and project_creation_form.is_valid() \
+                    and sequence_creation_form.is_valid() and asset_creation_form.is_valid()\
+                    and task_creation_form.is_valid():
+                return HttpResponseRedirect(template_name)
+        else:
+            project_creation_form = CreateProject()
+            shot_creation_form = CreateShot()
+            sequence_creation_form = CreateSequence()
+            asset_creation_form = CreateAsset()
+            task_creation_form = CreateTask(list_statuses)
+
+        return render(request, template_name,
+                      {
+                          'shot_form': shot_creation_form, 'project_form': project_creation_form,
+                          'sequence_form': sequence_creation_form, 'asset_form': asset_creation_form,
+                          'task_form': task_creation_form, 'task_hash': task_hash
+                      }
+                      )
+
+    '''
+        Ajax call function to create
+        project collection inside DB
+        using monngoengine
+    '''
+
+    def create_project(self,
+                       project_name, project_code, start_date, end_date,
+                       workflow_schema, status, scope, disk, project_folder,
+                       entity_name, resolution, start_frame, fps, version,
+                       client_label, flag_status
+                       ):
+        if flag_status == 'Update':
+
+            project_obj = self.session.query('Project where name is' + project_name).first()
+            project_obj['start_date'] = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            project_obj['end_date'] = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            if not project_folder == '':
+                project_obj['root'] = project_folder
+            if not resolution == '':
+                project_obj['custom_attributes']['resolution'] = resolution
+            if not start_frame == '':
+                project_obj['custom_attributes']['startFrame'] = start_frame
+            if not fps == '':
+                project_obj['custom_attributes']['fps'] = fps
+            if not client_label == '':
+                project_obj['custom_attributes']['clientlabel_proj'] = client_label
+            self.session.commit()
+        else:
+            import ftrack
+            workflow = ftrack.getProjectSchemes()[-3]
+            self.set_ftrack_project(project_name, project_code, workflow)
+            self.project = self.get_ftrack_project_object()
+            self.project.set('startdate', datetime.datetime.strptime(start_date, "%Y-%m-%d"))
+            self.project.set('enddate', datetime.datetime.strptime(end_date, "%Y-%m-%d"))
+            self.project.set('status', self.project.get('status'))
+            self.project.set('root', project_folder)
+            self.project.set('entity_name', entity_name)
+            self.project.set('resolution', resolution)
+            self.project.set('startFrame', start_frame)
+            self.project.set('fps', fps)
+            self.project.set('ver', version)
+            self.project.set('clientlabel_proj', client_label)
+
+        return True
+
+
+    '''
+        Ajax call function to create
+        shot collection inside DB
+        using monngoengine
+    '''
+    def create_shot(self, parent_object_type, task_template, shot_type, name,
+                    description, assigned_users, status, priority, scope, entity_name,
+                    version, frame_start, frame_end, key_shot, key_frames, frame_handles,
+                    prj_name, sequence_name, flag_status, old_shot_name
+                    ):
+
+        if flag_status == 'update':
+
+            print sequence_name, name, prj_name
+            shot_result = self.session.query("Shot where name is {0} and parent.name is {1} and project.name is {2}"
+                                             .format(name, sequence_name, prj_name)).first()
+            shot_obj = ''
+            print shot_result.keys()
+            # for ele in shot_result:
+            #     if ele['parent']['name'] == sequence_name:
+            #         shot_obj = ele
+
+            if not name == '':
+                shot_result['name'] = name
+            if not description == '':
+                shot_result['description'] = description
+            if not frame_start == '':
+                shot_result['custom_attributes']['fstart'] = frame_start
+            if not frame_start == '':
+                shot_result['custom_attributes']['fend'] = frame_end
+
+            self.session.commit()
+
+        else:
+            import ftrack
+            prj_list = ftrack.getProjects()
+            prj_obj = [prj for prj in prj_list if prj_name == prj.getName()][0]
+            seq_list = prj_obj.getSequences()
+            seq_obj = [seq for seq in seq_list if sequence_name == seq.getName()][0]
+
+            shot_object = seq_obj.createShot(name)
+            shot_object.set('description', description)
+            shot_object.set('entity_name', entity_name)
+            shot_object.set('ver', version)
+            shot_object.set('fstart', frame_start)
+            shot_object.set('fend', frame_end)
+            shot_object.set('keyframes', key_frames)
+
+        return True
+
+    '''
+        Ajax call function to create
+        sequence collection inside DB
+        using monngoengine
+    '''
+
+    def create_sequence(self, parent_object_type, task_template, sequence_type, sequence_name, description,
+                        assigned_users, status, priority, scope, entity_name, version, prj_name,
+                        flag_status, old_seq_name
+                        ):
+
+        import ftrack
+
+        if flag_status == 'update':
+
+            seq_obj = self.session.query('Sequence where name is {0} and project.name is {1}'
+                                         .format(sequence_name, prj_name)).first()
+            if not sequence_name == '':
+                seq_obj['name'] = sequence_name
+            if not description == '':
+                seq_obj['description'] = description
+            if not priority == '':
+                seq_obj['priority']['name'] = priority
+            self.session.commit()
+        else:
+
+            list_prjs = ftrack.getProjects()
+            prj_obj = ''
+            for ele in list_prjs:
+                if prj_name == ele.getName():
+                    prj_obj = ele
+                    break
+
+            sequence_object = prj_obj.createSequence(sequence_name)
+            sequence_object.set('description', description)
+            sequence_object.set('entity_name', entity_name)
+            sequence_object.set('ver', version)
+
+        return True
+
+    '''
+            Ajax call function to create
+            asset collection inside DB
+            using monngoengine
+    '''
+    def create_asset(self, asset_type, asset_name, asset_desc, asset_status, asset_priority,
+                     asset_entity_name, asset_version, asset_client_label,
+                     asset_sub_category, prj_name, flag_status
+                     ):
+
+        if flag_status == 'update':
+            asset_obj = self.session.query('AssetBuild where name is "%s" and project.name is "%s"' % (asset_name, prj_name)
+                                           ).first()
+            if not asset_name == '':
+                asset_obj['name'] = asset_name
+            if not asset_desc == '':
+                asset_obj['description'] = asset_desc
+            if not asset_client_label == '':
+                asset_obj['custom_attributes']['clientlabel_ab'] = asset_client_label
+            if not asset_desc == '':
+                asset_obj['custom_attributes']['subcat'] = asset_sub_category
+
+            self.session.commit()
+        else:
+            import ftrack
+            list_prj = ftrack.getProjects()
+            prj_obj = ''
+            for ele in list_prj:
+                if prj_name == ele.getName():
+                    prj_obj = ele
+                    break
+            list_asset_build_types = prj_obj.getAssetBuildTypes()
+            asset_type_id = ''
+            for ele in list_asset_build_types:
+                if str(asset_type) == ele.get('name'):
+                    asset_type_id = ele.get('typeid')
+                break
+
+            asset_object = prj_obj.createAssetBuild(asset_name, asset_type_id)
+
+            asset_object.set('description', asset_desc)
+            asset_object.set('entity_name', asset_entity_name)
+            asset_object.set('ver', asset_version)
+            asset_object.set('clientlabel_ab', asset_client_label)
+            asset_object.set('subcat', asset_sub_category)
+
+        return True
+
+    def create_task(self,task_type, task_name, description, assignee, bid_days,
+                        task_status, task_priority, start_date,
+                        due_date, task_scope, entity_name, flag_status, project_name,
+                    sequence_name
+                    ):
+
+        if flag_status == 'create':
+            import ftrack
+            project_list = ftrack.getProjects()
+            seq_obj = ''
+            for ele in project_list:
+                if project_name == ele.getName():
+                    sequence_list = ele.getSequences()
+                    for seq_ele in sequence_list:
+                        if sequence_name == seq_ele.getName():
+                            seq_obj = seq_ele
+                            break
+                    break
+            task_object = seq_obj.createTask(task_name, task_type, task_status)
+            task_object.set('description', description)
+            task_object.set('bid', bid_days)
+            task_object.set('startdate', start_date)
+            task_object.set('enddate', due_date)
+            task_object.set('entity_name', entity_name)
+        else:
+            task_obj = self.session.query("Task where name is %s and parent.name is %s and project.name is %s" %
+                                          (task_name, sequence_name, project_name)
+                                          )
+            if not task_type == '':
+                task_obj['task']['name'] = task_type
+            if not description == '':
+                task_obj['description'] = description
+            task_obj['bid'] = bid_days
+            if not task_status == '':
+                task_obj['status']['name'] = task_status
+            if not task_priority:
+                task_obj['priority']['name'] = task_priority
+            if not start_date == '':
+                task_obj['start_date'] = start_date
+            if not due_date == '':
+                task_obj['end_date'] = due_date
+
+            self.session.commit()
+
+        return True
+
+    '''
+        getter and setter to get the project name
+    '''
+    def set_ftrack_project(self, project_name, project_code, workflow):
+        import ftrack
+
+        """
+            Create a project
+            :param fullname: ``str`` the long name of the project
+            :param name: ``str`` the shot name that will be used in scripts
+            :param workflow: ``ProjectScheme`` the project scheme that should be used in this project. Defines types and statuses.
+            :rtype: ``Project``
+        """
+        self.project = ftrack.createProject(project_name, project_code, workflow)
+
+    def get_ftrack_project_object(self):
+        return self.project
+
+    '''
+        function responsible to show the 
+        project data in thumbnail format
+    '''
+    def display_project_thumbnail_manner(self, project_name, project_ftrack_id):
+        db = self.mongo_database
+        project_list = []
+        collection_names_list = db.collection_names()
+        # pprint([self.mongo_database[str(i)] for i in collection_names_list])
+        # new_project_name = project_name.lower() + "_tasks"
+        # collection = self.mongo_database[str(new_project_name)]
+        # print collection
+        for element in collection_names_list:
+            collection = self.mongo_database[str(element)]
+            result = collection.find(
+                {
+                    'type': 'Project'
+                },
+                {
+                    "_id": 0, "name": 1,
+                    "ftrack_status": 1, "startdate": 1,
+                    "enddate": 1
+                }
+            )
+            for elements in result:
+                project_dict = {}
+                for key, value in elements.iteritems():
+                    a = ''
+                    if 'ftrack_status' not in key:
+                        project_dict['ftrack_status'] = "NA"
+                    if key == 'startdate' or key == "enddate":
+                        if 'T' in value:
+                            if "." in value:
+                                a = datetime.datetime.strptime(str(value), "%Y-%m-%dT%H:%M:%S.%f")
+                                val = datetime.datetime.strftime(a, "%Y-%m-%d")
+                            else:
+                                a = datetime.datetime.strptime(str(value), "%Y-%m-%dT%H:%M:%S")
+                                val = datetime.datetime.strftime(a, "%Y-%m-%d")
+                            project_dict[key] = val
+                        else:
+                            project_dict[key] = str(value).encode("utf-8").split(" ")[0]
+                    else:
+                        project_dict[key] = value
+                project_list.append(project_dict)
+        return project_list
+
+    '''
+        function to show the details sequence wise 
+    '''
+    def display_sequence_details(self, prj_name, seq_parent_id):
+        db = self.mongo_database
+        new_prj_name = prj_name.lower() + "_tasks"
+        collection = self.mongo_database[new_prj_name]
+        fetch_project_name = self.session.query('Project where name is'+prj_name).first()
+        fetch_project_id = fetch_project_name.get('id')
+        sequence_list = []
+
+        result = collection.find(
+            {
+                'parent_id': fetch_project_id,
+                'object_type': 'Sequence'
+            },
+            {
+                "type": 1, "name": 1,
+                "ftrack_status": 1, "_id": 0
+            }
+        )
+        for each in result:
+            sequence_dict = {}
+            for key, value in each.iteritems():
+                if value:
+                    sequence_dict[key] = value
+                else:
+                    sequence_dict[key] = "NA"
+            sequence_list.append(sequence_dict)
+
+        return sequence_list
+
+    '''
+        function to show details shot wise  
+    '''
+    def display_shot_details(self, seq_name, prj_name):
+        db = self.mongo_database
+        new_prj_name = prj_name.lower() + "_tasks"
+
+        collection = self.mongo_database[new_prj_name]
+        shot_list = []
+        fetch_seq_name = self.session.query('Sequence where name is' + seq_name)
+        fetch_seq_id = ''
+        for i in fetch_seq_name:
+            if i['parent']['name'] == prj_name:
+                fetch_seq_id = i['id']
+
+        result = collection.find(
+            {
+                # 'type':
+                #     {
+                #         "$in":
+                #             [
+                #                 "Static shot",
+                #                 "Dynamic"
+                #             ]
+                #     },
+                'object_type': 'Shot',
+                'parent_id': fetch_seq_id
+            },
+            {
+                "type": 1, "ftrack_status": 1,
+                "_id": 0, "name": 1
+            }
+        )
+        for ele in result:
+            shot_dict = {}
+            for key, value in ele.iteritems():
+                if value:
+                    shot_dict[key] = value
+                else:
+                    shot_dict[key] = "NA"
+            shot_list.append(shot_dict)
+        return shot_list
+
+
+    '''
+    function to show details asset wise
+    '''
+    def display_asset_details(self, project_name):
+        db = self.mongo_database
+        new_prj_name = project_name.lower() + "_tasks"
+        collection = self.mongo_database[new_prj_name]
+        asset_list = []
+        fetch_prject_name = self.session.query("Project where name is" + project_name).first()
+        fetch_project_id = fetch_prject_name.get('id')
+
+        result = collection.find(
+            {
+                'object_type': 'Asset Build',
+                'parent_id': fetch_project_id
+            },
+            {
+                'type': 1, "ftrack_status": 1,
+                "_id": 0, "name": 1
+            }
+        )
+        for ele in result:
+            asset_dict = {}
+            for key, value in ele.iteritems():
+                if value:
+                    asset_dict[key] = value
+                else:
+                    asset_dict[key] = "NA"
+            asset_list.append(asset_dict)
+        return asset_list
+
+    '''
+        function to show task details
+    '''
+    def display_task_details(self, project_name, name):
+        new_prj_name = project_name.lower() + "_tasks"
+        collection = self.mongo_database[new_prj_name]
+        task_list = []
+        fetch_sequence_name = self.session.query("Sequence where name is %s and project.name is %s" %
+                                                 (name, project_name)
+                                                 ).first()
+        seq_id = fetch_sequence_name['id']
+        result = collection.find(
+            {
+                "object_type": "Task",
+                "parent_id": seq_id
+            })
+    '''
+        function to get the details before
+        update method is called
+    '''
+    def get_details_before_update(self, name, flag, seq_name, shot_name, asset_name):
+
+        collection = self.mongo_database[name.lower() + "_tasks"]
+        update_data_list = []
+        if flag == 'project':
+            result = collection.find(
+                {
+                    'name': name
+                },
+                {
+                    "_id": 0, "ftrack_id": 0,
+                    "object_type": 0, #"project": 0,
+                    "updated_on": 0, "projectschemeid": 0,
+                    "added_on": 0, "bid": 0, "parent_id": 0,
+                    "parent_object_name": 0, "endframe": 0
+                }
+            )
+            for ele in result:
+                update_dict = {}
+                for k, v in ele.iteritems():
+                    if 'startdate' in k or 'enddate' in k:
+                        if 'T' in v:
+                            a = datetime.datetime.strptime(str(v), "%Y-%m-%dT%H:%M:%S")
+                            val = datetime.datetime.strftime(a, "%Y-%m-%d")
+                            update_dict[k] = val
+                        else:
+                            update_dict[k] = str(v).encode("utf-8").split(" ")[0]
+                    else:
+                        update_dict[k] = v
+                update_data_list.append(update_dict)
+            print "project details"
+            pprint(update_data_list)
+        elif flag == 'sequence':
+            project_obj = self.session.query("Project where name is"+name).first()
+            project_id = project_obj['id']
+            result = collection.find(
+                {
+                    'name': seq_name,
+                    #"parent_id": project_id
+                },
+                {
+                    "_id": 0, "ftrack_id": 0,
+                    "object_type": 0, #"project": 0,
+                    "updated_on": 0, "projectschemeid": 0,
+                    "added_on": 0, "bid": 0, "parent_id": 0,
+                    "parent_object_name": 0, "endframe": 0,
+                    'startdate': 0, 'enddate': 0
+                }
+            )
+            for ele in result:
+                update_dict = {}
+                for k, v in ele.iteritems():
+                        update_dict[k] = v
+                update_data_list.append(update_dict)
+            print "sequence details"
+            pprint(update_data_list)
+        elif flag == 'asset':
+            project_obj = self.session.query("Project where name is"+name).first()
+            project_id = project_obj['id']
+            result = collection.find(
+                {
+                    'name': asset_name,
+                    "parent_id": project_id
+                },
+                {
+                    "_id": 0, "ftrack_id": 0,
+                    "object_type": 0, #"project": 0,
+                    "updated_on": 0, "projectschemeid": 0,
+                    "added_on": 0, "bid": 0, "parent_id": 0,
+                    "parent_object_name": 0, "endframe": 0,
+                    'startdate': 0, 'enddate': 0
+                }
+            )
+            for ele in result:
+                update_dict = {}
+                for k, v in ele.iteritems():
+                        update_dict[k] = v
+                update_data_list.append(update_dict)
+            print "asset details"
+            pprint(update_data_list)
+        elif flag == 'shot':
+            shot_obj = self.session.query(
+                "Shot where name is {0} and parent.name is {1} and project.name is {2}".format(
+                    shot_name, seq_name, name
+                )
+            ).first()
+
+            start_frame = shot_obj['custom_attributes']['fstart']
+            print start_frame
+            end_frame = shot_obj['custom_attributes']['fend']
+            print end_frame
+
+            sequence_obj = self.session.query("Sequence where name is {0} and project.name is {1}"
+                                              .format(seq_name, name)).first()
+            sequence_id = sequence_obj['id']
+            result = collection.find(
+                {
+                    'name': shot_name,
+                    "parent_id": sequence_id
+                },
+                {
+                    "_id": 0, "ftrack_id": 0,
+                    "object_type": 0, #"project": 0,
+                    "updated_on": 0, "projectschemeid": 0,
+                    "added_on": 0, "bid": 0, "parent_id": 0,
+                    "parent_object_name": 0, "endframe": 0,
+                    'startdate': 0, 'enddate': 0
+                }
+            )
+            for ele in result:
+                update_dict = {}
+                for k, v in ele.iteritems():
+                        update_dict[k] = v
+                if 'fstart' not in ele:
+                    update_dict['fstart'] = start_frame
+                if 'fend' not in ele:
+                    update_dict['fend'] = end_frame
+
+                update_data_list.append(update_dict)
+            print "shot details"
+            pprint(update_data_list)
+
+        return update_data_list
+
+    def get_task_types(self, type_name):
+        list_type_choices = self.getTasksTemplate()
+        type_name = type_name.strip().split(" ")[0]
+
+        return list_type_choices[type_name][type_name]
+
+    def update_sequence_details(self, prj_name):
+        db = self.mongo_database
+        fetch_prj_ids = db.create_project_document.find(
+            {
+                "project_name": prj_name
+            },
+            {
+                "_id": 0,
+                "ftrack_id": 1
+            }
+        )
+        sequence_list = ''
+        for ids in fetch_prj_ids:
+            result = db.create_sequence_document.find(
+                {
+                    'parent_id': ids['ftrack_id']
+                },
+                {
+                    'name': 1,
+                    "_id": 0
+                }
+            )
+            sequence_list = [ele for ele in result]
+        return sequence_list

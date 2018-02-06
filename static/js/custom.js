@@ -4396,6 +4396,1423 @@ function secondsTimeSpanToHMS(s) {
     return h+":"+(m < 10 ? '0'+m : m)+":"+(s < 10 ? '0'+s : s); //zero padding on minutes and seconds
 }
 
+/*
+    Author Kunal Jamdade
+*/
+
+function create_project_click(){
+
+    $("#id_project_name").prop("disabled", false);
+    $('#id_project_code').prop("disabled", false);
+    $("#update_details").hide();
+    $("#submit_details").show();
+    $('#projectModal').modal('toggle');
+}
+/*
+    Modal options to display the div
+    on click More, Storage, Project Config
+*/
+/*
+================> Project Modal <=======================
+*/
+
+// More Option
+
+/*$('.modal-body #a_collapse_more').click(function(){
+    $('#collapse_more').toggle();
+});*/
+
+// Storage Option
+$('#a_collapse_storage').click(function(){
+   $('#collapse_storage').toggle();
+});
+
+// Project Config Option
+$('#a_project_config').click(function(){
+   $('#collapse_project_config').toggle();
+});
+
+/*
+===============> Sequence Modal <=====================
+*/
+
+// More Option
+$('#a_collapse_sequence_more').click(function(){
+    $('#collapse_sequence_more').toggle();
+});
+
+// Project Config
+$('#a_collapse_sequence_project').click(function(){
+    $('#collapse_sequence_project_config').toggle();
+});
+
+/*
+===============> Shot Modal <=====================
+*/
+
+// More Option
+$('#a_collapse_shot_more').click(function(){
+    $('#collapse_shot_more').toggle();
+});
+
+// Config Option
+$('#a_collapse_shot_project').click(function(){
+   $('#collapse_shot_project_config').toggle();
+});
+
+/*
+==============> Asset Modal <===================
+*/
+//More Option
+$("#a_collapse_asset_more").click(function(){
+    $("#collapse_asset_more").toggle();
+});
+
+//Config Option
+$("#a_collapse_asset_project").click(function(){
+    $("#collapse_shot_asset_config").toggle();
+});
+
+/*
+================> Task Modal <==================
+*/
+//More Option
+$("#a_collapse_task_more").click(function(){
+    $("#collapse_task_more").toggle();
+});
+
+//Config Option
+$("#a_collapse_task_project_config").click(function(){
+    $("#collapse_task_project_config").toggle();
+});
+
+/*
+    Cancel Modal events of
+    Project, Sequence & Shot
+    and Nullifying the fields
+*/
+
+// hiding Project modal on cancel
+$("#cancel_project_details").click(function(e){
+    //$(this).closest('div modal fade').
+    $('#projectModal').modal('hide');
+    $("#collapse_storage").hide();
+    $("#collapse_project_config").hide();
+    clear_project_fields();
+});
+
+//hiding project modal on update
+/*$("#update_details").click(function(){
+
+});*/
+
+function hide_project_modal(){
+    $('#projectModal').modal('hide');
+    $("#collapse_storage").hide();
+    $("#collapse_project_config").hide();
+    clear_project_fields();
+}
+
+//clear project modal fields
+function clear_project_fields(){
+    $('#id_project_name').val('');
+    $('#id_project_code').val('');
+    $('#id_start_date').val('');
+    $('#id_end_date').val('');
+    $('#id_status').val('');
+    $('#id_scope').val('');
+    $('#id_disk').val('');
+    $('#id_project_folder').val('');
+    $('#id_entity_name').val('');
+    $('#id_resolution').val('');
+    $('#id_start_frame').val('');
+    $('#id_fps').val('');
+    $('#id_version').val('');
+    $('#id_client_label').val('');
+}
+
+// hiding Sequence Modal on cancel
+$("#cancel_sequence_details").click(function(e){
+    $('#sequenceModal').modal('hide');
+    $("#collapse_sequence_more").hide();
+    $("#collapse_sequence_project_config").hide();
+    clear_sequence_fields();
+
+});
+//to clear sequence modal fields
+function clear_sequence_fields(){
+    $('#id_sequence_name').val('');
+    $('#id_sequence_description').val('');
+    $('#id_sequence_priority').val('');
+    $('#id_sequence_entity_name').val('');
+}
+
+
+// hiding Shot Model on cancel
+$('#cancel_shot_details').click(function(){
+    $('#shotModal').modal('hide');
+    $("#collapse_shot_more").hide();
+    $('#collapse_shot_project_config').hide();
+    clear_shot_modal_fields();
+});
+
+function clear_shot_modal_fields(){
+    $('#id_shot_type').val('Static Shot');
+    $('#id_name').val('');
+    $('#id_description').val('');
+    $('#id_status').val('Not Started');
+    $('#id_priority').val('None');
+    $('#id_frame_start').val('101');
+    $('#id_frame_end').val('100');
+    $('#id_total_frames').val('0.0');
+    $('#id_frame_duration').val('0.0');
+    $('#id_key_frames').val('');
+}
+
+//on click cancel hide asset modal
+$("#cancel_asset_details").click(function(){
+    $("#assetModal").modal('hide');
+    $("#collapse_asset_more").hide();
+    $("#collapse_shot_asset_config").hide();
+    clear_asset_modal_fields();
+});
+
+function clear_asset_modal_fields(){
+    $("#id_asset_type").val('Set');
+    $("#id_asset_name").val('');
+    $("#id_asset_description").val('');
+    $("#id_asset_status").val('Not Started');
+    $("#id_asset_priority").val('Urgent');
+    $("#id_asset_entity_name").val('');
+    $("#id_asset_version").val('');
+    $("#id_asset_client_label").val('');
+    $("#id_asset_sub_category").val('');
+}
+
+// Ajax call to create project
+$('#submit_details').click(function(){
+
+    var project_name = $('#id_project_name').val().trim();
+    //$('#id_project_code').prop("disabled", true);
+    var project_code = $('#id_project_code').val().trim();
+    var start_date = $('#id_start_date').val();
+    var end_date = $('#id_end_date').val();
+    var workflow_schema = $('#id_workflow_schema').val();
+    var status = $('#id_status').val();
+    var scope = $('#id_scope').val();
+    var disk = $('#id_disk').val();
+    var project_folder = $('#id_project_folder').val();
+    var entity_name = $('#id_entity_name').val();
+    var resolution = $('#id_resolution').val();
+    var start_frame = $('#id_start_frame').val();
+    var fps = $('#id_fps').val();
+    var version = $('#id_version').val();
+    var client_label = $('#id_client_label').val();
+    var flag_status = 'create';
+
+    if(project_name == ''){
+        alert("project name field must not be empty!!!!!!!");
+        return false;
+    }
+
+    var pattern_name = /^[0-9a-zA-Z]+$/;
+    if(!pattern_name.test(project_name)){
+        alert("Project name must be alphanumeric!!!");
+        return false;
+    }
+    if(project_code == ''){
+        alert("project code field must not be empty!!!!!!!");
+        return false;
+    }
+    var pattern = /^[0-9a-zA-Z]+$/;
+    if(!pattern.test(project_code)){
+        alert("Must contain alphabets and numbers!!!");
+        return false;
+    }
+
+    if(project_name.toUpperCase() != project_name){
+        alert("Project name must be in upper case!!!!");
+        return false;
+    }
+
+    if(project_name == project_code){
+        if(project_code.toLowerCase() != project_code){
+            alert("Project code must be in lower case!!!!");
+            return false;
+        }
+    }
+
+    if(start_date == '' && end_date == ''){
+        alert("Start and end date must not be empty!!!!!!!");
+        return false;
+    }
+
+    if(start_date == ''){
+        alert("start date field must not be empty!!!!!!!");
+        return false;
+    }
+
+    if(end_date == ''){
+        alert("end date field must not be empty!!!!!!!");
+        return false;
+    }
+    //return false;
+    var edate = new Date(end_date);
+    var sdate = new Date(start_date);
+
+    if(sdate > edate){
+        alert("Start date must not exceed end date!!!!!!!");
+        return false;
+    }
+
+    else{
+        $.ajax({
+            type: "POST",
+            url: "/callajax/",
+            data : {'object_name': 'Project_Creation',
+            'project_name': project_name,
+            'project_code': project_code,
+            'start_date': start_date,
+            'end_date': end_date,
+            'workflow_schema': workflow_schema,
+            'status': status,
+            'scope': scope,
+            'disk': disk,
+            'entity_name': entity_name,
+            'resolution': resolution,
+            'start_frame': start_frame,
+            'fps': fps,
+            'version': version,
+            'client_label': client_label,
+            'project_folder': project_folder,
+            'flag_status': flag_status,
+            },
+            success: function(json){
+                alert("successfully created project!!!!");
+                $('#table_view').empty();
+                get_project_details();
+            }
+        });//end of ajax call
+    }
+    hide_project_modal();
+});// end of create project details function
+
+// Ajax to call to update project
+$('#project_id #id_project_code').prop('disabled', true);
+
+$("#update_details").click(function(){
+
+    var project_name = $('#project_id #id_project_name').val();
+    var project_code = $('#project_id #id_project_code').val();
+    var start_date = $('#project_id #id_start_date').val();
+    var end_date = $('#project_id #id_end_date').val();
+    var workflow_schema = $('#project_id #id_workflow_schema').val();
+    var status = $('#project_id #id_status').val();
+    var scope = $('#project_id #id_scope').val();
+    var disk = $('#project_id #id_disk').val();
+    var project_folder = $('#project_id #id_project_folder').val();
+    var entity_name = $('#project_id #id_entity_name').val();
+    var resolution = $('#project_id #id_resolution').val();
+    var start_frame = $('#project_id #id_start_frame').val();
+    var fps = $('#project_id #id_fps').val();
+    var version = $('#project_id #id_version').val();
+    var client_label = $('#project_id #id_client_label').val();
+    var flag_status = 'Update';
+
+    if(start_date == '' || end_date == ''){
+        alert("start or end date field must not be empty!!!!!!!");
+    }
+    /*if(end_date == ''){
+        alert("end date field must not be empty!!!!!!!");
+    }
+    if(start_date == ''){
+        alert("start date field must not be empty!!!!!!!");
+    }*/
+    else{
+        $.ajax({
+            type: "POST",
+            url: "/callajax/",
+            data : {'object_name': 'Project_Creation',
+            'project_name': project_name,
+            'project_code': project_code,
+            'start_date': start_date,
+            'end_date': end_date,
+            'workflow_schema': workflow_schema,
+            'status': status,
+            'scope': scope,
+            'disk': disk,
+            'entity_name': entity_name,
+            'resolution': resolution,
+            'start_frame': start_frame,
+            'fps': fps,
+            'version': version,
+            'client_label': client_label,
+            'project_folder': project_folder,
+            'flag_status': flag_status
+            },
+            success: function(json){
+                alert("successfully updated project!!!!");
+                get_project_details();
+            }
+        });//end of ajax call
+        hide_project_modal();
+    }
+});
+
+//Ajax call to create sequence
+$('#submit_sequence_details').click(function(){
+
+    var parent_object_type = $('#id_sequence_parent_object_type').val();
+    var task_template = $('#id_sequence_task_template').val();
+    var sequence_type = $('#id_sequence_type').val();
+    var sequence_name = $('#id_sequence_name').val().trim();
+    var description = $('#id_sequence_description').val();
+
+    var assigned_users = '';//$('#id_sequence_assignee').val();
+    var str = '';
+    /*
+        Separate multiple assigned users
+        on ,
+    */
+    /*if(assigned_users){
+        $.each(assigned_users, function(indx, value){
+            str = str + value + ",";
+        });
+    }*/
+    var status = $('#id_sequence_status').val();
+    var priority = $('#id_sequence_priority').val();
+    var scope = $('#id_sequence_scope').val();
+    var entity_name = $('#id_sequence_entity_name').val();
+    var version = $('#id_sequence_version').val();
+    var prj_name = parent_object_type;
+    var flag_status = 'create';
+
+    var pattern = /^[0-9a-zA-Z]+$/;
+    if(!pattern.test(sequence_name)){
+        alert("Must contain alphabets and numbers!!!");
+        return false;
+    }
+    if(sequence_name == ""){
+        alert("Sequence name must not be empty!!!");
+        return false;
+    }
+    else{
+        $.ajax({
+            type: "POST",
+            url: "/callajax/",
+            data : {'object_name': 'Sequence_Creation',
+            'parent_object_type': parent_object_type,
+            'task_template': task_template,
+            'sequence_type': sequence_type,
+            'sequence_name': sequence_name,
+            'description': description,
+            'assigned_users': str,
+            'status': status,
+            'priority': priority,
+            'scope': scope,
+            'entity_name': entity_name,
+            'version': version,
+            'prj_name': prj_name,
+            'flag_status': flag_status
+            },
+            success: function(json){
+                alert("successfully created shot!!!!");
+                $('#table_view').empty();
+                get_sequence_details();
+            }
+        });//end of ajax call
+        $('#sequenceModal').modal('hide');
+        $("#table_view").show();
+    }
+});// end of create sequence function
+
+//Ajax call to create shot
+$('#submit_shot_details').click(function(){
+
+    var parent_object_type = $('#id_parent_object_type').val();
+    var task_template = $('#id_task_template').val();
+    var shot_type = $('#id_shot_type').val();
+    var name = $('#id_name').val().trim();
+    var description = $('#id_description').val();
+
+    //var assigned_users = '';//$('#id_assigned_users').val();
+    /*var str = '';
+    *//*
+        Separate multiple assigned users
+        on ,
+    *//*
+    if(assigned_users){
+        $.each(assigned_users, function(indx, value){
+            str = str + value + ",";
+        });
+    }*/
+    var status = $('#id_status').val();
+    var priority = $('#id_priority').val();
+    var scope = $('#id_scope').val();
+    var entity_name = $('#id_entity_name').val();
+    var version = $('#id_version').val();
+    var frame_start = $('#id_frame_start').val();
+    var frame_end = $('#id_frame_end').val();
+
+    var key_shot = '';
+
+    var key_frames = $('#id_key_frames').val();
+    var frame_handles = $('#id_frame_handles').val();
+    var split_prj_seq = parent_object_type.split(':');
+    var prj_name =  split_prj_seq[0]
+    var sequence_name = split_prj_seq[1];
+    var flag_status = 'create';
+    if(frame_end <= frame_start){
+        alert("End frame must be higher than start frame!!!!");
+        return false;
+    }
+    var pattern = /^[0-9a-zA-Z]+$/;
+    if(!pattern.test(name)){
+        alert("Must contain alphanumeric characters!!!!");
+        return false;
+    }
+    if(name == ''){
+        alert("Shot name must not be empty!!!!!");
+        return false;
+    }
+    else{
+        $.ajax({
+            type: "POST",
+            url: "/callajax/",
+            data : {'object_name': 'Shot_Creation',
+            'parent_object_type': parent_object_type,
+            'task_template': task_template,
+            'shot_type': shot_type,
+            'name': name,
+            'description': description,
+            //'assigned_users': '',
+            'status': status,
+            'priority': priority,
+            'scope': scope,
+            'entity_name': entity_name,
+            'version': version,
+            'frame_start': frame_start,
+            'frame_end': frame_end,
+            'key_shot': key_shot,
+            'key_frames': key_frames,
+            'frame_handles': frame_handles,
+            'prj_name': prj_name,
+            'sequence_name': sequence_name,
+            'flag_status': flag_status
+            },
+            success: function(json){
+                alert("successfully created shot!!!!");
+                $('#table_view').empty();
+                get_shot_details();
+            }
+        });//end of ajax call
+        $('#shotModal').modal('hide');
+        clear_shot_modal_fields();
+    }
+});// end of create asset function
+
+
+//Ajax call to create asset
+$('#submit_asset_details').click(function(){
+
+    var asset_type = $('#id_asset_type').val();
+    var asset_name = $('#id_asset_name').val().trim();
+    var asset_desc = $('#id_asset_description').val();
+    var asset_status = $('#id_asset_status').val();
+    var asset_priority = $('#id_asset_priority').val();
+    var asset_entity_name = $('#id_asset_entity_name').val();
+    var asset_version = $('#id_asset_version').val();
+    var asset_client_label = $('#id_asset_client_label').val();
+    var asset_sub_category = $('#id_asset_sub_category').val();
+
+    var prj_name =  $("#id_linked_to").val();
+    var flag_status = 'create';
+    if(asset_name == ""){
+        alert("Asset name must not be empty!!!!");
+        return false;
+    }
+    var pattern = /^[0-9a-zA-Z]+$/;
+    if(!pattern.test(asset_name)){
+        alert("Must contain alphabets and numbers!!!");
+        return false;
+    }
+    else{
+        $.ajax({
+            type: "POST",
+            url: "/callajax/",
+            data : {'object_name': 'Asset_Creation',
+            'asset_type': asset_type,
+            'asset_name': asset_name,
+            'asset_desc': asset_desc,
+            'asset_status': asset_status,
+            'asset_priority': asset_priority,
+            'asset_entity_name': asset_entity_name,
+            'asset_version': asset_version,
+            'asset_client_label': asset_client_label,
+            'asset_sub_category': asset_sub_category,
+            'prj_name': prj_name,
+            'flag_status': flag_status
+            },
+            success: function(json){
+                alert("successfully created asset!!!!");
+                $('#table_view').empty();
+                get_asset_details();
+            }
+        });//end of ajax call
+        $('#assetModal').modal('hide');
+
+        clear_asset_modal_fields();
+    }
+});// end of create shot function
+
+/*
+    function to get the
+    asset details
+*/
+function get_asset_details(){
+    $("#previous_div").show();
+//    $('.sidebar-nav').hide();
+    $.ajax({
+        type: "POST",
+        url: "/callajax/",
+        data :{
+        "object_name" : "display_asset_details",
+        "project_name": get_project_name()
+        },
+        beforeSend: function(){
+            $("#table_view").empty();
+            create_table_display_details(type='asset');
+        },
+        success: function(json){
+            var table = $('#project_table');
+                $.each(json, function(idx, data){
+                    var row = $('<tr>');
+                    row.append("<td>" + data.name + "</td>");
+                    row.append("<td>" + data.ftrack_status + "</td>");
+                    row.append("<td>" + data.type + "</td>");
+                    //row.append("<td> --- </td>");
+                    row.append("<td>"+
+                    "<button class='btn btn-sm btn-default' type='button' onclick='create_tasks(this)'>Create Task</button>"
+                    +"<button class='btn btn-sm btn-success' type='button' onclick='update_assets(this)'>Update</button>"
+                    +"</td>");
+                    table.append(row);
+            });// end of each loop
+            $("#table_view").append(table);
+        }
+    });
+}
+function update_assets(name){
+    var asset_name = $(name).closest('tr').find('td:eq(0)').text();
+    var prj_name = get_project_name();
+    $("#id_linked_to").val(prj_name);
+    $("#id_linked_to").prop("disabled", true);
+    $('#id_asset_name').prop("disabled", true);
+    get_details_before_update(prj_name, 'asset', '', '', asset_name);
+    $("#assetModal").modal("show");
+    $("#submit_asset_details").hide();
+    $("#update_asset_details").show();
+}
+/*
+    function to update asset details
+*/
+
+$("#update_asset_details").click(function(){
+
+    var asset_type = $('#id_asset_type').val();
+    var asset_name = $('#id_asset_name').val().trim();
+    var asset_desc = $('#id_asset_description').val();
+    var asset_status = $('#id_asset_status').val();
+    var asset_priority = $('#id_asset_priority').val();
+    var asset_entity_name = $('#id_asset_entity_name').val();
+    var asset_version = $('#id_asset_version').val();
+    var asset_client_label = $('#id_asset_client_label').val();
+    var asset_sub_category = $('#id_asset_sub_category').val();
+
+    var prj_name =  $("#id_linked_to").val();
+    var flag_status = 'update';
+    if(asset_name == ""){
+        alert("Asset name must not be empty!!!!");
+        return false;
+    }
+    var pattern = /^[0-9a-zA-Z]+$/;
+    if(!pattern.test(asset_name)){
+        alert("Asset name must contain alphanumeric character!!!!");
+        return false;
+    }
+    else{
+        $.ajax({
+            type: "POST",
+            url: "/callajax/",
+            data : {'object_name': 'Asset_Creation',
+            'asset_type': asset_type,
+            'asset_name': asset_name,
+            'asset_desc': asset_desc,
+            'asset_status': asset_status,
+            'asset_priority': asset_priority,
+            'asset_entity_name': asset_entity_name,
+            'asset_version': asset_version,
+            'asset_client_label': asset_client_label,
+            'asset_sub_category': asset_sub_category,
+            'prj_name': prj_name,
+            'flag_status': flag_status
+            },
+            success: function(json){
+                alert("successfully created asset!!!!");
+                $('#table_view').empty();
+                get_asset_details();
+            }
+        });//end of ajax call
+        $('#assetModal').modal('hide');
+        clear_asset_modal_fields();
+        $('#id_asset_name').removeAttr("disabled");
+    }
+});
+
+$("#submit_task_details").click(function(){
+
+    var task_type = $("#id_task_type").val();
+    var task_name = $("#id_task_name").val();
+    var description = $("#id_task_description").val();
+    var assignee = $("#id_task_assignee").val();
+    var bid_days = $("#id_task_bid_days").val();
+    var task_status = $("#id_task_status").val();
+    var task_priority = $("#id_task_priority option:selected").val();
+    alert(task_priority);
+    var start_date = $("#id_task_start_date").val();
+    var due_date = $("#id_task_due_date").val();
+    var task_scope = $("#id_task_scope").val();
+    var entity_name = $("#id_task_entity_name").val();
+    var flag_status = 'create';
+    var linked_to = $("#id_task_linked_to").val();
+    var str = linked_to.split(":");
+    var project_name = str[0];
+    var sequence_name = str[1];
+    $.ajax({
+        type: "POST",
+        url: "/callajax/",
+        data :{
+        "object_name" : "Task_Creation",
+        "task_type": task_type,
+        "task_name": task_name,
+        "description": description,
+        "assignee": assignee,
+        "bid_days": bid_days,
+        "task_status": task_status,
+        "task_priority": task_priority,
+        "start_date": start_date,
+        "due_date": due_date,
+        "task_scope": task_scope,
+        "entity_name": entity_name,
+        "flag_status": flag_status,
+        "project_name": project_name,
+        "sequence_name": sequence_name
+        },
+        success: function(json){
+            alert("Successfully created tasks!!!!!");
+            get_task_details(project_name, sequence_name);
+        }
+    });
+    $("#taskModal").hide();
+    clear_task_fields();
+});
+// clear task fields
+function clear_task_fields(){
+    $("#id_task_type").val('Select Option');
+    $("#id_task_description").val('');
+    $("#id_task_bid_days").val('');
+    $("#id_task_start_date").val('');
+    $("#id_task_due_date").val('');
+    $("#id_task_scope").val('');
+    $("#id_task_entity_name").val('');
+
+}
+
+/*
+    function to get task
+    details sequence/asset/shot wise
+*/
+function get_task_details(project_name, name){
+
+    alert(get_project_name());
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data:{
+            "object_name": "display_task_details",
+            "project_name": project_name,
+            "name": name
+        },
+        beforeSend: function(){
+            $("#table_view").empty();
+        },
+        success: function(json){
+            var table = $('#project_table');
+
+        }
+    });
+}
+
+/*
+    function to get the project
+    details
+*/
+function get_project_details(){
+
+    $.ajax({
+        type: "POST",
+        url: "/callajax/",
+        data :{
+        "object_name" : "display_project_thumbnail_manner"
+        },
+        beforeSend: function(){
+            var create_proj = '<div class="box col-md-3" style="text-align: center;font-size: 20px;height: 209px;">\
+              <br><br>\
+              <button id="create_project" class="btn btn-primary btn-lg" data-toggle="modal" onclick="create_project_click()">+ Create Project</button>\
+          </div>';
+          $("#table_view").html(create_proj);
+        },
+        success: function(json){
+                var table = $('#project_table');
+                $.each(json, function(idx, data){
+                    new_div = '\
+			<div class="box col-md-3" style="height: 209px;background-color: #666;">\
+              <ul class="list-group">\
+                <li class="list-group-item">\
+                  <label>Project Name: &nbsp;</label><a>'+data.name+'</a>\
+                  <div style="text-align: center;">\
+                    <button class="btn btn-xs btn-primary" type="button" onclick="display_create_modal(this)">Create</button>\
+                    <button class="btn btn-xs btn-success" type="button" onclick="display_proj_modal(this)">Update</button>\
+                    <button class="btn btn-xs btn-info" type="button" onclick="display_view_modal(this)">View</button>\
+                  </div>\
+                </li>\
+                <li class="list-group-item">\
+		    <label>Ftrack Status: &nbsp;</label><strong>'+data.ftrack_status+'</strong>\
+                </li>\
+                <li class="list-group-item">\
+                  <label>Start Date: &nbsp;</label><strong>'+data.startdate+'</strong>\
+                </li>\
+                <li class="list-group-item">\
+                  <label>End Date: &nbsp;</label><strong>'+data.enddate+'</strong>\
+                </li>\
+              </ul>\
+            </div>';
+                    $("#table_view").append(new_div);
+                });
+                $("#table_view").show();
+        }
+    });// end of ajax call
+}
+
+function display_proj_modal(name){
+    project_name = $(name).closest("li").find('a').text();
+    $("#id_project_name").val(project_name);
+    $("#id_project_name").prop("disabled", true);
+    $("#id_project_code").prop("disabled", true);
+    $("#update_details").show();
+    $("#submit_details").hide()
+    $('#projectModal').modal('show');
+    get_details_before_update(project_name, 'project', '', '', '');
+}
+
+/*
+    display option to create asset,
+    sequence & shot
+*/
+function display_create_modal(name){
+    $("#first_li").show();
+    $("#second_li").show();
+    $("#fourth_li").hide();
+    $("#fifth_li").hide();
+    $("#Update_sequence_details").hide();
+    $("#submit_sequence_details").show();
+    s = $(name).closest("li").find('a').text();
+    set_project_name(s);
+    $('#createModal').modal('toggle');
+}
+
+function display_view_modal(name){
+    s = $(name).closest("li").find('a').text();
+
+    set_project_name(s);
+    $("#fourth_li").show();
+    $("#fifth_li").show();
+    $("#first_li").hide();
+    $("#second_li").hide();
+    $("#shot_li").hide();
+    $("#task_li").hide();
+    $('#createModal').modal('toggle');
+}
+
+var project_name = '';
+function set_project_name(name){
+    project_name = name;
+}
+function get_project_name(){
+    return project_name;
+}
+
+var seq_name = '';
+function set_sequence_name(name){
+    seq_name = name
+}
+function get_sequence_name(){
+    return seq_name
+}
+// on click of create_Seq show modal
+$('#create_sequence').click(function(){
+    $('#createModal').modal('hide');
+    $("#sequenceModal").modal('show');
+    //$('#id_sequence_parent_object_type').prop('disabled', true);
+    $('#id_sequence_parent_object_type').val(get_project_name());
+    $("#id_sequence_name").removeAttr('disabled');
+});
+
+//on click of create_shot show modal
+$("#create_shot").click(function(){
+    $('#createModal').modal('hide');
+
+    $("#shotModal").modal("show");
+});
+
+//on click of create_asset show modal
+$("#create_asset").click(function(){
+    //$("#choice_asset_Modal").modal('toggle');
+    $('#createModal').modal('hide');
+    $("#id_linked_to").val(get_project_name());
+    $("#id_linked_to").prop("disabled", true);
+    $("#submit_asset_details").show();
+    $("#update_asset_details").hide();
+    $("#assetModal").modal('toggle');
+});
+
+$("#view_asset").click(function(){
+    $('#createModal').modal('hide');
+//    $('.sidebar-nav').hide();
+    $("#table_view").empty();
+    get_asset_details();
+
+    $("#previous_div").show();
+    var view_asset = $('#view_asset').text();
+    set_view_option(view_asset);
+});
+
+$("#view_sequence").click(function(){
+
+    $('#createModal').modal('hide');
+//    $('.sidebar-nav').hide();
+    $("#table_view").empty();
+    get_sequence_details();
+
+    $("#previous_div").show();
+    var view_sequence = $('#view_sequence').text();
+    set_view_option(view_sequence);
+});
+
+/*
+    function to get the
+    sequence details
+*/
+function get_sequence_details(){
+    $("#previous_div").show();
+//    $('.sidebar-nav').hide();
+    $.ajax({
+        type: "POST",
+        url: "/callajax/",
+        data: {
+        "object_name": "display_sequence_details",
+        "project_name": get_project_name(),
+        },
+        beforeSend:function(){
+            $("#table_view").empty();
+            create_table_display_details(type='sequence');
+        },
+        success: function(json){
+            var table = $('#project_table');
+                $.each(json, function(idx, data){
+                    var row = $('<tr>');
+                    row.append("<td>" + data.name + "</td>");
+                    row.append("<td>" + data.ftrack_status + "</td>");
+                    row.append("<td>" + data.type + "</td>");
+                    //row.append("<td> --- </td>");
+                    row.append("<td>"+//create_shots(this)
+                    "<button class='btn btn-sm btn-default' type='button' onclick='create_options(this)'>Create</button>"+
+                    "<button class='btn btn-sm btn-success' type='button' onclick='update_sequences(this)'>Update</button>"
+                    +"<button class='btn btn-sm btn-info' type='button' onclick='display_shots(this)'>View</button></td>");
+                    table.append(row);
+            });// end of each loop
+            $("#table_view").append(table);
+        }
+    });
+}
+
+/*
+    function which displays
+    modal to create shots or tasks
+    inside sequence
+*/
+function create_options(name){
+    var seq = $(name).closest('tr').find('td:eq(0)').text(); //$("#project_table tbody tr td:first").text();
+    set_sequence_name(seq);
+
+    $("#first_li").hide();
+    $("#second_li").hide();
+    $("#fourth_li").hide();
+    $("#fifth_li").hide();
+    $("#shot_li").show();
+    $("#task_li").show();
+    $("#createModal").modal('show');
+}
+// on click of create shot button
+$("#create_shot").click(function(){
+    $("#id_name").prop("disabled",false);
+    var prj_name = get_project_name();
+    var seq_name = get_sequence_name();
+    $('#id_parent_object_type').val(prj_name + ":" + seq_name).prop('disabled', true);
+    $("#shotModal").modal('show');
+    $("#createModal").modal('hide');
+    $("#submit_shot_details").show();
+    $("#update_shot_details").hide();
+});
+
+var header_name = '';
+function set_table_header(name){
+    header_name = name
+}
+function get_table_header(){
+    return header_name;
+}
+// on click of create task button
+$("#create_task").click(function(){
+    $("#createModal").modal('hide');
+    var header_name = $("#project_table thead tr").find('th:eq(0)').text();
+    set_table_header(header_name);
+    get_task_types(get_table_header());
+    var prj_name = get_project_name();
+    var seq_name = get_sequence_name();
+    $("#id_task_linked_to").val(prj_name + ":" + seq_name);
+    $("#taskModal").modal("show");
+    $("#update_task_details").hide();
+});
+
+
+//function to get task type
+function get_task_types(type_name){
+
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data:{'object_name': 'Task_types',
+        'type_name': type_name
+        },
+        beforeSend: function(){
+            $("#id_task_type").empty();
+        },
+        success: function(json){
+            var option = "<option value=''></option>";
+            $("#id_task_type").append("<option value=''>Select Option</option>");
+            $.each(json, function(idx, data){
+                $("#id_task_type").append("<option value="+data+">"+data+"</option>");
+            });
+        }
+    });
+}
+/*
+    function to show shot
+    modal on create button click
+*/
+var s = $(name).closest("li").find('a').text();
+set_project_name(s);
+
+/*function create_shots(){
+    $("#id_name").prop("disabled",false);
+    *//*var seq = $(name).closest('tr').find('td:eq(0)').text(); //$("#project_table tbody tr td:first").text();
+    set_sequence_name(seq);*//*
+    var prj_name = get_project_name();
+    var seq_name = get_sequence_name();
+    $('#id_parent_object_type').val(prj_name + ":" + seq_name).prop('disabled', true);
+    $("#shotModal").modal('toggle');
+    $("#submit_shot_details").show();
+    $("#update_shot_details").hide();
+}*/
+/*
+    show sequence modal
+    on update click
+*/
+function update_sequences(name){
+    $("#id_sequence_parent_object_type").val(get_project_name());
+    var seq_name = $(name).closest('tr').find('td:eq(0)').text();//$("#project_table tbody tr td:first").text();
+    $("#id_sequence_name").val(seq_name);
+    $("#id_sequence_name").prop("disabled", true);
+    $("#Update_sequence_details").show();
+    $("#submit_sequence_details").hide();
+    get_details_before_update(get_project_name(), 'sequence', seq_name, '', '');
+    $("#sequenceModal").modal('show');
+}
+
+//update sequence
+$("#Update_sequence_details").click(function(){
+
+    var sequence_name = $('#id_sequence_name').val();
+    var description = $('#id_sequence_description').val();
+    var status = $('#id_sequence_status').val();
+    var priority = $('#id_sequence_priority').val();
+    var entity_name = $('#id_sequence_entity_name').val();
+    var prj_name = get_project_name();
+    //var old_seq_name = get_sequence_name();
+    var flag_status = 'update';
+
+    if(sequence_name == ''){
+        alert("Field must not be empty!!!!");
+        return false;
+    }
+    else{
+        $.ajax({
+            type: "POST",
+            url: "/callajax/",
+            data : {'object_name': 'Sequence_Creation',
+            'prj_name': prj_name,
+            'new_sequence_name': sequence_name,
+            'description': description,
+            'priority': priority,
+            'flag_status': flag_status,
+            //'old_seq_name': old_seq_name
+            },
+            success: function(json){
+                alert("successfully updated sequence!!!!");
+                get_sequence_details();
+            }
+        });//end of ajax call
+        $("#sequenceModal").modal('hide');
+        clear_sequence_fields();
+    }
+});
+/*
+    function views shots in tabular format
+*/
+function display_shots(name){
+    var s = $(name).closest('tr').find('td:eq(0)').text();
+
+    set_sequence_name(s);
+
+    get_shot_details();
+
+    //set_view_option(view_option);
+}
+/*
+    function to get the
+    shot details and display
+*/
+function get_shot_details(){
+    $("#previous_div").show();
+//    $('.sidebar-nav').hide();
+
+    $.ajax({
+        type: "POST",
+        url: "/callajax/",
+        data:{
+        "object_name": "display_shot_details",
+        'seq_name': get_sequence_name(),
+        'prj_name': get_project_name()
+        },
+        beforeSend:function(){
+            $("#table_view").empty();
+            create_table_display_details(type='shot');
+        },
+        success: function(json){
+                var table = $('#project_table');
+                $.each(json, function(idx, data){
+                    var row = $('<tr>');
+                    row.append("<td>" + data.name + "</td>");
+                    row.append("<td>" + data.ftrack_status + "</td>");
+                    row.append("<td>" + data.type + "</td>");
+                    row.append("<td>"+
+                    "<button class='btn btn-sm btn-success' type='button' onclick='create_tasks(this)'>Create Task</button>"+
+                    "<button class='btn btn-sm btn-success' type='button' onclick='update_shots(this)'>Update</button>"+
+                    "</td>");
+                    table.append(row);
+            });
+            $("#table_view").append(table);
+        }
+    });
+}
+/*
+    function to update shot
+    details
+*/
+function update_shots(name){
+    var prj_name = get_project_name();
+    var seq_name = get_sequence_name();
+    $('#id_parent_object_type').val(prj_name+":"+seq_name).prop('disabled',true);
+    var shot_name = $(name).closest('tr').find('td:eq(0)').text();
+    $("#id_name").val(shot_name);
+    $("#id_name").prop('disabled', true);
+    $("#id_shot_type").prop("disabled", true);
+    $("#id_total_frames").prop("disabled", true);
+    $("#id_frame_duration").prop("disabled", true);
+    $("#id_key_frames").prop("disabled", true);
+    get_details_before_update(prj_name, 'shot', seq_name, shot_name, '');
+    $("#shotModal").modal("show");
+    $("#submit_shot_details").hide();
+    $("#update_shot_details").show();
+}
+
+// to update shot
+$("#update_shot_details").click(function(){
+
+    var shot_type = $('#id_shot_type').val();
+    var name = $('#id_name').val().trim();
+    var description = $('#id_description').val();
+    var status = $('#id_status').val();
+    var priority = $('#id_priority').val();
+    var entity_name = $('#id_entity_name').val();
+    var frame_start = $('#id_frame_start').val();
+    var frame_end = $('#id_frame_end').val();
+    var key_frames = $('#id_key_frames').val();
+    var sequence_name = get_sequence_name();
+    //var shot_name = get_shot_name();
+    var flag_status = 'update';
+    //var old_shot_name = get_shot_name();
+
+    $.ajax({
+        type: "POST",
+        url: "/callajax/",
+        data : {'object_name': 'Shot_Creation',
+        'shot_type': shot_type,
+        'name': name,
+        'description': description,
+        'status': status,
+        'priority': priority,
+        'entity_name': entity_name,
+        'frame_start': frame_start,
+        'frame_end': frame_end,
+        'key_frames': key_frames,
+        'prj_name': get_project_name(),
+        'sequence_name': sequence_name,
+        'flag_status': flag_status,
+        //'old_shot_name': old_shot_name
+        },
+        success: function(json){
+            alert("successfully updated shot!!!!");
+            get_shot_details();
+        }
+    });//end of ajax call
+        $("#shotModal").modal("hide");
+        clear_shot_modal_fields();
+});
+
+
+/*
+    show the breadcrumb to
+    traverse back to previous
+    div
+*/
+
+var set_view_var = '';
+function set_view_option(name){
+    set_view_var = name;
+}
+function get_view_option(){
+    return set_view_var;
+}
+
+
+$("#previous_page").click(function(){
+    var prev_name = 'null';
+    if($("#table_view #project_table tbody td").length > 0){//.contains('td')){
+        prev_name = $("#table_view #project_table").find('td:eq(2)').text();
+        if(prev_name == 'Sequence'){
+            $("#table_view").empty()
+            get_project_details();
+            $("#previous_div").hide();
+//            $('.sidebar-nav').show();
+        }
+        else if(prev_name == 'Asset'){
+            $("#table_view").empty();
+            get_project_details();
+            $("#previous_div").hide();
+//            $('.sidebar-nav').show();
+        }
+        else if(prev_name == 'Static shot' || prev_name == 'Dynamic' || prev_name == ""){
+            $("#table_view").empty();
+            get_sequence_details();
+            //("#previous_div").show();
+        }
+        else if(prev_name == 'Set' || prev_name == 'Vehicle' || prev_name == 'Prop' || prev_name == 'Character'){
+            $("#table_view").empty();
+            get_project_details();
+            $("#previous_div").hide();
+//            $('.sidebar-nav').show();
+        }
+    }
+    else{
+        var th_name = $("#table_view #project_table").find('th:eq(0)').text();
+        var nm = th_name.split(" ")[0].trim();
+        if(prev_name == 'null'){
+            if(nm == 'Asset'){
+                $("#table_view").empty();
+                get_project_details();
+                $("#previous_div").hide();
+//                $('.sidebar-nav').show();
+            }
+            else if(nm == 'Sequence'){
+
+                $("#table_view").empty()
+                get_project_details();
+                $("#previous_div").hide();
+//                $('.sidebar-nav').show();
+            }
+            else if(nm == 'Shot'){
+                $("#table_view").empty();
+                get_sequence_details();
+            }
+        }
+    }
+});
+/**
+    display data in
+    tabular format
+*/
+function create_table_display_details(data){
+
+    var table = $('<table class="table-hover table-condensed table-bordered" id="project_table"/>');
+    thead = $('<thead/>');
+    tbody = $('<tbody />');
+    var headerCell = '';
+    var header = '';
+    var row = $(thead[0].insertRow(-1));
+
+    if( data == 'sequence'){
+        var headerCell = $('<th style="width: 400px;" class="head_class" name="Sequence Name" title="Double Click to sort"/>');
+        var header = "Sequence Name";
+
+        headerCell.html('<i class="glyphicon glyphicon-sort-by-alphabet"></i>&nbsp;'+header);
+        row.append(headerCell);
+
+        headerCell = $('<th style="width: 400px;" class="head_class" name="Ftrack Status" />');
+        header = 'Ftrack Status';
+        headerCell.html(header);
+        row.append(headerCell);
+
+        headerCell = $('<th style="width: 400px;" class="head_class" name="Type" />');
+        header = 'Type';
+        headerCell.html(header);
+        row.append(headerCell);
+
+        headerCell = $('<th style="width: 400px;" class="head_class" name="Action" />');
+        header = 'Action';
+        headerCell.html(header);
+        row.append(headerCell);
+
+        table.append(thead);
+        table.append(tbody);
+    }
+    else if( data == 'shot'){
+        var headerCell = $('<th style="width: 400px;" class="head_class" name="Shot Name" title="Double Click to sort"/>');
+        var header = "Shot Name";
+
+        headerCell.html('<i class="glyphicon glyphicon-sort-by-alphabet"></i>&nbsp;'+header);
+        row.append(headerCell);
+
+        headerCell = $('<th style="width: 400px;" class="head_class" name="Ftrack Status" />');
+        header = 'Ftrack Status';
+        headerCell.html(header);
+        row.append(headerCell);
+
+        headerCell = $('<th style="width: 400px;" class="head_class" name="Type" />');
+        header = 'Type';
+        headerCell.html(header);
+        row.append(headerCell);
+
+        headerCell = $('<th style="width: 400px;" class="head_class" name="Action" />');
+        header = 'Action';
+        headerCell.html(header);
+        row.append(headerCell);
+
+        table.append(thead);
+        table.append(tbody);
+    }
+    else if( data == 'asset'){
+        var headerCell = $('<th style="width: 400px;" class="head_class" name="Asset Name" title="Double Click to sort"/>');
+        var header = "Asset Name";
+
+        headerCell.html('<i class="glyphicon glyphicon-sort-by-alphabet"></i>&nbsp;'+header);
+        row.append(headerCell);
+
+        headerCell = $('<th style="width: 400px;" class="head_class" name="Ftrack Status" />');
+        header = 'Ftrack Status';
+        headerCell.html(header);
+        row.append(headerCell);
+
+        headerCell = $('<th style="width: 400px;" class="head_class" name="Type" />');
+        header = 'Type';
+        headerCell.html(header);
+        row.append(headerCell);
+
+        headerCell = $('<th style="width: 400px;" class="head_class" name="Action" />');
+        header = 'Action';
+        headerCell.html(header);
+        row.append(headerCell);
+
+        table.append(thead);
+        table.append(tbody);
+    }
+    $("#table_view").append(table);
+}
+
+function get_details_before_update(project_name, flag, seq_name, shot_name, asset_name){
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data:{
+        'object_name': 'get_details',
+        'project_name': project_name,
+        'sequence_name': seq_name,
+        'shot_name': shot_name,
+        'asset_name': asset_name,
+        'flag': flag
+        },
+        success:function(json){
+            if(flag == 'project'){
+                $.each(json, function(idx, data){
+                    $('#project_id #id_project_code').val(data.project);
+                    $('#project_id #id_start_date').val(data.startdate);
+                    $('#project_id #id_end_date').val(data.enddate);
+                    $('#project_id #id_status').val(data.status);
+                    $('#project_id #id_project_folder').val(data.root);
+                    $('#project_id #id_resolution').val(data.resolution);
+                    $('#project_id #id_client_label').val(data.clientlabel_proj);
+                });
+            }
+            if(flag == 'sequence'){
+                $.each(json, function(idx, data){
+                    $('#id_sequence_description').val(data.description);
+                    $('#id_sequence_entity_name').val(data.entity_name);
+                    $('#id_sequence_priority').val(data.priority);
+                });
+            }
+            if(flag == 'shot'){
+                $.each(json, function(idx, data){
+                    $('#id_description').val(data.description);
+                    $('#id_sequence_entity_name').val(data.entity_name);
+                    $('#id_sequence_priority').val(data.priority);
+                    $('#id_frame_start').val(data.fstart);
+                    $('#id_frame_end').val(data.fend);
+                });
+            }
+            if(flag == 'asset'){
+                $.each(json, function(idx, data){
+                    $('#id_asset_type').val(data.type);
+                    $('#id_asset_name').val(data.name);
+                    $('#id_asset_description').val(data.description);
+                    $('#id_asset_priority').val(data.priority);
+                    $('#id_asset_entity_name').val(data.entity_name);
+                    $('#id_asset_status').val(data.ftrack_status);
+                });
+            }
+        }
+    });
+}
+
 // Reload page here
 window.onload = function() {
     if ($('#dashboard_page').attr('class') == 'active'){
@@ -4406,5 +5823,12 @@ window.onload = function() {
     }
     if ($('#artist_tasks').attr('class') == 'active'){
         show_artist_tasks();
+    }
+    if($('#create_project_page').attr('class') == 'active'){
+        //create_table_display_details();
+        get_project_details();
+
+        /*create_table_display_details();
+        $('#panel_thumbnail').hide();*/
     }
 }
