@@ -16,13 +16,13 @@ class CreateProject(forms.Form):
             attrs=
             {
                 "placeholder": 'Project Name',
-                'style': 'color:black;width: 250px;overflow: auto',
+                'style': 'color:black;width: 250px;overflow: auto;text-transform: uppercase;',
                 'class': 'form-control'
             }
         )
     )
     project_code = forms.CharField(
-        max_length=50,
+        max_length=3,
         required=False,
         #disabled=True,
         widget=forms.TextInput(
@@ -30,7 +30,8 @@ class CreateProject(forms.Form):
                 "placeholder": "Project Code",
                 'style': 'color:black;width: 250px;overflow: auto',
                 'class': 'form-control',
-                'pattern': '[0-9a-zA-Z]'
+                'pattern': '[0-9a-zA-Z]',
+                'maxlength': '3'
             }
         )
     )
@@ -41,7 +42,7 @@ class CreateProject(forms.Form):
             attrs={
                 "placeholder": "Start Date",
                 'type': 'date',
-                'style': 'color:black;width: 250px;overflow: auto',
+                'style': 'color:black;width: 250px',
                 'class': 'form-control'
             }
         )
@@ -53,7 +54,7 @@ class CreateProject(forms.Form):
             attrs={
                 'placeholder': "End Date",
                 'type': 'date',
-                'style': 'color:black;width: 250px;overflow: auto',
+                'style': 'color:black;width: 250px',
                 'class': 'form-control'
             }
         )
@@ -102,17 +103,17 @@ class CreateProject(forms.Form):
         )
     )
 
-    disk = forms.CharField(
-        required=False,
-        max_length=150,
-        widget=forms.TextInput(
-            attrs={
-                "placeholder": "location on disk",
-                'style': 'color:black;width: 250px;overflow: auto',
-                'class': 'form-control'
-            }
-        )
-    )
+    # disk = forms.CharField(
+    #     required=False,
+    #     max_length=150,
+    #     widget=forms.TextInput(
+    #         attrs={
+    #             "placeholder": "location on disk",
+    #             'style': 'color:black;width: 250px;overflow: auto',
+    #             'class': 'form-control'
+    #         }
+    #     )
+    # )
 
     entity_name = forms.CharField(
         required=False,
@@ -145,7 +146,9 @@ class CreateProject(forms.Form):
             attrs={
                 'placeholder': 'Start Frame',
                 'style': 'color:black;width: 250px;overflow: auto',
-                'class': 'form-control'
+                'class': 'form-control',
+                'value': '101',
+                'max_length': '3'
             }
         )
     )
@@ -157,7 +160,9 @@ class CreateProject(forms.Form):
             attrs={
                 'placeholder': 'fps ex:-24',
                 'style': 'color:black;width: 250px;overflow: auto',
-                'class': 'form-control'
+                'class': 'form-control',
+                'value': '24',
+                'max_length': '2'
             }
         )
     )
@@ -206,13 +211,13 @@ class CreateShot(forms.Form):
         ('SW9', 'SW9')
     ]
 
-    task_template_choices = [
-        ('AnimAssetBuildDev', 'AnimAssetBuildDev'),
-        ('SequenceDev', 'SequenceDev'),
-        ('SetAssetBuildDev', 'SetAssetBuildDev'),
-        ('ShotDev', 'ShotDev'),
-        ('StaticAssetBuildDev', 'StaticAssetBuildDev')
-    ]
+    # task_template_choices = [
+    #     ('AnimAssetBuildDev', 'AnimAssetBuildDev'),
+    #     ('SequenceDev', 'SequenceDev'),
+    #     ('SetAssetBuildDev', 'SetAssetBuildDev'),
+    #     ('ShotDev', 'ShotDev'),
+    #     ('StaticAssetBuildDev', 'StaticAssetBuildDev')
+    # ]
 
     assignee_choices = [
         ('kunal', 'kunal'),
@@ -227,6 +232,7 @@ class CreateShot(forms.Form):
     ]
 
     status_choice = [
+        ('Select Status', 'Select Status'),
         ('Not started', 'Not started'),
         ('Awaiting Data', 'Awaiting Data'),
         ('Ready to start', 'Ready to start'),
@@ -237,7 +243,13 @@ class CreateShot(forms.Form):
         ('Duplicate', 'Duplicate')
     ]
 
-    priority_choices = [('None', 'None')]
+    priority_choices = [
+        ('None', 'None'),
+        ("Urgent", "Urgent"),
+        ("High", "High"),
+        ("Medium", "Medium"),
+        ("Low", "Low")
+    ]
 
     parent_object_type = forms.ChoiceField(
         choices=linked_choices,
@@ -266,17 +278,17 @@ class CreateShot(forms.Form):
     #         }
     #     )
     # )
-    shot_type_choice = [
-        ("Static Shot", "Static Shot"),
-        ("Dynamic", "Dynamic")
-    ]
-    shot_type = forms.ChoiceField(
-        choices=shot_type_choice,
-        disabled=False,
-        required=True,
-        widget=forms.Select(
+    # shot_type_choice = [
+    #     ("Static Shot", "Static Shot"),
+    #     ("Dynamic", "Dynamic")
+    # ]
+    shot_type = forms.CharField(
+        # choices=shot_type_choice,
+        disabled=True,
+        # required=True,
+        widget=forms.TextInput(
             attrs={
-                #'value': "Static Shot",
+                'value': "Static Shot",
                 'style': 'color:black;width: 250px;overflow: auto',
                 'class': 'form-control'
             }
@@ -291,15 +303,16 @@ class CreateShot(forms.Form):
                 'style': 'color:black;width: 250px;overflow: auto',
                 'class': 'form-control',
                 'placeholder': 'Shot Name',
-                'pattern': '[a-zA-Z0-9]'
+                'pattern': '[a-zA-Z0-9]',
+                'maxlength': '4'
             }
         )
     )
     description = forms.CharField(
         widget=forms.Textarea(
             attrs={
-                'rows': '5',
-                'cols': '32',
+                'rows': '0',
+                'cols': '10',
                 'wrap': "hard",
                 'style': 'color:black;width: 250px;overflow: auto',
                 'class': 'form-control'
@@ -350,8 +363,8 @@ class CreateShot(forms.Form):
         disabled=True,
         widget=forms.Textarea(
             attrs={
-                'rows': '5',
-                'cols': '32',
+                'rows': '0',
+                'cols': '10',
                 'wrap': 'hard',
                 'style': 'color:black;width: 250px;overflow: auto',
                 'class': 'form-control'
@@ -420,8 +433,8 @@ class CreateShot(forms.Form):
     key_frames = forms.CharField(
         widget=forms.Textarea(
             attrs={
-                'rows': '5',
-                'cols': '32',
+                'rows': '0',
+                'cols': '10',
                 'wrap': 'hard',
                 'style': 'color:black;width: 250px;overflow: auto',
                 'class': 'form-control',
@@ -446,9 +459,9 @@ class CreateShot(forms.Form):
 class CreateSequence(forms.Form):
 
     linked_choices = [
-        # ('AAJ', 'AAJ'),
-        # ('ICE', 'ICE'),
-        # ('SW9', 'SW9')
+        ('AAJ', 'AAJ'),
+        ('ICE', 'ICE'),
+        ('SW9', 'SW9')
     ]
 
     task_template_choices = [
@@ -471,6 +484,7 @@ class CreateSequence(forms.Form):
     ]
 
     status_choice = [
+        ('Select Status', 'Select Status'),
         ('Not started', 'Not started'),
         ('Awaiting Data', 'Awaiting Data'),
         ('Ready to start', 'Ready to start'),
@@ -481,24 +495,23 @@ class CreateSequence(forms.Form):
         ('Duplicate', 'Duplicate')
     ]
 
-    priority_choices = [('None', 'None')]
+    priority_choices = [
+        ('None', 'None'),
+        ("Urgent", "Urgent"),
+        ("High", "High"),
+        ("Medium", "Medium"),
+        ("Low", "Low")
+    ]
 
     sequence_parent_object_type = forms.ChoiceField(
         choices=linked_choices,
-        required=False,
         disabled=True,
         widget=forms.TextInput(
             attrs={
-                'style': 'color:black;width: 250px;overflow: auto',
+                'style': 'color:black;width: 250px',
                 'class': 'form-control'
             }
         )
-        # widget=forms.Select(
-        #     attrs={
-        #         'style': 'color:black;width: 250px;overflow: auto',
-        #         'class': 'form-control'
-        #     }
-        # )
     )
 
     # sequence_task_template = forms.ChoiceField(
@@ -536,8 +549,8 @@ class CreateSequence(forms.Form):
     sequence_description = forms.CharField(
         widget=forms.Textarea(
             attrs={
-                'rows': '5',
-                'cols': '32',
+                'rows': '0',
+                'cols': '10',
                 'wrap': "hard",
                 'style': 'color:black;width: 250px;overflow: auto',
                 'class': 'form-control'
@@ -559,11 +572,9 @@ class CreateSequence(forms.Form):
 
     sequence_status = forms.ChoiceField(
         choices=status_choice,
-        required=False,
-        disabled=True,
-        widget=forms.TextInput(
+        required=True,
+        widget=forms.Select(
             attrs={
-                'value': 'Not Started',
                 'style': 'color:black;width: 250px;overflow: auto',
                 'class': 'form-control'
             }
@@ -636,6 +647,7 @@ class CreateAsset(forms.Form):
     )
 
     asset_type_choices = [
+        ("Select", "Select"),
         ("Set", "Set"),
         ("Vehicle", "Vehicle"),
         ("Prop", "Prop"),
@@ -667,8 +679,8 @@ class CreateAsset(forms.Form):
         disabled=False,
         widget=forms.Textarea(
             attrs={
-                'rows': '5',
-                'cols': '32',
+                'rows': '0',
+                'cols': '10',
                 'wrap': 'hard',
                 'style': 'color:black;width: 250px;overflow: auto',
                 'class': 'form-control'
@@ -700,11 +712,11 @@ class CreateAsset(forms.Form):
     )
 
     asset_priority_choices = [
+        ("None", "None"),
         ("Urgent", "Urgent"),
         ("High", "High"),
         ("Medium", "Medium"),
-        ("Low", "Low"),
-        ("None", "None"),
+        ("Low", "Low")
     ]
     asset_priority = forms.ChoiceField(
         choices=asset_priority_choices,
@@ -742,8 +754,8 @@ class CreateAsset(forms.Form):
         disabled=False,
         widget=forms.Textarea(
             attrs={
-                'rows': '5',
-                'cols': '32',
+                'rows': '0',
+                'cols': '10',
                 'wrap': 'hard',
                 'style': 'color:black;width: 250px;overflow: auto',
                 'class': 'form-control'
@@ -755,8 +767,8 @@ class CreateAsset(forms.Form):
         disabled=False,
         widget=forms.Textarea(
             attrs={
-                'rows': '5',
-                'cols': '32',
+                'rows': '0',
+                'cols': '10',
                 'wrap': 'hard',
                 'style': 'color:black;width: 250px;overflow: auto',
                 'class': 'form-control'
@@ -764,15 +776,28 @@ class CreateAsset(forms.Form):
         )
     )
 
-    asset_sub_category = forms.CharField(
-        disabled=False,
-        widget=forms.Textarea(
+    asset_sub_category = forms.ChoiceField(
+
+        choices=(
+            [
+                ('Primary', 'Primary'),
+                ('Secondary', 'Secondary'),
+                ('Tertiary', 'Tertiary'),
+            ]
+        ),
+        widget=forms.Select(
             attrs={
-                'rows': '5',
-                'cols': '32',
-                'wrap': 'hard',
-                'style': 'color:black;width: 250px;overflow: auto',
+                'style': 'color:black;width: 250px',
                 'class': 'form-control'
+            }
+        )
+    )
+
+    asset_file = forms.FileField(
+        allow_empty_file=False,
+        widget=forms.FileInput(
+            attrs={
+                'accept': '.csv'
             }
         )
     )
@@ -782,6 +807,7 @@ class CreateTask(forms.Form):
 
     def __init__(self, choices, *args, **kwargs):
         super(CreateTask, self).__init__(*args, **kwargs)
+        choices.insert(0, ('', 'Select Choice'))
         self.fields['task_status'].choices = choices
 
     task_linked_to = forms.CharField(
@@ -794,7 +820,7 @@ class CreateTask(forms.Form):
         )
     )
 
-    task_type = forms.ChoiceField(
+    task_name = forms.ChoiceField(
         required=True,
         choices=(),
         widget=forms.Select(
@@ -805,21 +831,21 @@ class CreateTask(forms.Form):
         )
     )
 
-    task_name = forms.CharField(
-        disabled=False,
-        widget=forms.TextInput(
-            attrs={
-                'style': 'color:black;width: 250px',
-                'class': 'form-control'
-            }
-        )
-    )
+    # task_name = forms.CharField(
+    #     disabled=False,
+    #     widget=forms.TextInput(
+    #         attrs={
+    #             'style': 'color:black;width: 250px',
+    #             'class': 'form-control'
+    #         }
+    #     )
+    # )
 
     task_description = forms.CharField(
         widget=forms.Textarea(
             attrs={
-                'rows': '5',
-                'cols': '32',
+                'rows': '0',
+                'cols': '10',
                 'wrap': 'hard',
                 'style': 'color:black;width: 250px;overflow: auto',
                 'class': 'form-control'
@@ -827,10 +853,11 @@ class CreateTask(forms.Form):
         )
     )
 
-    task_assignee = forms.MultipleChoiceField(
+    task_assignee = forms.ChoiceField(
         choices=(),
         required=True,
-        widget=forms.SelectMultiple(
+        widget=forms.Select
+        (
             attrs={
                 'style': 'color:black;width: 250px',
                 'class': 'form-control'
@@ -843,7 +870,8 @@ class CreateTask(forms.Form):
         widget=forms.TextInput(
             attrs={
                 'style': 'color:black;width: 250px',
-                'class': 'form-control'
+                'class': 'form-control',
+                'max-length': '2'
             }
         )
     )
@@ -885,40 +913,50 @@ class CreateTask(forms.Form):
             attrs={
                 'style': 'color:black;width: 250px',
                 'class': 'form-control',
-                "placeholder": 'Start Date'
+                "placeholder": 'mm/dd/yyyy',
+                "id": "startdate"
             }
         )
     )
 
     task_due_date = forms.DateField(
         required=True,
+        disabled=True,
         input_formats="%Y-%m-%d",
         widget=forms.DateInput(
             attrs={
                 'style': 'color:black;width: 250px',
                 'class': 'form-control',
-                "placeholder": 'Due Date'
+                "placeholder": 'mm/dd/yyyy',
+                "id": "enddate"
             }
         )
     )
 
-    task_scope = forms.CharField(
-        widget=forms.TextInput(
-            attrs={
-                'style': 'color:black;width: 250px',
-                'class': 'form-control',
-                "placeholder": 'Scope'
-            }
-        )
-    )
-    task_entity_name = forms.CharField(
-        widget=forms.Textarea(
-            attrs={
-                'rows': '5',
-                'cols': '32',
-                'wrap': 'hard',
-                'style': 'color:black;width: 250px;overflow: auto',
-                'class': 'form-control'
-            }
-        )
-    )
+    # task_scope = forms.CharField(
+    #     widget=forms.TextInput(
+    #         attrs={
+    #             'style': 'color:black;width: 250px',
+    #             'class': 'form-control',
+    #             "placeholder": 'Scope'
+    #         }
+    #     )
+    # )
+    # task_entity_name = forms.CharField(
+    #     widget=forms.Textarea(
+    #         attrs={
+    #             'rows': '5',
+    #             'cols': '32',
+    #             'wrap': 'hard',
+    #             'style': 'color:black;width: 250px;overflow: auto',
+    #             'class': 'form-control'
+    #         }
+    #     )
+    # )
+
+
+class AttachmentForm(forms.ModelForm):
+    class Meta:
+        model = Attachment
+        fields = ('file', )
+

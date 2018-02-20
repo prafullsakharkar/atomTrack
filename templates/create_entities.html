@@ -17,48 +17,7 @@
 
   <div class="row">
     <!-- leftside menu start -->
-    <div class="col-sm-1" id="task_menu1" style="display:none">
-      <div class="sidebar-nav">
-        <div class="nav-canvas">
-          <ul class="nav nav-pills nav-stacked main-menu">
-            <li class="nav-header"><img class="dashboard-avatar" alt=""
-                                        src="http://192.168.1.18/Employees/{{emp_code}}.jpg"></li>
-            <li class="nav-header">Main</li>
-            {% if data.user_role == 'Supervisor' %}
-            <li id="mgm_dashboard_page"><a class="ajax-link" href="/mgm_dashboard"><i
-              class="glyphicon glyphicon-dashboard"></i>&nbsp;&nbsp;<span> Management</span></a></li>
-            <li><a class="ajax-link" href="/dashboard"><i class="glyphicon glyphicon-dashboard"></i>&nbsp;&nbsp;<span> Dashboard</span></a>
-            </li>
-            {% endif %}
-            <li><a class="ajax-link" href="/tasks"><i
-              class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;<span> To Do List</span></a>
-            </li>
-            <li><a class="ajax-link" href="/status"><i
-              class="glyphicon glyphicon-th"></i><span>&nbsp;&nbsp; Task Status</span></a>
-            </li>
-            {% if data.user_role == 'Co-ordinator' or data.user_role == 'Supervisor' %}
-            <li class="active"><a class="ajax-link" href="/review"><i class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;<span> Review Tasks</span></a>
-            <li><a class="ajax-link" href="/ftp"><i class="glyphicon glyphicon-cloud-upload"></i>&nbsp;&nbsp;<span> FTP Upload</span></a>
-            </li>
-            {% endif %}
-            <li class="active" id="create_project_page"><a class="ajax-link" href="/create"><i
-              class="glyphicon glyphicon-dashboard"></i>&nbsp;&nbsp;<span> Create Project</span></a>
-            </li>
-            <li class="accordion">
-              <a href="#"><i class="glyphicon glyphicon-plus"></i><span>&nbsp;&nbsp; Create Entities</span></a>
-              <ul class="nav nav-pills nav-stacked">
-                <li><a href="#">Project</a></li>
-                <li><a href="#">Sequence</a></li>
-                <li><a href="#">Shot</a></li>
-                <li><a href="#">Asset Build</a></li>
-                <li><a href="#">Task</a></li>
-              </ul>
-            </li>
-
-          </ul>
-        </div>
-      </div>
-    </div>
+    {% include "left_side_menu.html" %}
     <!-- leftside menu start -->
 
     <div class="col-at-12" id="panel_big">
@@ -70,11 +29,12 @@
           <a href="#">Create Entities</a>
         </li>
       </ul>
+      <div class="sidebar-nav">
         <div class="box-content row">
           <div class="col-at-12">
             <div class="box" style="overflow:auto; overflow-y:auto; height:778px"
                  id="div_entity_details">
-              <ul class="breadcrumb" id='previous_div' style="display:block;">
+              <ul class="breadcrumb" id='previous_div' style="display:none;">
                 <li>
                   <a href="#" id="previous_page">Previous Page</a>
                 </li>
@@ -86,8 +46,9 @@
           </div>
 
         </div>
+      </div>
 
-      <!-- Creat Model start -->
+      <!-- Create Model start -->
       <div class="modal fade" id="createModal" tabindex="-1" role="dialog"
            aria-labelledby="myLargeModalLabel" aria-hidden="true" data-backdrop="static">
         <div class="modal-dialog modal-dialog-centered" role="document">
@@ -96,12 +57,12 @@
           </div>
           <div class="modal-body">
             <ul class='list-group'>
-              <li class='list-group-item' id="first_li">
+              <li class='list-group-item' id="asset_li">
                 <button type="button" class="btn btn-default btn_class" id="create_asset" style="width: 100%;">Asset
                   Build
                 </button>
               </li>
-              <li class='list-group-item' id="second_li">
+              <li class='list-group-item' id="sequence_li">
                 <button type="button" class="btn btn-default btn_class" id="create_sequence" style="width: 100%;">
                   Sequence
                 </button>
@@ -110,12 +71,11 @@
                 <button type="button" class="btn btn-default btn_class" id="create_shot" style="width: 100%;">Shot
                 </button>
               </li>
-              <li class='list-group-item' id="fourth_li">
-                <button type="button" class="btn btn-default btn_class" id="view_asset" style="width: 100%;">Asset
-                  Build
+              <li class='list-group-item' id="view_asset_li" style='display:none;'>
+                <button type="button" class="btn btn-default btn_class" id="view_asset" style="width: 100%;">Asset Build
                 </button>
               </li>
-              <li class='list-group-item' id="fifth_li">
+              <li class='list-group-item' id="view_seq_li" style='display:none;'>
                 <button type="button" class="btn btn-default btn_class" id="view_sequence" style="width: 100%;">
                   Sequence
                 </button>
@@ -124,8 +84,12 @@
                 <button type="button" class="btn btn-default btn_class" id="create_task" style="width: 100%;">Task
                 </button>
               </li>
-              <li class='list-group-item' id="task_view" style='display:none;'>
+              <li class='list-group-item' id="task_view_li" style='display:none;'>
                 <button type="button" class="btn btn-default btn_class" id="view_task" style="width: 100%;">Task
+                </button>
+              </li>
+              <li class='list-group-item' id="shot_view_li" style='display:none;'>
+                <button type="button" class="btn btn-default btn_class" id="view_shot" style="width: 100%;">Shot
                 </button>
               </li>
             </ul>
@@ -134,275 +98,299 @@
       </div>
 
       <!--Create Model start here -->
-      <div class="col-at-sm-4" style="display:block;" id="main_div">
-        <div class="controls" id="project_id">
-          <div class="modal fade" id="projectModal" tabindex="-1" role="dialog"
-               aria-labelledby="myLargeModalLabel" data-keyboard="false" data-backdrop="static"
-               aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered rounded_border">
-            <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal" style="color: #fff;">×</button>
-              <br>
-              <div class="container">
-                  <form action="{% url 'create_project_form' %}" method="post"
-                        id="project_creation" class="form-horizontal">
-                    {% csrf_token %}
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">Project Name : &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ project_form.project_name }}
-                      </div>
-                    </div>
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">Project Code : &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ project_form.project_code }}
-                      </div>
-                    </div>
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">Start Date : &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ project_form.start_date }}
-                      </div>
-                    </div>
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">End Date : &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ project_form.end_date }}
-                      </div>
-                    </div>
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">WorkFlow Schema &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ project_form.workflow_schema }}
-                      </div>
-                    </div>
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">Status : &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ project_form.status }}
-                      </div>
-                    </div>
-                    <!--<p class="form-row">
-                        <a href="#collapse_more"
-                           data-toggle="collapse" aria-expanded="false"
-                           aria-controls="collapse_more" id="a_collapse_more">
-                            <i>More</i></a>
-                    </p>
-                    <div id="collapse_more" style="display:none;" class="form-row">
-                        <div class="form-group">
-                            <label class="control-label col-sm-2">Status : &nbsp;</label>
-                            <div class="col-sm-10">
-                                {{ project_form.status }}
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="control-label col-sm-2">Scope : &nbsp;</label>
-                            <div class="col-sm-10">
-                                {{ project_form.scope }}
-                            </div>
-                        </div>
-                    </div>-->
-                    <p></p>
-                    <p class="form-row">
-                      <a href="#collapse_storage"
-                         data-toggle="collapse" aria-expanded="false"
-                         aria-controls="collapse_storage" id="a_collapse_storage">Storage
-                        &nbsp;</a>
-                    </p>
 
-                    <div id="collapse_storage" style="display:none;" class="form-row">
-                      <div class="form-group">
-                        <label class="control-label col-sm-2">Disk : &nbsp;</label>
-                        <div class="col-sm-10">
-                          {{ project_form.disk }}
-                        </div>
-                      </div>
-                      <div class="form-group">
-                        <label class="control-label col-sm-2">Project Folder :
-                          &nbsp;</label>
-                        <div class="col-sm-10">
-                          {{ project_form.project_folder }}
-                        </div>
-                      </div>
-                    </div>
-                    <p></p>
-                    <p class="form-row">
-                      <a href="#collapse_project_config"
-                         data-toggle="collapse" aria-expanded="false"
-                         aria-controls="collapse_project_config"
-                         id="a_project_config">
-                        ProjectConfig &nbsp;</a>
-                    </p>
-
-                    <div id="collapse_project_config" style="display:none;"
-                         class="form-row">
-                      <!--<div class="form-group">
-                          <label class="control-label col-sm-2">Entity Name :
-                              &nbsp;</label>
-                          <div class="col-sm-10">
-                              {{ project_form.entity_name }}
-                          </div>
-                      </div>-->
-                      <div class="form-group">
-                        <label class="control-label col-sm-2">Resolution :
-                          &nbsp;</label>
-                        <div class="col-sm-10">
-                          {{ project_form.resolution }}
-                        </div>
-                      </div>
-                      <div class="form-group">
-                        <label class="control-label col-sm-2">Start Frame :
-                          &nbsp;</label>
-                        <div class="col-sm-10">
-                          {{ project_form.start_frame }}
-                        </div>
-                      </div>
-                      <div class="form-group">
-                        <label class="control-label col-sm-2">fps : &nbsp;</label>
-                        <div class="col-sm-10">
-                          {{ project_form.fps }}
-                        </div>
-                      </div>
-                      <!--<div class="form-group">
-                          <label class="control-label col-sm-2">Version : &nbsp;</label>
-                          <div class="col-sm-10">
-                              {{ project_form.version }}
-                          </div>
-                      </div>-->
-                      <div class="form-group">
-                        <label class="control-label col-sm-2">Client Label :
-                          &nbsp;</label>
-                        <div class="col-sm-10">
-                          {{ project_form.client_label }}
-                        </div>
-                      </div>
-                    </div>
-                    <br/>
-                    <div class="form-group  form-row">
-                      <div class="col-sm-offset-2 col-sm-10">
-                        <input type="button" value="Create" id="submit_details"
-                               class="btn btn-success"/>
-                        <input type="button" value="Update" id="update_details"
-                               class="btn btn-default" style="display:none;"/>
-                        <input type="button" value="Cancel"
-                               id="cancel_project_details"
-                               class="btn btn-warning"/>
-                      </div>
-                    </div>
-                  </form>
-                </div>
-            </div>
-          </div>
-          </div>
-        </div>
-        <!-- end of project form div -->
-        <div class="controls" id="sequence_id">
-          <div class="modal fade" id="sequenceModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-               data-backdrop="static" data-keyboard="false" aria-hidden="true">
-
-            <div class="modal-dialog modal-dialog-centered rounded_border">
-              <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" style="color: #fff;">×</button>
-                <br>
-                <div class="container">
-                  <form action="{% url 'create_project_form' %}" method="post"
-                        id="sequence_creation" class="form-horizontal">
-                    {% csrf_token %}
-                    <div class="form-group" id="linked_to">
-                      <label class="control-label col-sm-2">Linked To : &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ sequence_form.sequence_parent_object_type }}
-                      </div>
-                    </div>
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">Sequence Type : &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ sequence_form.sequence_type }}
-                      </div>
-                    </div>
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">Name : &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ sequence_form.sequence_name }}
-                      </div>
-                    </div>
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">Description : &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ sequence_form.sequence_description }}
-                      </div>
-                    </div>
-                    <p class="form-row">
-                      <a href="#collapse_sequence_more"
-                         data-toggle="collapse" aria-expanded="false"
-                         aria-controls="collapse_sequence_more"
-                         id="a_collapse_sequence_more">
-                        <i>More</i></a>
-                    </p>
-                    <div id="collapse_sequence_more" style="display:none;"
-                         class="form-row">
-                      <div class="form-group">
-                        <label class="control-label col-sm-2">Status : &nbsp;</label>
-                        <div class="col-sm-10">
-                          {{ sequence_form.sequence_status }}
-                        </div>
-                      </div>
-                      <div class="form-group">
-                        <label class="control-label col-sm-2">Priority : &nbsp;</label>
-                        <div class="col-sm-10">
-                          {{ sequence_form.sequence_priority }}
-                        </div>
-                      </div>
-                    </div>
-                    <p class="form-row">
-                      <a href="#collapse_sequence_project_config"
-                         data-toggle="collapse" aria-expanded="false"
-                         aria-controls="collapse_sequence_project_config"
-                         id="a_collapse_sequence_project">
-                        <i>ProjectConfig</i></a>
-                    </p>
-                    <div id="collapse_sequence_project_config" style="display:none;"
-                         class="form-row">
-                      <div class="form-group">
-                        <label class="control-label col-sm-2">Entity Name :
-                          &nbsp;</label>
-                        <div class="col-sm-10">
-                          {{ sequence_form.sequence_entity_name }}
-                        </div>
-                      </div>
-                    </div>
-                    <br/>
-                    <div class="form-group form-row">
-                      <div class="col-sm-offset-2 col-sm-10">
-                        <input type="button" value="Create"
-                               id="submit_sequence_details"
-                               class="btn btn-success"/>
-                        <input type="button" value="Update"
-                               id="Update_sequence_details"
-                               class="btn btn-default" style="display:none;"/>
-                        <input type="button" value="Cancel"
-                               id="cancel_sequence_details"
-                               class="btn btn-warning"/>
-                      </div>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- model end -->
-        </div>
-      </div>
-      <!-- end of sequence form div -->
-      <div class="controls" id="shot_id">
-        <div class="modal fade" id="shotModal" tabindex="-1" role="dialog"
-             aria-labelledby="myLargeModalLabel" aria-hidden="true" data-backdrop="static">
+      <div class="controls" id="project_id">
+        <div class="modal fade" id="projectModal" tabindex="-1" role="dialog"
+             aria-labelledby="myLargeModalLabel" data-keyboard="false" data-backdrop="static"
+             aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered rounded_border">
             <div class="modal-header">
               <button type="button" class="close" data-dismiss="modal" style="color: #fff;">×</button>
               <br>
               <div class="container">
+                <form action="{% url 'create_project_form' %}" method="post"
+                      id="project_creation" class="form-horizontal">
+                  {% csrf_token %}
+                  <div class="form-group">
+                    <label class="control-label col-sm-2">Project Name : &nbsp;</label>
+                    <div class="col-sm-10">
+                      {{ project_form.project_name }}
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2">Project Code : &nbsp;</label>
+                    <div class="col-sm-10">
+                      {{ project_form.project_code }}
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2">Start Date : &nbsp;</label>
+                    <div class="col-sm-10">
+                      {{ project_form.start_date }}
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2">End Date : &nbsp;</label>
+                    <div class="col-sm-10">
+                      {{ project_form.end_date }}
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2">WorkFlow Schema &nbsp;</label>
+                    <div class="col-sm-10">
+                      {{ project_form.workflow_schema }}
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2">Resolution :
+                      &nbsp;</label>
+                    <div class="col-sm-10">
+                      {{ project_form.resolution }}
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2">Start Frame :
+                      &nbsp;</label>
+                    <div class="col-sm-10">
+                      {{ project_form.start_frame }}
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2">fps : &nbsp;</label>
+                    <div class="col-sm-10">
+                      {{ project_form.fps }}
+                    </div>
+                  </div>
+                  <!--<div class="form-group">
+                      <label class="control-label col-sm-2">Status : &nbsp;</label>
+                      <div class="col-sm-10">
+                          {{ project_form.status }}
+                      </div>
+                  </div>-->
+                  <!--<p class="form-row">
+                      <a href="#collapse_more"
+                         data-toggle="collapse" aria-expanded="false"
+                         aria-controls="collapse_more" id="a_collapse_more">
+                          <i>More</i></a>
+                  </p>
+                  <div id="collapse_more" style="display:none;" class="form-row">
+                      <div class="form-group">
+                          <label class="control-label col-sm-2">Status : &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ project_form.status }}
+                          </div>
+                      </div>
+                      <div class="form-group">
+                          <label class="control-label col-sm-2">Scope : &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ project_form.scope }}
+                          </div>
+                      </div>
+                  </div>-->
+                  <!--<p></p>
+                  <p class="form-row">
+                      <a href="#collapse_storage"
+                         data-toggle="collapse" aria-expanded="false"
+                         aria-controls="collapse_storage" id="a_collapse_storage">Storage
+                          &nbsp;</a>
+                  </p>
+
+                  <div id="collapse_storage" style="display:none;" class="form-row">
+                      &lt;!&ndash;<div class="form-group">
+                          <label class="control-label col-sm-2">Disk : &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ project_form.disk }}
+                          </div>
+                      </div>&ndash;&gt;
+                      <div class="form-group">
+                          <label class="control-label col-sm-2">Project Folder :
+                              &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ project_form.project_folder }}
+                          </div>
+                      </div>
+                  </div>-->
+                  <!--<p></p>
+                  <p class="form-row">
+                      <a href="#collapse_project_config"
+                         data-toggle="collapse" aria-expanded="false"
+                         aria-controls="collapse_project_config"
+                         id="a_project_config">
+                          ProjectConfig &nbsp;</a>
+                  </p>-->
+
+                  <!--<div id="collapse_project_config" style="display:none;"
+                       class="form-row">
+                      <div class="form-group">
+                          <label class="control-label col-sm-2">Entity Name :
+                              &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ project_form.entity_name }}
+                          </div>
+                      </div>
+                      <div class="form-group">
+                          <label class="control-label col-sm-2">Resolution :
+                              &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ project_form.resolution }}
+                          </div>
+                      </div>
+                      <div class="form-group">
+                          <label class="control-label col-sm-2">Start Frame :
+                              &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ project_form.start_frame }}
+                          </div>
+                      </div>
+                      <div class="form-group">
+                          <label class="control-label col-sm-2">fps : &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ project_form.fps }}
+                          </div>
+                      </div>
+                      <div class="form-group">
+                          <label class="control-label col-sm-2">Version : &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ project_form.version }}
+                          </div>
+                      </div>
+                      <div class="form-group">
+                          <label class="control-label col-sm-2">Client Label :
+                              &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ project_form.client_label }}
+                          </div>
+                      </div>
+                  </div>-->
+                  <br/>
+                  <div class="form-group  form-row">
+                    <div class="col-sm-offset-2 col-sm-10">
+                      <input type="button" value="Create" id="submit_details"
+                             class="btn btn-success"/>
+                      <input type="button" value="Update" id="update_details"
+                             class="btn btn-default" style="display:none;"/>
+                      <input type="button" value="Cancel"
+                             id="cancel_project_details"
+                             class="btn btn-warning"/>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- end of project form div -->
+
+      <div class="controls" id="sequence_id">
+        <div class="modal fade" id="sequenceModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+             data-backdrop="static" data-keyboard="false" aria-hidden="true">
+
+          <div class="modal-dialog modal-dialog-centered rounded_border">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" style="color: #fff;">×</button>
+              <br>
+              <div class="container">
+                <form action="{% url 'create_project_form' %}" method="post"
+                      id="sequence_creation" class="form-horizontal">
+                  {% csrf_token %}
+                  <div class="form-group" id="linked_to">
+                    <label class="control-label col-sm-2">Linked To : &nbsp;</label>
+                    <div class="col-sm-10">
+                      {{ sequence_form.sequence_parent_object_type }}
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2">Sequence Type : &nbsp;</label>
+                    <div class="col-sm-10">
+                      {{ sequence_form.sequence_type }}
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2">Name : &nbsp;</label>
+                    <div class="col-sm-10">
+                      {{ sequence_form.sequence_name }}
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2">Description : &nbsp;</label>
+                    <div class="col-sm-10">
+                      {{ sequence_form.sequence_description }}
+                    </div>
+                  </div>
+                  <!--<p class="form-row">
+                      <a href="#collapse_sequence_more"
+
+                         id="a_collapse_sequence_more">
+                          <i>More</i></a>
+                  </p>
+                  <div id="collapse_sequence_more" style="display:none;"
+                       class="form-row">
+                      <div class="form-group">
+                          <label class="control-label col-sm-2">Status : &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ sequence_form.sequence_status }}
+                          </div>
+                      </div>
+                      <div class="form-group">
+                          <label class="control-label col-sm-2">Priority : &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ sequence_form.sequence_priority }}
+                          </div>
+                      </div>
+                  </div>-->
+                  <!--<p class="form-row">
+                      <a href="#collapse_sequence_project_config"
+                         data-toggle="collapse" aria-expanded="false"
+                         aria-controls="collapse_sequence_project_config"
+                         id="a_collapse_sequence_project">
+                          <i>ProjectConfig</i></a>
+                  </p>
+                  <div id="collapse_sequence_project_config" style="display:none;"
+                       class="form-row">
+                      <div class="form-group">
+                          <label class="control-label col-sm-2">Entity Name :
+                              &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ sequence_form.sequence_entity_name }}
+                          </div>
+                      </div>
+                  </div>-->
+                  <br/>
+                  <div class="form-group form-row">
+                    <div class="col-sm-offset-2 col-sm-10">
+                      <input type="button" value="Create"
+                             id="submit_sequence_details"
+                             class="btn btn-success"/>
+                      <input type="button" value="Update"
+                             id="Update_sequence_details"
+                             class="btn btn-default" style="display:none;"/>
+                      <input type="button" value="Cancel"
+                             id="cancel_sequence_details"
+                             class="btn btn-warning"/>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- model end -->
+      </div>
+      <!-- end of sequence form div -->
+
+      <div class="controls" id="shot_id">
+        <div class="modal fade" id="shotModal" tabindex="-1" role="dialog"
+             aria-labelledby="myLargeModalLabel" aria-hidden="true" data-backdrop="static">
+          <div class="modal-dialog modal-dialog-centered rounded_border">
+            <div class="modal-header">
+              <label>
+                <input type="checkbox" id="create_shot_csv">&nbsp;&nbsp; Create from CSV &nbsp;&nbsp;
+                <a href="/media/sample/sample_create_shot.csv">[ Sample CSV ]</a>
+              </label>
+              <button type="button" class="close" data-dismiss="modal" style="color: #fff;">×</button>
+              <br>
+              <div class="container" id="div_create_shot_manual">
                 <form action="{% url 'create_project_form' %}" method="post"
                       id="shot_creation" class="form-horizontal">
                   {% csrf_token %}
@@ -430,85 +418,111 @@
                       {{ shot_form.description }}
                     </div>
                   </div>
-                  <p class="form-row">
-                    <a href="#collapse_shot_more"
-                       data-toggle="collapse" aria-expanded="false"
-                       aria-controls="collapse_shot_more"
-                       id="a_collapse_shot_more">
-                      <i>More</i></a>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2">frame_start :
+                      &nbsp;</label>
+                    <div class="col-sm-10">
+                      {{ shot_form.frame_start }}
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2">frame_end : &nbsp;</label>
+                    <div class="col-sm-10">
+                      {{ shot_form.frame_end }}
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2">Total Frames :
+                      &nbsp;</label>
+                    <div class="col-sm-10">
+                      {{ shot_form.total_frames }}
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2">Frame Duration :
+                      &nbsp;</label>
+                    <div class="col-sm-10">
+                      {{ shot_form.frame_duration }}
+                    </div>
+                  </div>
+                  <!--<p class="form-row">
+                      <a href="#collapse_shot_more"
+
+                         id="a_collapse_shot_more">
+                          <i>More</i></a>
                   </p>
                   <div id="collapse_shot_more" style="display:none;"
                        class="form-row">
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">Status : &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ shot_form.status }}
+                      <div class="form-group">
+                          <label class="control-label col-sm-2">Status : &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ shot_form.status }}
+                          </div>
                       </div>
-                    </div>
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">Priority : &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ shot_form.priority }}
+                      <div class="form-group">
+                          <label class="control-label col-sm-2">Priority : &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ shot_form.priority }}
+                          </div>
                       </div>
-                    </div>
-                  </div>
-                  <p class="form-row">
-                    <a href="#collapse_shot_project_config"
-                       data-toggle="collapse" aria-expanded="false"
-                       aria-controls="collapse_shot_project_config"
-                       id="a_collapse_shot_project">
-                      <i>ProjectConfig</i></a>
+                  </div>-->
+                  <!--<p class="form-row">
+                      <a href="#collapse_shot_project_config"
+
+
+                         id="a_collapse_shot_project">
+                          <i>ProjectConfig</i></a>
                   </p>
                   <div id="collapse_shot_project_config" style="display:none;"
                        class="form-row">
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">Entity Name :
-                        &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ shot_form.entity_name }}
+                      <div class="form-group">
+                          <label class="control-label col-sm-2">Entity Name :
+                              &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ shot_form.entity_name }}
+                          </div>
                       </div>
-                    </div>
-                    <!--<div class="form-group">
-                        <label class="control-label col-sm-2">Version : &nbsp;</label>
-                        <div class="col-sm-10">
-                            {{ shot_form.version }}
-                        </div>
-                    </div>-->
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">frame_start :
-                        &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ shot_form.frame_start }}
+                      <div class="form-group">
+                          <label class="control-label col-sm-2">Version : &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ shot_form.version }}
+                          </div>
                       </div>
-                    </div>
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">frame_end : &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ shot_form.frame_end }}
+                      <div class="form-group">
+                          <label class="control-label col-sm-2">frame_start :
+                              &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ shot_form.frame_start }}
+                          </div>
                       </div>
-                    </div>
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">Total Frames :
-                        &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ shot_form.total_frames }}
+                      <div class="form-group">
+                          <label class="control-label col-sm-2">frame_end : &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ shot_form.frame_end }}
+                          </div>
                       </div>
-                    </div>
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">Frame Duration :
-                        &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ shot_form.frame_duration }}
+                      <div class="form-group">
+                          <label class="control-label col-sm-2">Total Frames :
+                              &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ shot_form.total_frames }}
+                          </div>
                       </div>
-                    </div>
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">key_frames :
-                        &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ shot_form.key_frames }}
+                      <div class="form-group">
+                          <label class="control-label col-sm-2">Frame Duration :
+                              &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ shot_form.frame_duration }}
+                          </div>
                       </div>
-                    </div>
-                  </div>
+                      <div class="form-group">
+                          <label class="control-label col-sm-2">key_frames :
+                              &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ shot_form.key_frames }}
+                          </div>
+                      </div>
+                  </div>-->
                   <br/>
                   <div class="form-group form-row">
                     <div class="col-sm-offset-2 col-sm-10">
@@ -525,128 +539,189 @@
                   </div>
                 </form>
               </div>
-            </div>
-          </div>
+              <div class="box" id="div_create_shot_csv" style="display:none">
+                <button type="button" title="Attach file here ..." class="btn btn-inverse btn-default btn-xs"
+                        style="float: left;margin-right: 5px;" id="shot_csv" onclick="csv_upload_files(this)"><span
+                  class="glyphicon glyphicon-plus"></span></button>
+                <label id="attached_csv_file"></label>
+                <div class="progress" style="display:none">
+                  <div class="progress-bar" role="progressbar" style="width: 0%;">0%</div>
+                </div>
+                <input id="csv_fileupload" type="file" name="file" accept=".csv"
+                       style="display: none;"
+                       data-form-data='{"csrfmiddlewaretoken": "{{ csrf_token }}"}'>
+                <button class="btn btn-inverse btn-default btn-xs" id="btn_create_shot_csv"
+                        title="Create Shots" style="width: 150px;float: right;">Create Shots
+                </button>
 
-        </div>
-      </div>
-      <!-- end of shot form div -->
-      <div class="controls" id="asset_id">
-        <div class="modal fade" id="assetModal" tabindex="-1" role="dialog"
-             aria-labelledby="myLargeModalLabel" aria-hidden="true" data-backdrop="static">
-          <div class="modal-dialog modal-dialog-centered rounded_border">
-            <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal" style="color: #fff;">×</button>
-              <br>
-              <div class="container">
-                <form action="{% url 'create_project_form' %}" method="post"
-                      id="asset_creation" class="form-horizontal">
-                  {% csrf_token %}
-                  <div class="form-group">
-                    <label class="control-label col-sm-2">Linked To : &nbsp;</label>
-                    <div class="col-sm-10">
-                      {{ asset_form.linked_to }}
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label class="control-label col-sm-2">Asset Type : &nbsp;</label>
-                    <div class="col-sm-10">
-                      {{ asset_form.asset_type }}
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label class="control-label col-sm-2">Asset Name : &nbsp;</label>
-                    <div class="col-sm-10">
-                      {{ asset_form.asset_name }}
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label class="control-label col-sm-2">Description : &nbsp;</label>
-                    <div class="col-sm-10">
-                      {{ asset_form.asset_description }}
-                    </div>
-                  </div>
-                  <p class="form-row">
-                    <a href="#collapse_asset_more"
-                       data-toggle="collapse" aria-expanded="false"
-                       aria-controls="collapse_asset_more"
-                       id="a_collapse_asset_more">
-                      <i>More</i></a>
-                  </p>
-                  <div id="collapse_asset_more" style="display:none;"
-                       class="form-row">
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">Status : &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ asset_form.asset_status }}
-                      </div>
-                    </div>
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">Priority : &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ asset_form.asset_priority }}
-                      </div>
-                    </div>
-                  </div>
-                  <p class="form-row">
-                    <a href="#collapse_shot_project_config"
-                       data-toggle="collapse" aria-expanded="false"
-                       aria-controls="collapse_shot_project_config"
-                       id="a_collapse_asset_project">
-                      <i>ProjectConfig</i></a>
-                  </p>
-                  <div id="collapse_shot_asset_config" style="display:none;"
-                       class="form-row">
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">Entity Name :
-                        &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ asset_form.asset_entity_name }}
-                      </div>
-                    </div>
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">Version : &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ asset_form.asset_version }}
-                      </div>
-                    </div>
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">Client Label :
-                        &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ asset_form.asset_client_label }}
-                      </div>
-                    </div>
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">Sub-Category : &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ asset_form.asset_sub_category }}
-                      </div>
-                    </div>
-                    <br/>
-                  </div>
-                  <div class="form-group form-row">
-                    <div class="col-sm-offset-2 col-sm-10">
-                      <input type="button" value="Create"
-                             id="submit_asset_details"
-                             class="btn btn-success"/>
-                      <input type="button" value="Update"
-                             id="update_asset_details"
-                             class="btn btn-default" style="display:none;"/>
-                      <input type="button" value="Cancel"
-                             id="cancel_asset_details"
-                             class="btn btn-warning"/>
-                    </div>
-                  </div>
-                  <!--</div>-->
-                </form>
+                <div class="box-inner" style="overflow:auto; overflow-y:auto; height:410px;width: 100%;">
+                  <table id="csv_shots" class="table table-condensed table-bordered">
+                    <thead>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
 
         </div>
       </div>
+      <!-- end of shot form div -->
+
+      <div class="controls" id="asset_id">
+        <div class="modal fade" id="assetModal" tabindex="-1" role="dialog"
+             aria-labelledby="myLargeModalLabel" aria-hidden="true" data-backdrop="static">
+          <div class="modal-dialog modal-dialog-centered rounded_border">
+            <div class="modal-header">
+              <label>
+                <input type="checkbox" id="create_asset_csv">&nbsp;&nbsp; Create from CSV &nbsp;&nbsp;
+                <a href="/media/sample/sample_create_asset.csv">[ Sample CSV ]</a>
+              </label>
+              <button type="button" class="close" data-dismiss="modal" style="color: #fff;">×</button>
+
+              <br>
+              <div class="container" id="div_create_asset_manual">
+                <form enctype="multipart/form-data" action="{% url 'create_project_form' %}"
+                      method="post"
+                      id="asset_creation" class="form-horizontal">
+                  {% csrf_token %}
+                  <div class="container">
+                    <div class="form-group">
+                      <label class="control-label col-sm-2">Linked To : &nbsp;</label>
+                      <div class="col-sm-10">
+                        {{ asset_form.linked_to }}
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="control-label col-sm-2">Asset Type : &nbsp;</label>
+                      <div class="col-sm-10">
+                        {{ asset_form.asset_type }}
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="control-label col-sm-2">Asset Name : &nbsp;</label>
+                      <div class="col-sm-10">
+                        {{ asset_form.asset_name }}
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="control-label col-sm-2">Description : &nbsp;</label>
+                      <div class="col-sm-10">
+                        {{ asset_form.asset_description }}
+                      </div>
+                    </div>
+                    <!--<p class="form-row">
+                        <a href="#collapse_asset_more"
+                           data-toggle="collapse" aria-expanded="false"
+                           aria-controls="collapse_asset_more"
+                           id="a_collapse_asset_more">
+                            <i>More</i></a>
+                    </p>
+                    <div id="collapse_asset_more" style="display:none;"
+                         class="form-row">
+                        <div class="form-group">
+                            <label class="control-label col-sm-2">Status : &nbsp;</label>
+                            <div class="col-sm-10">
+                                {{ asset_form.asset_status }}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-sm-2">Priority : &nbsp;</label>
+                            <div class="col-sm-10">
+                                {{ asset_form.asset_priority }}
+                            </div>
+                        </div>
+                    </div>
+                    <p class="form-row">
+                        <a href="#collapse_shot_project_config"
+                           data-toggle="collapse" aria-expanded="false"
+                           aria-controls="collapse_shot_project_config"
+                           id="a_collapse_asset_project">
+                            <i>ProjectConfig</i></a>
+                    </p>
+                    <div id="collapse_shot_asset_config" style="display:none;"
+                         class="form-row">
+                        <div class="form-group">
+                            <label class="control-label col-sm-2">Entity Name :
+                                &nbsp;</label>
+                            <div class="col-sm-10">
+                                {{ asset_form.asset_entity_name }}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-sm-2">Version : &nbsp;</label>
+                            <div class="col-sm-10">
+                                {{ asset_form.asset_version }}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-sm-2">Client Label :
+                                &nbsp;</label>
+                            <div class="col-sm-10">
+                                {{ asset_form.asset_client_label }}
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label col-sm-2">Sub-Category : &nbsp;</label>
+                            <div class="col-sm-10">
+                                {{ asset_form.asset_sub_category }}
+                                <input type="text" id="asset_subCat"
+                                       class="form-control"
+                                       style="color:black;width: 250px;display:none">
+                            </div>
+                        </div>
+                        <br/>
+                    </div>-->
+                    <div class="form-group form-row">
+                      <div class="col-sm-offset-1 col-sm-7">
+                        <input type="button" value="Create"
+                               id="submit_asset_details"
+                               class="btn btn-success"/>
+                        <input type="button" value="Update"
+                               id="update_asset_details"
+                               class="btn btn-default" style="display:none;"/>
+                        <input type="button" value="Cancel"
+                               id="cancel_asset_details"
+                               class="btn btn-warning"/>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              <div class="box" id="div_create_asset_csv" style="display:none">
+                <button type="button" title="Attach file here ..." class="btn btn-inverse btn-default btn-xs"
+                        style="float: left;margin-right: 5px;" id="asset_csv" onclick="csv_upload_files(this)"><span
+                  class="glyphicon glyphicon-plus"></span></button>
+                <label id="attached_csv_file"></label>
+                <div class="progress" style="display:none">
+                  <div class="progress-bar" role="progressbar" style="width: 0%;">0%</div>
+                </div>
+                <input id="csv_fileupload" type="file" name="file" accept=".csv"
+                       style="display: none;"
+                       data-form-data='{"csrfmiddlewaretoken": "{{ csrf_token }}"}'>
+                <button class="btn btn-inverse btn-default btn-xs" id="create_asset_build_csv"
+                        title="Create Asset Builds" style="width: 150px;float: right;">Create Asset Builds
+                </button>
+                <br>
+                <div class="box-inner" style="overflow:auto; overflow-y:auto; height:410px;width: 100%;">
+                  <table id="csv_asset_builds" class="table table-condensed table-bordered">
+                    <thead>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
       <!-- end of asset form div -->
+
       <div class="controls" id="task_id">
         <div class="modal fade" id="taskModal" tabindex="-1" role="dialog"
              aria-labelledby="myLargeModalLabel" aria-hidden="true" data-backdrop="static">
@@ -665,17 +740,17 @@
                     </div>
                   </div>
                   <div class="form-group">
-                    <label class="control-label col-sm-2">Task Type : &nbsp;</label>
-                    <div class="col-sm-10">
-                      {{ task_form.task_type }}
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label class="control-label col-sm-2">Task Name : &nbsp;</label>
+                    <label class="control-label col-sm-2" id="task_name_id">Task Name : &nbsp;</label>
                     <div class="col-sm-10">
                       {{ task_form.task_name }}
                     </div>
                   </div>
+                  <!--<div class="form-group">
+                      <label class="control-label col-sm-2">Task Name : &nbsp;</label>
+                      <div class="col-sm-10">
+                          {{ task_form.task_name }}
+                      </div>
+                  </div>-->
                   <div class="form-group">
                     <label class="control-label col-sm-2">Description : &nbsp;</label>
                     <div class="col-sm-10">
@@ -694,66 +769,89 @@
                       {{ task_form.task_bid_days }}
                     </div>
                   </div>
-                  <p class="form-row">
-                    <a href="#collapse_task_more"
-                       data-toggle="collapse" aria-expanded="false"
-                       aria-controls="collapse_asset_more"
-                       id="a_collapse_task_more">
-                      <i>More</i></a>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2">Status : &nbsp;</label>
+                    <div class="col-sm-10">
+                      {{ task_form.task_status }}
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2">Priority : &nbsp;</label>
+                    <div class="col-sm-10">
+                      {{ task_form.task_priority }}
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2">Start Date : &nbsp;</label>
+                    <div class="col-sm-10">
+                      {{ task_form.task_start_date }}
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-sm-2">Due Date : &nbsp;</label>
+                    <div class="col-sm-10">
+                      {{ task_form.task_due_date }}
+                    </div>
+                  </div>
+                  <!--<p class="form-row">
+                      <a href="#collapse_task_more"
+                         data-toggle="collapse" aria-expanded="false"
+                         aria-controls="collapse_asset_more"
+                         id="a_collapse_task_more">
+                          <i>More</i></a>
                   </p>
                   <div id="collapse_task_more" style="display:none;"
                        class="form-row">
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">Status : &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ task_form.task_status }}
+                      <div class="form-group">
+                          <label class="control-label col-sm-2">Status : &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ task_form.task_status }}
+                          </div>
                       </div>
-                    </div>
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">Priority : &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ task_form.task_priority }}
+                      <div class="form-group">
+                          <label class="control-label col-sm-2">Priority : &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ task_form.task_priority }}
+                          </div>
                       </div>
-                    </div>
-                    <div class="form-group">
-                      {{ form.task_start_date.error }}
-                      <label for="{{ form.task_start_date.id_for_label }}" class="control-label col-sm-2">Start Date
-                        : &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ task_form.task_start_date }}
+                      <div class="form-group">
+                          <label class="control-label col-sm-2">Start Date : &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ task_form.task_start_date }}
+                          </div>
                       </div>
-                    </div>
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">Due Date : &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ task_form.task_due_date }}
+                      <div class="form-group">
+                          <label class="control-label col-sm-2">Due Date : &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ task_form.task_due_date }}
+                          </div>
                       </div>
-                    </div>
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">Scope : &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ task_form.task_scope }}
+                      <!--<div class="form-group">
+                          <label class="control-label col-sm-2">Scope : &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ task_form.task_scope }}
+                          </div>
                       </div>
-                    </div>
                   </div>
                   <p class="form-row">
-                    <a href="#collapse_task_project_config"
-                       data-toggle="collapse" aria-expanded="false"
-                       aria-controls="collapse_task_project_config"
-                       id="a_collapse_task_project_config">
-                      <i>ProjectConfig</i></a>
+                      <a href="#collapse_task_project_config"
+                         data-toggle="collapse" aria-expanded="false"
+                         aria-controls="collapse_task_project_config"
+                         id="a_collapse_task_project_config">
+                          <i>ProjectConfig</i></a>
                   </p>
                   <div id="collapse_task_project_config" style="display:none;"
                        class="form-row">
-                    <div class="form-group">
-                      <label class="control-label col-sm-2">Entity Name :
-                        &nbsp;</label>
-                      <div class="col-sm-10">
-                        {{ task_form.task_entity_name }}
+                      <div class="form-group">
+                          <label class="control-label col-sm-2">Entity Name :
+                              &nbsp;</label>
+                          <div class="col-sm-10">
+                              {{ task_form.task_entity_name }}
+                          </div>
                       </div>
-                    </div>
-                    <br/>
+                      <br/>
                   </div>
+                  </div>-->
                   <div class="form-group form-row">
                     <div class="col-sm-offset-2 col-sm-10">
                       <input type="button" value="Create"
@@ -767,7 +865,6 @@
                              class="btn btn-warning"/>
                     </div>
                   </div>
-                  <!--</div>-->
                 </form>
               </div>
             </div>
@@ -776,6 +873,7 @@
         </div>
       </div>
       <!-- end of task form div -->
+
       <div class="modal fade" id="choice_asset_Modal" tabindex="-1" role="dialog"
            aria-labelledby="myLargeModalLabel" aria-hidden="true" data-backdrop="static">
         <div class="modal-dialog modal-sm">

@@ -122,9 +122,10 @@ $(document).ready(function () {
 
     $('.accordion li.active:first').parents('ul').slideDown();
 
+    $('[data-rel="chosen"],[rel="chosen"]').chosen();
 
     //other things to do on document ready, separated for ajax calls
-    docReady();
+    //docReady();
 });
 
 

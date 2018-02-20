@@ -4221,6 +4221,62 @@ $('#task_refresh').click(function(){
     show_artist_tasks();
 });
 
+function artist_action(param){
+
+    action = '';
+    action_attr = $(param).attr('title');
+    note_text = '';
+    if (action_attr == 'START'){
+	action = 'Started';
+    }else if (action_attr == 'PAUSE'){
+	action = 'Paused';
+	note_text = prompt("Why you want to pause the task ?", "");
+	if (note_text != null)
+	    note_text = note_text.trim();
+
+        if (!(note_text.length)){
+            alert("invalid reason ...");
+            return null;
+        }
+    }else{
+	action = 'Stopped';
+    }
+
+    fn_artist_task_action(param,action,note_text);
+}
+
+function fn_artist_task_action(param,action,note_text){
+
+    $tr = $(param).closest('tr');
+
+    project = $tr.attr('data-project');
+    task_id = $tr.attr('data-task-id');
+
+    $.ajax({
+	type: "POST",
+	url: "/callajax/",
+	data : {'object_name': 'Artist Action', 'project': project, 'task_id': task_id, 'action': action, 'note_text': note_text},
+	beforeSend: function(){
+        },
+	success: function(json){
+//	    $.each(json,function(idx,obj){
+//	    });
+                    noty({
+                            text: 'Your task has been '+action,
+                            layout: 'topCenter',
+                            closeWith: ['click', 'hover'],
+                            type: 'success'
+			});
+		setTimeout(location.reload.bind(location), 3000);
+	},
+	error: function(error){
+	    console.log("Error:"+error);
+	}
+
+    });
+
+}
+
 function show_artist_tasks(){
 
     project_id = $('#selectArtistProject').val();
@@ -4244,8 +4300,20 @@ function show_artist_tasks(){
 	        if (obj.time_left.startsWith('-')){
 	            color_code = 'style="color:#ff2a0c"'
 	        }
+		action_play = 'display:none;';
+		action_pause = 'display:none;';
+		action_stop = 'display:none;';
+		if (obj.backup_status == 'Started'){
+		    action_pause = '';
+		    action_stop = '';
+		}else if (obj.backup_status == 'Paused'){
+		    action_play = '';
+		    action_stop = '';
+		}else{
+		    action_play = '';
+		}
 	        table_row = '\
-            <tr>\
+            <tr data-project="'+obj.project+'" data-task-id="'+obj.task_id+'">\
                   <td>\
                     <strong>'+obj.project+'</strong>\
                   </td>\
@@ -4281,6 +4349,20 @@ function show_artist_tasks(){
                   </td>\
                   <td>\
                     <strong '+color_code+'>'+obj.time_left+'</strong>\
+                  </td>\
+		  <td style="width: 205px;">\
+                    <button title="START" class="btn btn-inverse btn-success btn-sm" id="task_approved"\
+                            style="color: black;'+action_play+'" onclick="artist_action(this)">\
+                      <i class="glyphicon glyphicon-play"></i>\
+                    </button>\
+                    <button title="PAUSE" class="btn btn-inverse btn-warning btn-sm" id="task_reject"\
+                            style="color: black;'+action_pause+'" onclick="artist_action(this)">\
+                      <i class="glyphicon glyphicon-pause"></i>\
+                    </button>\
+                    <button title="STOP" class="btn btn-inverse btn-danger btn-sm" id="task_reject"\
+                            style="color: black;'+action_stop+'" onclick="artist_action(this)">\
+                      <i class="glyphicon glyphicon-stop"></i>\
+                    </button>\
                   </td>\
                 </tr>';
             $('#tbl_task tbody').append(table_row);
@@ -4396,18 +4478,233 @@ function secondsTimeSpanToHMS(s) {
     return h+":"+(m < 10 ? '0'+m : m)+":"+(s < 10 ? '0'+s : s); //zero padding on minutes and seconds
 }
 
+// Asset CSV upload
+$("#create_asset_csv").click(function(){
+    if (this.checked){
+	$('#div_create_asset_manual').css({'display':'none'});
+	$('#div_create_asset_csv').css({'display':'block'});
+    }else{
+	$('#div_create_asset_manual').css({'display':'block'});
+	$('#div_create_asset_csv').css({'display':'none'});
+    }
+});
+
+$("#create_shot_csv").click(function(){
+    if (this.checked){
+	$('#div_create_shot_manual').css({'display':'none'});
+	$('#div_create_shot_csv').css({'display':'block'});
+    }else{
+	$('#div_create_shot_manual').css({'display':'block'});
+	$('#div_create_shot_csv').css({'display':'none'});
+    }
+});
+function csv_upload_files(param){
+    $("#csv_fileupload").click();
+
+    entity = '';
+    csv_entity = $(param).attr('id');
+    if (csv_entity == 'asset_csv'){
+	entity = 'AssetBuild';
+    }else{
+	entity = 'Shot';
+    }
+$("#csv_fileupload").fileupload({
+    dataType: 'json',
+    sequentialUploads: true,
+    url: '/callajax/',
+
+    start: function (e) {
+      $(".progress").css({"display":"block"});
+    },
+
+    stop: function (e) {
+      $(".progress-bar").css({"width": "0%"});
+      $(".progress-bar").text("0%");
+      $(".progress").css({"display":"none"});
+    },
+
+    progressall: function (e, data) {
+      var progress = parseInt(data.loaded / data.total * 100, 10);
+      var strProgress = progress + "%";
+      $(".progress-bar").css({"width": strProgress});
+      $(".progress-bar").text(strProgress);
+    },
+
+    done: function (e, data) {
+      if (data.result.is_valid) {
+        $("#attached_csv_file").html(data.result.name);
+
+	// show uploaded csv
+	parent_id = get_entity_id()
+	project = get_project_name()
+	file_path = data.result.url;
+	show_upload_csv(file_path,entity,parent_id,project);
+      }
+    }
+
+  });
+}
+function show_upload_csv(file_path,entity,parent_id,project){
+    div = '';
+    if (entity == 'AssetBuild'){
+	div = 'csv_asset_builds';
+    }else{
+	div = 'csv_shots';
+    }
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data:{
+        'object_name': 'Show Upload CSV',
+        'project': project,
+        'create_entity': entity,
+        'parent_id': parent_id,
+        'file_path': file_path
+        },
+	beforeSend: function(){
+	    $('#'+div+' thead').html('');
+	    $('#'+div+' tbody').html('');
+        },
+        success:function(json){
+	    if(json.AssetBuild){
+		$.each(json.AssetBuild, function(idx, data){
+		    get_asset_row_csv(idx,data,div);
+		});
+	    }else{
+		$.each(json.Shot, function(idx, data){
+		   get_shot_row_csv(idx,data,div);
+		});
+	    }
+        }
+    });
+}
+
+function get_asset_row_csv(idx,data,div){
+    tr = '';
+    invalid_data = 'data-invalid="0"';
+    if (data.invalid == 1){
+        invalid_data = 'style="background-color:#ed4343;color:black" data-invalid="1"';
+    }
+
+    if (idx == 0){
+        tr = '\
+	<tr>\
+	    <th>'+data.asset_name+'</th>\
+	    <th>'+data.asset_type+'</th>\
+	    <th>'+data.description+'</th>\
+	</tr>\
+	';
+	$('#'+div+' thead').append(tr);
+    }else{
+        tr = '\
+	<tr '+invalid_data+'>\
+	    <td>'+data.asset_name+'</th>\
+	    <td>'+data.asset_type+'</th>\
+	    <td>'+data.description+'</th>\
+	<tr>\
+	';
+	$('#'+div+' tbody').append(tr);
+    }
+
+}
+function get_shot_row_csv(idx,data,div){
+    tr = '';
+    invalid_data = 'data-invalid="0"';
+    if (data.invalid == 1){
+        invalid_data = 'style="background-color:#ed4343;color:black" data-invalid="1"';
+    }
+
+    if (idx == 0){
+        tr = '\
+	<tr>\
+	    <th>'+data.shot_name+'</th>\
+	    <th>'+data.start_frame+'</th>\
+	    <th>'+data.end_frame+'</th>\
+	    <th>'+data.description+'</th>\
+	</tr>\
+	';
+	$('#'+div+' thead').append(tr);
+    }else{
+        tr = '\
+	<tr '+invalid_data+'>\
+	    <td>'+data.shot_name+'</th>\
+	    <td>'+data.start_frame+'</th>\
+	    <td>'+data.end_frame+'</th>\
+	    <td>'+data.description+'</th>\
+	<tr>\
+	';
+	$('#'+div+' tbody').append(tr);
+    }
+
+}
+
+$('#create_asset_build_csv').click(function(){
+
+    data_list = [];
+    $("#csv_asset_builds tr[data-invalid='0']").each(function(index){
+	td_array = {};
+	asset_build_name = $(this).find('td:eq(0)').text();
+	asset_build_type = $(this).find('td:eq(1)').text();
+	desc = $(this).find('td:eq(2)').text();
+
+	td_array['parent_id'] = get_parent_id();
+	td_array['parent_object'] = get_parent_object();
+	td_array['asset_build_name'] = asset_build_name;
+	td_array['asset_build_type'] = asset_build_type;
+	td_array['description'] = desc;
+
+	data_list.push(td_array);
+    });
+    if (data_list.length > 0)
+	var entity_name = 'AssetBuild';
+	update_form_data(entity_name,data_list);
+
+	$('#assetModal').modal('hide');
+	clear_asset_modal_fields();
+
+});
+
+$('#btn_create_shot_csv').click(function(){
+
+    data_list = [];
+    $("#csv_shots tr[data-invalid='0']").each(function(index){
+	td_array = {};
+	shot_name = $(this).find('td:eq(0)').text();
+	start_frame = $(this).find('td:eq(1)').text();
+	end_frame = $(this).find('td:eq(2)').text();
+	desc = $(this).find('td:eq(3)').text();
+
+	td_array['parent_id'] = get_parent_id();
+	td_array['parent_object'] = get_parent_object();
+	td_array['shot_name'] = shot_name;
+	td_array['start_frame'] = start_frame;
+	td_array['end_frame'] = end_frame;
+	td_array['description'] = desc;
+
+	data_list.push(td_array);
+    });
+    if (data_list.length > 0)
+	var entity_name = 'Shot';
+	update_form_data(entity_name,data_list);
+
+	$("#shotModal").modal("hide");
+        clear_shot_modal_fields();
+
+});
+
 /*
     Author Kunal Jamdade
 */
-
 function create_project_click(){
 
+    clear_project_fields();
     $("#id_project_name").prop("disabled", false);
     $('#id_project_code').prop("disabled", false);
     $("#update_details").hide();
     $("#submit_details").show();
     $('#projectModal').modal('toggle');
 }
+
 /*
     Modal options to display the div
     on click More, Storage, Project Config
@@ -4424,12 +4721,24 @@ function create_project_click(){
 
 // Storage Option
 $('#a_collapse_storage').click(function(){
-   $('#collapse_storage').toggle();
+   // $('#collapse_storage').toggle();
+
+   if($("#collapse_storage").css('display') == 'none')
+        $("#collapse_storage").show();
+    else
+        $("#collapse_storage").hide();
+
 });
 
 // Project Config Option
 $('#a_project_config').click(function(){
-   $('#collapse_project_config').toggle();
+   // $('#collapse_project_config').toggle();
+
+   if($("#collapse_project_config").css('display') == 'none')
+        $("#collapse_project_config").show();
+    else
+        $("#collapse_project_config").hide();
+
 });
 
 /*
@@ -4438,12 +4747,24 @@ $('#a_project_config').click(function(){
 
 // More Option
 $('#a_collapse_sequence_more').click(function(){
-    $('#collapse_sequence_more').toggle();
+    //$('#collapse_sequence_more').toggle();
+
+    if($("#collapse_sequence_more").css('display') == 'none')
+        $("#collapse_sequence_more").show();
+    else
+        $("#collapse_sequence_more").hide();
+
 });
 
 // Project Config
 $('#a_collapse_sequence_project').click(function(){
-    $('#collapse_sequence_project_config').toggle();
+    //$('#collapse_sequence_project_config').toggle();
+
+    if($("#collapse_sequence_project_config").css('display') == 'none')
+        $("#collapse_sequence_project_config").show();
+    else
+        $("#collapse_sequence_project_config").hide();
+
 });
 
 /*
@@ -4452,12 +4773,22 @@ $('#a_collapse_sequence_project').click(function(){
 
 // More Option
 $('#a_collapse_shot_more').click(function(){
-    $('#collapse_shot_more').toggle();
+    //$('#collapse_shot_more').toggle();
+
+    if($("#collapse_shot_more").css('display') == 'none')
+        $("#collapse_shot_more").show();
+    else
+        $("#collapse_shot_more").hide();
 });
 
 // Config Option
 $('#a_collapse_shot_project').click(function(){
-   $('#collapse_shot_project_config').toggle();
+   //$('#collapse_shot_project_config').toggle();
+
+   if($("#collapse_shot_project_config").css('display') == 'none')
+        $("#collapse_shot_project_config").show();
+    else
+        $("#collapse_shot_project_config").hide();
 });
 
 /*
@@ -4465,12 +4796,22 @@ $('#a_collapse_shot_project').click(function(){
 */
 //More Option
 $("#a_collapse_asset_more").click(function(){
-    $("#collapse_asset_more").toggle();
+    //$("#collapse_asset_more").toggle();
+
+    if($("#collapse_asset_more").css('display') == 'none')
+        $("#collapse_asset_more").show();
+    else
+        $("#collapse_asset_more").hide();
 });
 
 //Config Option
 $("#a_collapse_asset_project").click(function(){
-    $("#collapse_shot_asset_config").toggle();
+    //$("#collapse_shot_asset_config").toggle();
+
+    if($("#collapse_shot_asset_config").css('display') == 'none')
+        $("#collapse_shot_asset_config").show();
+    else
+        $("#collapse_shot_asset_config").hide();
 });
 
 /*
@@ -4478,7 +4819,11 @@ $("#a_collapse_asset_project").click(function(){
 */
 //More Option
 $("#a_collapse_task_more").click(function(){
-    $("#collapse_task_more").toggle();
+    //$("#collapse_task_more").toggle();
+    if($("#collapse_task_more").css('display') == 'none')
+        $("#collapse_task_more").show();
+    else
+        $("#collapse_task_more").hide();
 });
 
 //Config Option
@@ -4519,14 +4864,13 @@ function clear_project_fields(){
     $('#id_project_code').val('');
     $('#id_start_date').val('');
     $('#id_end_date').val('');
-    $('#id_status').val('');
     $('#id_scope').val('');
     $('#id_disk').val('');
     $('#id_project_folder').val('');
     $('#id_entity_name').val('');
     $('#id_resolution').val('');
-    $('#id_start_frame').val('');
-    $('#id_fps').val('');
+    $('#id_start_frame').val('101');
+    $('#id_fps').val('24');
     $('#id_version').val('');
     $('#id_client_label').val('');
 }
@@ -4543,6 +4887,7 @@ $("#cancel_sequence_details").click(function(e){
 function clear_sequence_fields(){
     $('#id_sequence_name').val('');
     $('#id_sequence_description').val('');
+    $('#id_sequence_status').val("Select Status")
     $('#id_sequence_priority').val('');
     $('#id_sequence_entity_name').val('');
 }
@@ -4556,6 +4901,8 @@ $('#cancel_shot_details').click(function(){
     clear_shot_modal_fields();
 });
 
+
+
 function clear_shot_modal_fields(){
     $('#id_shot_type').val('Static Shot');
     $('#id_name').val('');
@@ -4567,6 +4914,8 @@ function clear_shot_modal_fields(){
     $('#id_total_frames').val('0.0');
     $('#id_frame_duration').val('0.0');
     $('#id_key_frames').val('');
+    $('#attached_csv_file').html('');
+    remove_rows('#csv_shots');
 }
 
 //on click cancel hide asset modal
@@ -4576,24 +4925,51 @@ $("#cancel_asset_details").click(function(){
     $("#collapse_shot_asset_config").hide();
     clear_asset_modal_fields();
 });
+function asset_type_drop_down(){
+
+    var s = $("#id_asset_type");
+    s.append("<option values='Select Asset' selected='selected'> Select Asset </option>");
+    s.append("<option value='Set'>Set</option>");
+    s.append("<option value='Vehicle'>Vehicle</option>");
+    s.append("<option value='Prop'>Prop</option>");
+    s.append("<option value='Character'>Character</option>");
+}
 
 function clear_asset_modal_fields(){
-    $("#id_asset_type").val('Set');
+    //$("#id_asset_type option:eq(0)").attr("selected", true);
+    asset_type_drop_down();
     $("#id_asset_name").val('');
     $("#id_asset_description").val('');
     $("#id_asset_status").val('Not Started');
-    $("#id_asset_priority").val('Urgent');
+    $("#id_asset_priority").val('None');
     $("#id_asset_entity_name").val('');
     $("#id_asset_version").val('');
     $("#id_asset_client_label").val('');
     $("#id_asset_sub_category").val('');
+
+    $('#attached_csv_file').html('');
+    remove_rows('#csv_asset_builds');
 }
+
+/*
+    keypress event on project name
+    to fill project code
+*/
+var cnt = 1;
+var max = $('#id_project_code').attr("maxlength");
+$('#id_project_name').keydown(function(){
+    console.log(max);
+    len = $('#id_project_code').val().length;
+    if(len < 3){
+        $('#id_project_code').val($(this).val().toLowerCase());
+        //cnt++
+    }
+});
 
 // Ajax call to create project
 $('#submit_details').click(function(){
 
     var project_name = $('#id_project_name').val().trim();
-    //$('#id_project_code').prop("disabled", true);
     var project_code = $('#id_project_code').val().trim();
     var start_date = $('#id_start_date').val();
     var end_date = $('#id_end_date').val();
@@ -4610,38 +4986,60 @@ $('#submit_details').click(function(){
     var client_label = $('#id_client_label').val();
     var flag_status = 'create';
 
+    var data_array = {};
+
     if(project_name == ''){
         alert("project name field must not be empty!!!!!!!");
         return false;
     }
-
+    
     var pattern_name = /^[0-9a-zA-Z]+$/;
     if(!pattern_name.test(project_name)){
         alert("Project name must be alphanumeric!!!");
         return false;
     }
+    data_array['project_name'] = project_name;
+
     if(project_code == ''){
         alert("project code field must not be empty!!!!!!!");
         return false;
     }
     var pattern = /^[0-9a-zA-Z]+$/;
     if(!pattern.test(project_code)){
-        alert("Must contain alphabets and numbers!!!");
+        alert("Project code must contain alphabets and numbers!!!");
         return false;
     }
+    data_array['project_code'] = project_code;
 
-    if(project_name.toUpperCase() != project_name){
-        alert("Project name must be in upper case!!!!");
+    var fps_pattern = /^[0-9]+$/;
+    if(!fps_pattern.test(fps)){
+        alert("Fps must be integer only!!!!");
         return false;
     }
-
-    if(project_name == project_code){
-        if(project_code.toLowerCase() != project_code){
-            alert("Project code must be in lower case!!!!");
-            return false;
-        }
+    if(!fps_pattern.test(start_frame)){
+        alert("Start frame must be integer!!!");
+        return false;
     }
+    data_array['fps'] = fps;
 
+//
+//    if(project_name == project_code){
+//        if(project_code.toLowerCase() != project_code){
+//            alert("Project code must be in lower case!!!!");
+//            return false;
+//        }
+//    }
+//    else{
+//        if (project_name.toLowerCase() != project_code.toLowerCase())
+//        {
+//            alert("project code and project name must be same!!!!");
+//            return false;
+//        }
+//        if(project_code.toLowerCase() != project_code){
+//            alert("Project code must be in lower case!!!!");
+//            return false;
+//        }
+//    }
     if(start_date == '' && end_date == ''){
         alert("Start and end date must not be empty!!!!!!!");
         return false;
@@ -4664,8 +5062,18 @@ $('#submit_details').click(function(){
         alert("Start date must not exceed end date!!!!!!!");
         return false;
     }
+    data_array['start_date'] = start_date;
+    data_array['end_date'] = end_date;
+    data_array['start_frame'] = start_frame;
 
-    else{
+    var data_list = [];
+    data_list.push(data_array);
+
+    var entity_name = 'Project'
+//    else{
+
+    update_form_data(entity_name,data_list);
+/*
         $.ajax({
             type: "POST",
             url: "/callajax/",
@@ -4688,14 +5096,56 @@ $('#submit_details').click(function(){
             'flag_status': flag_status,
             },
             success: function(json){
-                alert("successfully created project!!!!");
+            noty({
+                text: 'Project ['+project_code+'] Created Successfully.',
+                layout: 'topCenter',
+                closeWith: ['click', 'hover'],
+                type: 'success'
+            });
                 $('#table_view').empty();
                 get_project_details();
             }
         });//end of ajax call
-    }
+*/
+//    }
     hide_project_modal();
 });// end of create project details function
+
+function update_form_data(entity_name,data_list){
+
+    object_name = 'Update Form Data';
+    data_list = JSON.stringify(data_list);
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 
+	    'object_name': object_name, 
+	    'data_list': data_list, 
+	    'entity_name': entity_name},
+        beforeSend: function(){
+	    $('.modal-header').plainOverlay('show');
+        },
+        success: function(json){
+        
+	    $('.modal-header').plainOverlay('hide');
+            noty({
+                text: json.message,
+                layout: 'topCenter',
+                closeWith: ['click', 'hover'],
+                type: 'success'
+            });
+                $('#table_view').empty();
+                get_project_details();
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+
+    });
+
+}
+
 
 // Ajax to call to update project
 $('#project_id #id_project_code').prop('disabled', true);
@@ -4704,6 +5154,7 @@ $("#update_details").click(function(){
 
     var project_name = $('#project_id #id_project_name').val();
     var project_code = $('#project_id #id_project_code').val();
+    var project_id = $('#project_id #id_project_code').attr('data-id');
     var start_date = $('#project_id #id_start_date').val();
     var end_date = $('#project_id #id_end_date').val();
     var workflow_schema = $('#project_id #id_workflow_schema').val();
@@ -4719,15 +5170,42 @@ $("#update_details").click(function(){
     var client_label = $('#project_id #id_client_label').val();
     var flag_status = 'Update';
 
+    var data_array = {};
+    if (!project_id){
+	alert("Invalid project to update ...");
+	return False;
+    }
+
+    var sdate = new Date(start_date);
+    var edate = new Date(end_date);
+    if (sdate > edate){
+        alert("start date must not exceed end date!!!!");
+        return false;
+    }
     if(start_date == '' || end_date == ''){
         alert("start or end date field must not be empty!!!!!!!");
+        return false;
     }
-    /*if(end_date == ''){
-        alert("end date field must not be empty!!!!!!!");
+    if(end_date == '' && start_date == ''){
+        alert("Date fields must not be blank!!!!!!!");
+        return false;
     }
-    if(start_date == ''){
-        alert("start date field must not be empty!!!!!!!");
-    }*/
+    data_array['project_id'] = project_id;
+    data_array['start_date'] = start_date;
+    data_array['end_date'] = end_date;
+    data_array['resolution'] = resolution;
+    data_array['start_frame'] = start_frame;
+    data_array['fps'] = fps;
+
+    var data_list = [];
+    data_list.push(data_array);
+
+    var entity_name = 'Project';
+
+    update_form_data(entity_name,data_list);
+
+    hide_project_modal();
+/*
     else{
         $.ajax({
             type: "POST",
@@ -4757,6 +5235,7 @@ $("#update_details").click(function(){
         });//end of ajax call
         hide_project_modal();
     }
+*/
 });
 
 //Ajax call to create sequence
@@ -4767,19 +5246,7 @@ $('#submit_sequence_details').click(function(){
     var sequence_type = $('#id_sequence_type').val();
     var sequence_name = $('#id_sequence_name').val().trim();
     var description = $('#id_sequence_description').val();
-
-    var assigned_users = '';//$('#id_sequence_assignee').val();
-    var str = '';
-    /*
-        Separate multiple assigned users
-        on ,
-    */
-    /*if(assigned_users){
-        $.each(assigned_users, function(indx, value){
-            str = str + value + ",";
-        });
-    }*/
-    var status = $('#id_sequence_status').val();
+    var status = $('#id_sequence_status option:selected').text().trim();
     var priority = $('#id_sequence_priority').val();
     var scope = $('#id_sequence_scope').val();
     var entity_name = $('#id_sequence_entity_name').val();
@@ -4789,13 +5256,33 @@ $('#submit_sequence_details').click(function(){
 
     var pattern = /^[0-9a-zA-Z]+$/;
     if(!pattern.test(sequence_name)){
-        alert("Must contain alphabets and numbers!!!");
+        alert("Sequence must contain alphabets or numbers!!!");
         return false;
     }
     if(sequence_name == ""){
-        alert("Sequence name must not be empty!!!");
+        alert("Sequence name cannot be empty!!!");
         return false;
     }
+    if (status == 'Select Status'){
+        alert("Please select proper status!!!");
+        return false;
+    }
+    var data_array = {};
+    data_array['parent_id'] = get_parent_id();
+    data_array['parent_object'] = get_parent_object();
+    data_array['seq_name'] = sequence_name;
+    
+    data_array['description'] = description;
+
+    var data_list = [];
+    data_list.push(data_array);
+
+    var entity_name = 'Sequence';
+
+    update_form_data(entity_name,data_list);
+
+    $('#sequenceModal').modal('hide');
+/*
     else{
         $.ajax({
             type: "POST",
@@ -4806,7 +5293,7 @@ $('#submit_sequence_details').click(function(){
             'sequence_type': sequence_type,
             'sequence_name': sequence_name,
             'description': description,
-            'assigned_users': str,
+            'assigned_users': '',
             'status': status,
             'priority': priority,
             'scope': scope,
@@ -4816,7 +5303,12 @@ $('#submit_sequence_details').click(function(){
             'flag_status': flag_status
             },
             success: function(json){
-                alert("successfully created shot!!!!");
+            noty({
+                text: 'Sequence ['+sequence_name+'] Created Successfully.',
+                layout: 'topCenter',
+                closeWith: ['click', 'hover'],
+                type: 'success'
+            });
                 $('#table_view').empty();
                 get_sequence_details();
             }
@@ -4824,7 +5316,36 @@ $('#submit_sequence_details').click(function(){
         $('#sequenceModal').modal('hide');
         $("#table_view").show();
     }
+*/
 });// end of create sequence function
+
+$('#id_frame_end').change(function(){
+
+    var sf = $('#id_frame_start').val();
+    var ef = $('#id_frame_end').val();
+    var linked_to = $('#id_parent_object_type').val();
+    var prj_name = get_project_name();
+    var seq_name = get_sequence_name();
+    console.log(sf +"====>"+ parseInt(ef));
+
+    $("#id_total_frames").val(parseInt(ef) - (parseInt(sf) - 1));
+
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data:{
+        'object_name':'fps_calculation',
+        'sf':sf,
+        'ef':ef,
+        'prj_name': prj_name,
+        'seq_name': seq_name
+        },
+        success: function(json){
+
+            $("#id_frame_duration").val(json + "sec");
+        }
+    });
+});
 
 //Ajax call to create shot
 $('#submit_shot_details').click(function(){
@@ -4835,17 +5356,6 @@ $('#submit_shot_details').click(function(){
     var name = $('#id_name').val().trim();
     var description = $('#id_description').val();
 
-    //var assigned_users = '';//$('#id_assigned_users').val();
-    /*var str = '';
-    *//*
-        Separate multiple assigned users
-        on ,
-    *//*
-    if(assigned_users){
-        $.each(assigned_users, function(indx, value){
-            str = str + value + ",";
-        });
-    }*/
     var status = $('#id_status').val();
     var priority = $('#id_priority').val();
     var scope = $('#id_scope').val();
@@ -4862,19 +5372,48 @@ $('#submit_shot_details').click(function(){
     var prj_name =  split_prj_seq[0]
     var sequence_name = split_prj_seq[1];
     var flag_status = 'create';
-    if(frame_end <= frame_start){
-        alert("End frame must be higher than start frame!!!!");
-        return false;
-    }
+
+
     var pattern = /^[0-9a-zA-Z]+$/;
     if(!pattern.test(name)){
-        alert("Must contain alphanumeric characters!!!!");
+        alert("Shot name must be alphanumeric!!!!");
         return false;
     }
     if(name == ''){
         alert("Shot name must not be empty!!!!!");
         return false;
     }
+    if (status == 'Select Status'){
+        alert("Select proper status!!!!!");
+        return false;
+    }
+    if(frame_end <= frame_start){
+        alert("End frame must be higher than start frame!!!!");
+        return false;
+    }
+    if(frame_start == ''){
+        alert("Start frame cannot be empty!!!!");
+        return false;
+    }
+    var data_array = {};
+    data_array['parent_id'] = get_parent_id();
+    data_array['parent_object'] = get_parent_object();
+    data_array['shot_name'] = name;
+    data_array['shot_type'] = shot_type;
+    data_array['description'] = description;
+    data_array['start_frame'] = frame_start;
+    data_array['end_frame'] = frame_end;
+
+    var data_list = [];
+    data_list.push(data_array);
+
+    var entity_name = 'Shot';
+
+    update_form_data(entity_name,data_list);
+
+    $('#shotModal').modal('hide');
+    clear_shot_modal_fields();
+/*
     else{
         $.ajax({
             type: "POST",
@@ -4901,7 +5440,12 @@ $('#submit_shot_details').click(function(){
             'flag_status': flag_status
             },
             success: function(json){
-                alert("successfully created shot!!!!");
+            noty({
+                text: 'Shot ['+name+'] Created Successfully.',
+                layout: 'topCenter',
+                closeWith: ['click', 'hover'],
+                type: 'success'
+            });
                 $('#table_view').empty();
                 get_shot_details();
             }
@@ -4909,33 +5453,78 @@ $('#submit_shot_details').click(function(){
         $('#shotModal').modal('hide');
         clear_shot_modal_fields();
     }
+*/
 });// end of create asset function
 
+/*var s = $("#id_asset_type option:selected").text().trim();
+var asset_sub_category = '';
+if (s != 'Character'){
+
+    $("#id_asset_sub_category").hide();
+    $("#asset_subCat").show();
+    asset_sub_category = $("#asset_subCat").val();
+}
+else{
+    $("#id_asset_sub_category").show();
+}*/
+
+/*$("#id_asset_type").change(function(){
+    var s = $("#id_asset_type option:selected").text().trim();
+    if (s != 'Character'){
+        $("#id_asset_sub_category").hide();
+        $("#asset_subCat").show();
+        asset_sub_category = $("#asset_subCat").val();
+    }
+    else{
+        $("#id_asset_sub_category").css('display','block');
+        $("#asset_subCat").hide();
+        asset_sub_category = $("#id_asset_sub_category").val();
+    }
+});*/
 
 //Ajax call to create asset
 $('#submit_asset_details').click(function(){
 
-    var asset_type = $('#id_asset_type').val();
-    var asset_name = $('#id_asset_name').val().trim();
+    var asset_type = $('#id_asset_type option:selected').text().trim();
+    var asset_name = $('#id_asset_name').val();
     var asset_desc = $('#id_asset_description').val();
     var asset_status = $('#id_asset_status').val();
     var asset_priority = $('#id_asset_priority').val();
     var asset_entity_name = $('#id_asset_entity_name').val();
     var asset_version = $('#id_asset_version').val();
     var asset_client_label = $('#id_asset_client_label').val();
-    var asset_sub_category = $('#id_asset_sub_category').val();
-
+    //var asset_sub_category = $('#id_asset_sub_category').val();
+    //console.log(asset_sub_category);
     var prj_name =  $("#id_linked_to").val();
     var flag_status = 'create';
+
     if(asset_name == ""){
         alert("Asset name must not be empty!!!!");
         return false;
     }
-    var pattern = /^[0-9a-zA-Z]+$/;
+    var pattern = /^[a-zA-Z]+$/;
     if(!pattern.test(asset_name)){
-        alert("Must contain alphabets and numbers!!!");
+        alert("Asset Name must contain alphabets !!!");
         return false;
     }
+    var data_array = {};
+    data_array['parent_id'] = get_parent_id();
+    data_array['parent_object'] = get_parent_object();
+    data_array['asset_build_name'] = asset_name;
+    data_array['asset_build_type'] = asset_type;
+    data_array['description'] = asset_desc;
+
+    var data_list = [];
+    data_list.push(data_array);
+
+    var entity_name = 'AssetBuild';
+
+    update_form_data(entity_name,data_list);
+
+    $('#assetModal').modal('hide');
+
+    clear_asset_modal_fields();
+/*
     else{
         $.ajax({
             type: "POST",
@@ -4949,12 +5538,17 @@ $('#submit_asset_details').click(function(){
             'asset_entity_name': asset_entity_name,
             'asset_version': asset_version,
             'asset_client_label': asset_client_label,
-            'asset_sub_category': asset_sub_category,
+            'asset_sub_category': '',
             'prj_name': prj_name,
             'flag_status': flag_status
             },
             success: function(json){
-                alert("successfully created asset!!!!");
+            noty({
+                text: 'Asset Build ['+asset_name+'] Created Successfully.',
+                layout: 'topCenter',
+                closeWith: ['click', 'hover'],
+                type: 'success'
+            });
                 $('#table_view').empty();
                 get_asset_details();
             }
@@ -4963,6 +5557,7 @@ $('#submit_asset_details').click(function(){
 
         clear_asset_modal_fields();
     }
+*/
 });// end of create shot function
 
 /*
@@ -4986,14 +5581,15 @@ function get_asset_details(){
         success: function(json){
             var table = $('#project_table');
                 $.each(json, function(idx, data){
-                    var row = $('<tr>');
+                    var row = $('<tr id="'+data.ftrack_id+'" data-object="AssetBuild">');
                     row.append("<td>" + data.name + "</td>");
                     row.append("<td>" + data.ftrack_status + "</td>");
                     row.append("<td>" + data.type + "</td>");
                     //row.append("<td> --- </td>");
-                    row.append("<td>"+
-                    "<button class='btn btn-sm btn-default' type='button' onclick='create_tasks(this)'>Create Task</button>"
+                    row.append("<td>"
+                    +"<button class='btn btn-sm btn-default' type='button' onclick='create_tasks(this)'>Create Task</button>"
                     +"<button class='btn btn-sm btn-success' type='button' onclick='update_assets(this)'>Update</button>"
+                    +"<button class='btn btn-sm btn-info' type='button' onclick='view_tasks(this)'>View Task</button>"
                     +"</td>");
                     table.append(row);
             });// end of each loop
@@ -5004,13 +5600,21 @@ function get_asset_details(){
 function update_assets(name){
     var asset_name = $(name).closest('tr').find('td:eq(0)').text();
     var prj_name = get_project_name();
+    var entity_id = $(name).closest('tr').attr('id');
     $("#id_linked_to").val(prj_name);
     $("#id_linked_to").prop("disabled", true);
     $('#id_asset_name').prop("disabled", true);
-    get_details_before_update(prj_name, 'asset', '', '', asset_name);
+    $('#id_asset_type').prop("disabled", true);
+    get_details_before_update(prj_name, 'asset', '', '', asset_name, entity_id);
     $("#assetModal").modal("show");
     $("#submit_asset_details").hide();
     $("#update_asset_details").show();
+
+    var asset_build_id = $(name).closest('tr').attr('id');
+    var asset_build_object = $(name).closest('tr').attr('data-object');
+
+    set_entity_name(asset_build_object);
+    set_entity_id(asset_build_id);
 }
 /*
     function to update asset details
@@ -5018,7 +5622,7 @@ function update_assets(name){
 
 $("#update_asset_details").click(function(){
 
-    var asset_type = $('#id_asset_type').val();
+    var asset_type = $('#id_asset_type option:selected').text().trim();
     var asset_name = $('#id_asset_name').val().trim();
     var asset_desc = $('#id_asset_description').val();
     var asset_status = $('#id_asset_status').val();
@@ -5026,7 +5630,15 @@ $("#update_asset_details").click(function(){
     var asset_entity_name = $('#id_asset_entity_name').val();
     var asset_version = $('#id_asset_version').val();
     var asset_client_label = $('#id_asset_client_label').val();
-    var asset_sub_category = $('#id_asset_sub_category').val();
+
+    /*if (asset_type != 'Character')
+        asset_sub_category = $("#asset_subCat").val().trim();
+    else
+        asset_sub_category = $("#id_asset_type option:selected").text().trim();
+
+    console.log(asset_sub_category);*/
+
+    // var asset_sub_category = $('#id_asset_sub_category').val();
 
     var prj_name =  $("#id_linked_to").val();
     var flag_status = 'update';
@@ -5039,6 +5651,27 @@ $("#update_asset_details").click(function(){
         alert("Asset name must contain alphanumeric character!!!!");
         return false;
     }
+    var data_array = {};
+    data_array['parent_id'] = get_parent_id();
+    data_array['parent_object'] = get_parent_object();
+    data_array['asset_build_id'] = get_entity_id();
+    data_array['asset_build_object'] = get_entity_name();
+    
+    data_array['description'] = asset_desc;
+
+    var data_list = [];
+    data_list.push(data_array);
+
+    var entity_name = 'AssetBuild';
+
+    update_form_data(entity_name,data_list);
+
+        get_asset_details();
+        clear_asset_modal_fields();
+        $('#assetModal').modal('hide');
+        $('#id_asset_name').removeAttr("disabled");
+        $('#id_asset_type').removeAttr("disabled");
+/*
     else{
         $.ajax({
             type: "POST",
@@ -5052,48 +5685,340 @@ $("#update_asset_details").click(function(){
             'asset_entity_name': asset_entity_name,
             'asset_version': asset_version,
             'asset_client_label': asset_client_label,
-            'asset_sub_category': asset_sub_category,
+            'asset_sub_category': '', //asset_sub_category,
             'prj_name': prj_name,
             'flag_status': flag_status
             },
-            success: function(json){
-                alert("successfully created asset!!!!");
+            beforeSend: function(){
                 $('#table_view').empty();
-                get_asset_details();
+            },
+
+            success: function(json){
+                alert("successfully updated asset!!!!");
             }
         });//end of ajax call
-        $('#assetModal').modal('hide');
+        get_asset_details();
         clear_asset_modal_fields();
+        $('#assetModal').modal('hide');
         $('#id_asset_name').removeAttr("disabled");
+        $('#id_asset_type').removeAttr("disabled");
     }
+*/
 });
 
+/*
+    on key press to fill the task name
+*/
+$("#startdate").css('display','block');
+/*$(document).ready(function() {
+$("#task_creation").formValidation({
+
+    framework: 'bootstrap',
+    icon: {
+        valid: 'glyphicon glyphicon-ok',
+        invalid: 'glyphicon glyphicon-remove',
+        validating: 'glyphicon glyphicon-refresh'
+    },
+    fields: {
+        task_bid_days: {
+            notEmpty: {
+                message: 'This field is required'
+            }
+        }
+    }
+});
+});*/
+/*$("#id_task_bid_days").change(function(){
+
+    var v = $("#id_task_bid_days").value;
+    //alert(isNaN(v));
+    if (isNaN(v) == 'true'){
+        if (v.indexOf(".")){
+            var len = v.split(".")[1].length;
+            if (len > 1){
+                $("#id_task_bid_days").innerHTML("<span class='error'>Only 2 decimal places allowed</span>");
+            }
+        }
+        else{
+            $("#startdate").css('display','block');
+        }
+    }
+    else{
+        alert("Only numbers are allowed");
+        $("#id_task_bid_days").show().append("<span class='error'>Only numbers are allowed</span>");
+    }
+});*/
+
+/*
+    on key change event to fill in
+    the due date based on bid days
+*/
+$("#startdate").on("select", function(){
+
+    var bid_days = $("#id_task_bid_days").val();
+
+    var sval = $("#startdate").val();//datepicker("getDate");
+
+    var sdate = new Date(sval);
+
+    var dd = sdate.getDate() + parseInt(bid_days);
+    var mm = sdate.getMonth() + 1;
+    var yy = sdate.getFullYear();
+
+    console.log(dd);
+
+    dd -= 1;
+
+    console.log(dd);
+
+    var temp_date = new Date(yy,mm,0);
+
+    if (dd > temp_date.getDate()){
+        dd -= temp_date.getDate();
+        console.log("____"+dd);
+        mm += 1;
+    }
+    var s = "0" + mm + "/" + dd + "/" + yy;
+    var n = new Date(s)
+    console.log("<======>" + n);
+    var nm = (n.getMonth() + 1);
+    var nd = n.getDate();
+    if (nm < 10)
+        nm = "0" + nm;
+    if (nd < 10)
+        nd = "0" + nd;
+
+    $("#enddate").val(nm + "/" + nd + "/" + n.getFullYear()).prop("disabled", true);
+    return false;
+});// end of key press event on bid days
+
+/*
+    onchange event
+    on select to check
+    task exists
+*/
+
+$("#id_task_name").change(function(){
+
+    var val = $("#id_task_name option:selected").text().trim();
+    console.log(val);
+    var th = get_table_header();
+    console.log(th);
+    var result = $("#id_task_name");
+    if (th == "Sequence" ){
+        var linked = $("#id_task_linked_to").val().trim().split(":");
+        var prj_name = linked[0].trim();
+        var seq_name = linked[1].trim();
+
+    }
+    if (th == "Shot"){
+        var linked = $("#id_task_linked_to").val().trim().split(":");
+        var prj_name = linked[0].trim();
+        var seq_name = linked[1].trim();
+        var shot_name = linked[2].trim();
+    }
+    if (th == "Asset"){
+        var linked = $("#id_task_linked_to").val().trim().split(":");
+        var prj_name = linked[0].trim();
+        var seq_name = linked[1].trim();
+    }
+    var s = '';
+    $.ajax({
+        type:"POST",
+        url: "/callajax/",
+        data :{
+            'object_name': 'Duplicate_name_check',
+            'name': val,
+            'prj': prj_name,
+            'seq': seq_name,
+            'shot': shot_name,
+            'flag': th + "_task"
+        },
+        success: function(json){
+                //alert(json);
+                check(json);
+        }
+    });
+});
+function check(data){
+    //alert("in check" + data);
+    s = JSON.stringify(data);
+    if(s == 'false'){
+        console.log("false");
+        //$("#id_task_name").html("<span class='success'>Available</span>");
+        $("#submit_task_details").removeAttr("disabled");
+    }
+    if(s == 'true'){
+        console.log("true");
+        //$("#id_task_name").html("<span class='error'>Already Present</span>");
+        $("#submit_task_details").prop("disabled", true);
+    }
+}
+
+/*
+    on keypress of asset name
+    to check asset exists
+*/
+$("#id_asset_type").change(function(){
+
+    var prj_name = $("#id_linked_to").val().trim();
+    var asset_name = $("#id_asset_type option:selected").text().trim();
+    console.log(prj_name);
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data:{
+            "object_name": 'Duplicate_name_check',
+            'prj': prj_name,
+            'name': asset_name,
+            'flag':'asset_name'
+        },
+        success: function(json){
+               var s = JSON.stringify(json);
+               if (s == 'true')
+                    $("#submit_asset_details").prop("disabled", true);
+               if (s == 'false')
+                    $("#submit_asset_details").removeAttr("disabled");
+        }
+    });
+});
+
+/*
+    on keypress of project name
+    to check if project exists
+    or not
+*/
+$("#id_project_name").focusout(function(){
+
+    var prj_name = $("#id_project_name").val().trim();
+    var prj_code = $("#id_project_code").val().trim();
+    console.log(prj_name + "\t"+ prj_code);
+    $.ajax({
+        type: "POST",
+        url:"/callajax/",
+        data:{
+            "object_name": "Duplicate_name_check",
+            'prj': prj_code,
+            'name': prj_code,
+            'flag': 'prj_name'
+        },
+        success: function(json){
+            var s = JSON.stringify(json);
+            if (s == 'true'){
+                alert("Project Name already exists!!!");
+                $("#projectModal").modal("hide");
+                clear_project_fields();
+            }
+            if (s == 'false'){
+                $("#submit_details").removeAttr("disabled");
+            }
+        }
+    });
+});
+
+
+
+/*
+    function to submit
+    task details on click
+*/
 $("#submit_task_details").click(function(){
 
-    var task_type = $("#id_task_type").val();
-    var task_name = $("#id_task_name").val();
+    var task_type = $("#id_task_name option:selected").text().trim();
+    //var task_name = $("#id_task_name").val().trim();
     var description = $("#id_task_description").val();
     var assignee = $("#id_task_assignee").val();
+
     var bid_days = $("#id_task_bid_days").val();
     var task_status = $("#id_task_status").val();
     var task_priority = $("#id_task_priority option:selected").val();
-    alert(task_priority);
-    var start_date = $("#id_task_start_date").val();
-    var due_date = $("#id_task_due_date").val();
+    var start_date = $("#startdate").val();
+    var due_date = $("#enddate").val();
     var task_scope = $("#id_task_scope").val();
     var entity_name = $("#id_task_entity_name").val();
     var flag_status = 'create';
     var linked_to = $("#id_task_linked_to").val();
     var str = linked_to.split(":");
-    var project_name = str[0];
-    var sequence_name = str[1];
+    var project_name = '';
+    var sequence_name = '';
+    var shot_name = '';
+    var asset_name = '';
+
+    var th = get_table_header().trim().split(" ")[0];
+    if (th == 'Sequence'){
+        project_name = str[0];
+        sequence_name = str[1];
+        //alert(sequence_name);
+    }
+    if (th == 'Shot'){
+        project_name = str[0];
+        sequence_name = str[1];
+        shot_name = str[2];
+        //alert(shot_name);
+    }
+    if (th == 'Asset'){
+        project_name = str[0];
+        asset_name = str[1];
+        //alert("**************"+asset_name);
+        set_asset_name(asset_name);
+    }
+    var sdate = new Date(start_date);
+    var edate = new Date(due_date);
+
+    if (task_type == 'Select Option'){
+        alert("Select Valid Option!!!");
+        return false;
+    }
+    if (assignee == 'Select Option'){
+        alert("Select Assignee");
+        return false;
+    }
+    if (bid_days == ''){
+        alert("Bid Days must not be empty!!!");
+        return false;
+    }
+    if (jQuery.isNumeric(bid_days) == 'false'){
+        alert("bid days must be numeric!!!!");
+        return false;
+    }
+//    if (sdate > edate){
+//        alert("Start date must not exceed end date!!!!");
+//        return false;
+//    }
+    if (start_date == '' && due_date == ''){
+        alert("Date field must not be empty!!!!");
+        return false;
+    }
+
+    var data_array = {};
+    data_array['parent_id'] = get_parent_id();
+    data_array['parent_object'] = get_parent_object();
+    data_array['task_name'] = task_type;
+    data_array['task_type'] = task_type;
+    data_array['description'] = description;
+    data_array['start_date'] = start_date;
+    data_array['end_date'] = due_date;
+    data_array['bid'] = bid_days;
+    data_array['priority'] = task_priority;
+    data_array['assignee'] = assignee;
+    data_array['task_status'] = task_status;
+
+    var data_list = [];
+    data_list.push(data_array);
+
+    var entity_name = 'Task';
+
+    update_form_data(entity_name,data_list);
+    $("#taskModal").modal("hide");
+    clear_task_fields();
+/*
     $.ajax({
         type: "POST",
         url: "/callajax/",
         data :{
         "object_name" : "Task_Creation",
         "task_type": task_type,
-        "task_name": task_name,
+        "task_name": task_type,
         "description": description,
         "assignee": assignee,
         "bid_days": bid_days,
@@ -5105,52 +6030,285 @@ $("#submit_task_details").click(function(){
         "entity_name": entity_name,
         "flag_status": flag_status,
         "project_name": project_name,
-        "sequence_name": sequence_name
+        "sequence_name": sequence_name,
+        "shot_name": shot_name,
+        "asset_name": asset_name,
+        "type": th
         },
         success: function(json){
             alert("Successfully created tasks!!!!!");
-            get_task_details(project_name, sequence_name);
+            get_task_details(project_name, sequence_name, th);
         }
     });
-    $("#taskModal").hide();
+    $("#taskModal").modal("hide");
+    clear_task_fields();
+*/
+});
+
+// hiding task modal on cancel
+$("#cancel_task_details").click(function(){
+    $("#taskModal").modal("hide");
+    $("#collapse_task_more").hide();
+    //$("#collapse_task_project_config").hide();
     clear_task_fields();
 });
+
+
 // clear task fields
 function clear_task_fields(){
-    $("#id_task_type").val('Select Option');
+    $("#id_task_name").val('Select Option');
     $("#id_task_description").val('');
     $("#id_task_bid_days").val('');
-    $("#id_task_start_date").val('');
-    $("#id_task_due_date").val('');
+    $("#id_task_status").val("Not Started");
+    $("#id_task_priority").val("None");
+    $("#startdate").val('');
+    $("#enddate").val('');
     $("#id_task_scope").val('');
     $("#id_task_entity_name").val('');
-
+    //$("#id_task_name").val("");
 }
 
 /*
     function to get task
     details sequence/asset/shot wise
 */
-function get_task_details(project_name, name){
-
-    alert(get_project_name());
+function get_task_details(project_name, name, type){
+    /*alert("seq_name" + name);
+    alert("shot_name" + get_shot_name());
+    alert("asset_name" + get_asset_name());*/
     $.ajax({
         type:"POST",
         url:"/callajax/",
         data:{
             "object_name": "display_task_details",
             "project_name": project_name,
-            "name": name
+            "name": name,
+            "type": type,
+            "shot_name": get_shot_name(),
+            "asset_name": get_asset_name()
         },
         beforeSend: function(){
             $("#table_view").empty();
+            create_table_display_details(type_name='task');
         },
         success: function(json){
             var table = $('#project_table');
-
+            $.each(json, function(idx, data){
+                var row = $('<tr id="'+data.ftrack_id+'" data-object="Task">');
+                    row.append("<td>" + data.name + "</td>");
+                    row.append("<td>" + data.ftrack_status + "</td>");
+                    row.append("<td>" + data.type + "</td>");
+                    row.append("<td>"+
+                    "<button class='btn btn-sm btn-success' type='button' onclick='update_tasks(this)'>Update</button>"
+                    +"</td>");
+                    table.append(row);
+                    $("#table_view").append(table);
+                });
+            $("#table_view").show();
         }
-    });
+    });// end of ajax call
 }
+
+/*
+    function to get the
+    update task details
+*/
+var asset_type_name = '';
+function set_asset_type(name){
+    asset_type_name = name;
+}
+function get_asset_type(){
+    return asset_type_name;
+}
+var task_name = ''
+function set_task_name(name){
+    task_name = name;
+}
+function get_task_name(){
+    return task_name;
+}
+function update_tasks(name){
+
+    var th = get_table_header().trim().split(" ")[0];
+    var project_name = get_project_name();
+    var seq_name = get_sequence_name();
+    var shot_name = get_shot_name();
+    var asset_name = get_asset_name();
+    var task_name = $(name).closest('tr').find("td:eq(0)").text().trim();
+    var entity_id = $(name).closest('tr').attr('id');
+    set_task_name(task_name);
+    $("#collapse_task_more").hide();
+    $("#id_task_name").prop("disabled",true);
+    $("#id_task_name").css('display', 'none');
+    $("#task_name_id").css('display', 'none');
+    if (th == "Asset"){
+
+        $("#id_task_linked_to").val(project_name + ":" + asset_name);
+        $("#update_task_details").show();
+        $("#submit_task_details").hide();
+        var asset_type_name = get_asset_type();//$(name).closest('tr').find("td:eq(2)").text().trim();
+        //get_task_types(th, asset_type_name);
+
+        $("#id_task_name").val(task_name);
+        // alert(project_name+"\n"+task_name+"\n"+asset_name);
+        get_details_before_update(project_name, 'Asset_Task', task_name, '', asset_name, entity_id);
+        $("#taskModal").modal("show");
+    }
+    else if (th == "Sequence"){
+
+        $("#id_task_linked_to").val(project_name + ":" + seq_name)
+        $("#update_task_details").show();
+        $("#submit_task_details").hide();
+        //get_task_types(th, '');
+        get_details_before_update(project_name, 'Sequence_Task', seq_name, '', task_name, entity_id);
+        $("#taskModal").modal("show");
+    }
+    else if (th == "Shot"){
+
+        $("#id_task_linked_to").val(project_name + ":" + seq_name + ":" + shot_name);
+        $("#update_task_details").show();
+        $("#submit_task_details").hide();
+        //get_task_types(th, '');
+        get_details_before_update(project_name, 'Shot_Task', seq_name, shot_name, task_name, entity_id);
+        $("#taskModal").modal("show");
+    }
+
+    set_entity_id($(name).closest('tr').attr('id'));
+    set_entity_name($(name).closest('tr').attr('data-object'));
+}
+
+/*
+    function to update tasks
+    on click
+*/
+
+$("#update_task_details").click(function(){
+    console.log(task_name);
+    var task_name = get_task_name();//$("#id_task_name option:selected").text().trim();
+    //var task_name = $("#id_task_name").val().trim();
+    var description = $("#id_task_description").val();
+    var assignee = $("#id_task_assignee").val();
+    var bid_days = $("#id_task_bid_days").val();
+    var task_status = $("#id_task_status").val();
+    var task_priority = $("#id_task_priority option:selected").val().trim();
+    var start_date = $("#startdate").val();
+    var due_date = $("#enddate").val();
+    var task_scope = $("#id_task_scope").val();
+    var entity_name = $("#id_task_entity_name").val();
+    var flag_status = 'update';
+    var linked_to = $("#id_task_linked_to").val();
+    var str = linked_to.split(":");
+    var project_name = '';
+    var sequence_name = '';
+    var shot_name = '';
+    var asset_name = '';
+
+    var th = get_table_header().trim();
+
+    console.log("----"+th);
+    if (th == 'Sequence'){
+        project_name = str[0];
+        sequence_name = str[1];
+        alert(sequence_name);
+    }
+    if (th == 'Shot'){
+        project_name = str[0];
+        sequence_name = str[1];
+        shot_name = str[2];
+       // alert(shot_name);
+    }
+    if (th == 'Asset'){
+        project_name = str[0];
+        asset_name = str[1];
+        set_asset_name(asset_name);
+    }
+    var sdate = new Date(start_date);
+    var edate = new Date(due_date);
+
+    if (sdate > edate){
+        alert("Start date must not exceed end date!!!!");
+        return false;
+    }
+    if (start_date == '' && due_date == ''){
+        alert("Date field must not be empty!!!!");
+        return false;
+    }
+    if (task_name == 'Select Option'){
+        alert("Select Valid Option!!!");
+        return false;
+    }
+    if (assignee == 'Select Option'){
+        alert("Select Assignee");
+        return false;
+    }
+    if (bid_days == ''){
+        alert("Bid Days must not be empty!!!");
+        return false;
+    }
+    var data_array = {};
+    data_array['task_id'] = get_entity_id();
+    data_array['task_object'] = get_entity_name();
+    data_array['description'] = description;
+    data_array['start_date'] = start_date;
+    data_array['end_date'] = due_date;
+    data_array['bid'] = bid_days;
+    data_array['priority'] = task_priority;
+    data_array['assignee'] = assignee;
+    data_array['task_status'] = task_status;
+
+    var data_list = [];
+    data_list.push(data_array);
+
+    var entity_name = 'Task';
+
+    update_form_data(entity_name,data_list);
+
+        $("#taskModal").modal("hide");
+        clear_task_fields();
+        $("#id_task_name").removeAttr("disabled");
+/*
+    else{
+        $.ajax({
+            type: "POST",
+            url : "/callajax/",
+            data: {
+                "object_name" : "Task_Creation",
+                "task_name": task_name,
+                //"task_name": task_name,
+                "description": description,
+                "assignee": assignee,
+                "bid_days": bid_days,
+                "task_status": task_status,
+                "task_priority": task_priority,
+                "start_date": start_date,
+                "due_date": due_date,
+                "task_scope": task_scope,
+                "entity_name": entity_name,
+                "flag_status": flag_status,
+                "project_name": get_project_name(),
+                "sequence_name": get_sequence_name(),
+                "shot_name": get_shot_name(),
+                "asset_name": get_asset_name(),
+                "type": th
+            },
+            success: function(json){
+                alert("Successfully updated tasks!!!!!");
+                if (th == "Sequence")
+                    get_task_details(project_name, sequence_name, "Sequence");
+                if (th == "Asset"){
+                    console.log(type);
+                    get_task_details(project_name, asset_name, "Asset");
+                    }
+                if (th == "Shot")
+                    get_task_details(project_name, sequence_name, "Shot");
+            }
+        });//end of Ajax Call
+        $("#taskModal").modal("hide");
+        clear_task_fields();
+        $("#id_task_name").removeAttr("disabled");
+    }// end of else
+*/
+});
 
 /*
     function to get the project
@@ -5165,20 +6323,20 @@ function get_project_details(){
         "object_name" : "display_project_thumbnail_manner"
         },
         beforeSend: function(){
-            var create_proj = '<div class="box col-md-3" style="text-align: center;font-size: 20px;height: 209px;">\
-              <br><br>\
-              <button id="create_project" class="btn btn-primary btn-lg" data-toggle="modal" onclick="create_project_click()">+ Create Project</button>\
-          </div>';
+	    var create_proj = '<div class="box col-md-3" style="text-align: center;font-size: 20px;height: 209px;">\
+		    <br><br>\
+		    <button id="create_project" class="btn btn-primary btn-lg" data-toggle="modal" onclick="create_project_click()">+ Create Project</button>\
+		</div>';
           $("#table_view").html(create_proj);
         },
         success: function(json){
-                var table = $('#project_table');
+	    var table = $('#project_table');
                 $.each(json, function(idx, data){
                     new_div = '\
-			<div class="box col-md-3" style="height: 209px;background-color: #666;">\
+                        <div class="box col-md-3" style="height: 209px;background-color: #666;">\
               <ul class="list-group">\
                 <li class="list-group-item">\
-                  <label>Project Name: &nbsp;</label><a>'+data.name+'</a>\
+                  <label>Project Name: &nbsp;</label><a id="'+data.ftrack_id+'" data-object="Project">'+data.name+'</a>\
                   <div style="text-align: center;">\
                     <button class="btn btn-xs btn-primary" type="button" onclick="display_create_modal(this)">Create</button>\
                     <button class="btn btn-xs btn-success" type="button" onclick="display_proj_modal(this)">Update</button>\
@@ -5186,7 +6344,7 @@ function get_project_details(){
                   </div>\
                 </li>\
                 <li class="list-group-item">\
-		    <label>Ftrack Status: &nbsp;</label><strong>'+data.ftrack_status+'</strong>\
+                    <label>Ftrack Status: &nbsp;</label><strong>'+data.ftrack_status+'</strong>\
                 </li>\
                 <li class="list-group-item">\
                   <label>Start Date: &nbsp;</label><strong>'+data.startdate+'</strong>\
@@ -5200,18 +6358,20 @@ function get_project_details(){
                 });
                 $("#table_view").show();
         }
+
     });// end of ajax call
 }
 
 function display_proj_modal(name){
     project_name = $(name).closest("li").find('a').text();
+    var entity_id = $(name).closest("li").find('a').attr('id');
     $("#id_project_name").val(project_name);
     $("#id_project_name").prop("disabled", true);
     $("#id_project_code").prop("disabled", true);
     $("#update_details").show();
     $("#submit_details").hide()
     $('#projectModal').modal('show');
-    get_details_before_update(project_name, 'project', '', '', '');
+    get_details_before_update(project_name, 'project', '', '', '', entity_id);
 }
 
 /*
@@ -5219,28 +6379,74 @@ function display_proj_modal(name){
     sequence & shot
 */
 function display_create_modal(name){
-    $("#first_li").show();
-    $("#second_li").show();
-    $("#fourth_li").hide();
-    $("#fifth_li").hide();
+    $("#asset_li").show();
+    $("#sequence_li").show();
+    $("#shot_li").hide();
+    $("#view_asset_li").hide();
+    $("#view_seq_li").hide();
+    $("#task_li").hide();
+    $("#shot_view_li").hide();
+    $("#task_view_li").hide();
     $("#Update_sequence_details").hide();
     $("#submit_sequence_details").show();
     s = $(name).closest("li").find('a').text();
     set_project_name(s);
     $('#createModal').modal('toggle');
+   
+    id = $(name).closest("li").find('a').attr('id');
+    my_object = $(name).closest("li").find('a').attr('data-object');
+
+    set_parent_object(my_object);
+    set_parent_id(id);
+     
 }
+
 
 function display_view_modal(name){
     s = $(name).closest("li").find('a').text();
 
     set_project_name(s);
-    $("#fourth_li").show();
-    $("#fifth_li").show();
-    $("#first_li").hide();
-    $("#second_li").hide();
+    $("#view_asset_li").show();
+    $("#view_seq_li").show();
+    $("#asset_li").hide();
+    $("#sequence_li").hide();
     $("#shot_li").hide();
     $("#task_li").hide();
+    $("#task_view_li").hide();
+    $("#shot_view_li").hide();
     $('#createModal').modal('toggle');
+}
+
+var parentobject = '';
+function set_parent_object(p_object){
+    parentobject = p_object;
+}
+function get_parent_object(){
+    return parentobject;
+}
+
+var parentid = '';
+function set_parent_id(p_id){
+    parentid = p_id;
+}
+function get_parent_id(){
+    return parentid;
+}
+
+var entityid = '';
+function set_entity_id(id){
+    entityid = id;
+}
+function get_entity_id(){
+    return entityid;
+}
+
+var entityname = '';
+function set_entity_name(name){
+    entityname = name;
+}
+function get_entity_name(){
+    return entityname;
 }
 
 var project_name = '';
@@ -5280,7 +6486,10 @@ $("#create_asset").click(function(){
     $('#createModal').modal('hide');
     $("#id_linked_to").val(get_project_name());
     $("#id_linked_to").prop("disabled", true);
+    $("#id_asset_type").removeAttr("disabled");
+    $("#id_asset_name").removeAttr("disabled");
     $("#submit_asset_details").show();
+    $("#submit_asset_details").removeAttr("disabled");
     $("#update_asset_details").hide();
     $("#assetModal").modal('toggle');
 });
@@ -5329,7 +6538,7 @@ function get_sequence_details(){
         success: function(json){
             var table = $('#project_table');
                 $.each(json, function(idx, data){
-                    var row = $('<tr>');
+                    var row = $('<tr id="'+data.ftrack_id+'" data-object="Sequence">');
                     row.append("<td>" + data.name + "</td>");
                     row.append("<td>" + data.ftrack_status + "</td>");
                     row.append("<td>" + data.type + "</td>");
@@ -5351,16 +6560,40 @@ function get_sequence_details(){
     inside sequence
 */
 function create_options(name){
-    var seq = $(name).closest('tr').find('td:eq(0)').text(); //$("#project_table tbody tr td:first").text();
-    set_sequence_name(seq);
 
-    $("#first_li").hide();
-    $("#second_li").hide();
-    $("#fourth_li").hide();
-    $("#fifth_li").hide();
+    var table_header = $("#project_table thead tr").find("th:eq(0)").text().trim().split(" ")[0];
+    set_table_header(table_header);
+    if (table_header == "Sequence"){
+        clear_task_fields();
+        var seq = $(name).closest('tr').find('td:eq(0)').text(); //$("#project_table tbody tr td:first").text();
+        set_sequence_name(seq);
+    }
+    else if (table_header == "Shot"){
+        clear_task_fields();
+        var shot = $(name).closest('tr').find('td:eq(0)').text(); //$("#project_table tbody tr td:first").text();
+        set_shot_name(shot);
+
+    }
+
+    $("#asset_li").hide();
+    $("#sequence_li").hide();
+    $("#view_asset_li").hide();
+    $("#view_seq_li").hide();
+    $("#shot_view_li").hide();
+    $("#task_view_li").hide();
     $("#shot_li").show();
     $("#task_li").show();
+    $("#id_task_name").removeAttr("disabled");
+    $("#id_task_name").css('display', 'block');
+    $("#task_name_id").css('display', 'block');
     $("#createModal").modal('show');
+
+    
+    id = $(name).closest("tr").attr('id');
+    my_object = $(name).closest("tr").attr('data-object');
+
+    set_parent_object(my_object);
+    set_parent_id(id);
 }
 // on click of create shot button
 $("#create_shot").click(function(){
@@ -5374,6 +6607,10 @@ $("#create_shot").click(function(){
     $("#update_shot_details").hide();
 });
 
+/*
+    function to set and get
+    table headers
+*/
 var header_name = '';
 function set_table_header(name){
     header_name = name
@@ -5381,38 +6618,106 @@ function set_table_header(name){
 function get_table_header(){
     return header_name;
 }
+
+/*
+    function to set and get asset name
+*/
+var asset_name = '';
+function set_asset_name(name){
+    asset_name = name;
+}
+function get_asset_name(){
+    return asset_name;
+}
+
 // on click of create task button
 $("#create_task").click(function(){
     $("#createModal").modal('hide');
-    var header_name = $("#project_table thead tr").find('th:eq(0)').text();
+    var header_name = $("#project_table thead tr").find('th:eq(0)').text().trim();
+    header_name = header_name.split(" ")[0].trim();
     set_table_header(header_name);
-    get_task_types(get_table_header());
+    get_task_types(get_table_header(), '');
+    get_multiple_assignees();
+
     var prj_name = get_project_name();
     var seq_name = get_sequence_name();
-    $("#id_task_linked_to").val(prj_name + ":" + seq_name);
+
+    if(header_name == "Sequence")
+        $("#id_task_linked_to").val(prj_name + ":" + seq_name);
+
+    $("#id_task_name").removeAttr("disabled");
+    $("#submit_task_details").show();
     $("#taskModal").modal("show");
     $("#update_task_details").hide();
 });
 
 
 //function to get task type
-function get_task_types(type_name){
+function get_task_types(type_name, asset_type_name){
 
     $.ajax({
         type:"POST",
         url:"/callajax/",
-        data:{'object_name': 'Task_types',
-        'type_name': type_name
+            data:{'object_name': 'Task_types',
+                'type_name': type_name,
+                'asset_type_name': asset_type_name
         },
         beforeSend: function(){
-            $("#id_task_type").empty();
+            $("#id_task_name").empty();
         },
         success: function(json){
-            var option = "<option value=''></option>";
-            $("#id_task_type").append("<option value=''>Select Option</option>");
+            $("#id_task_name").append("<option value=''>Select Option</option>");
+            if (type_name == "Asset"){
+                if (asset_type_name){
+                    $.each(json, function(idx, data){
+                        $("#id_task_name").append("<option value="+data+">"+data+"</option>");
+                    });
+                }
+                else{
+                    $.each(json, function(idx, data){
+                        var option_group = $("<optgroup label="+idx+" id="+idx+">");
+                        $.each(data, function(k,v){
+                            option_group.append("<option value="+v+">"+v+"</option>");
+                        });
+                        $("#id_task_name").append(option_group)
+                    });
+                }
+
+            }
+            else{
+                $.each(json, function(idx, data){
+                    $("#id_task_name").append("<option value="+data+">"+data+"</option>");
+                });
+            }
+        }
+    });
+}
+
+/*
+    ajax call to get
+    multiple assignee users
+*/
+function get_multiple_assignees(assignee){
+
+    assignee = assignee || '';
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+            data:{
+                'object_name': 'Multiple_assignees'
+                //'type_name': type_name
+        },
+        beforeSend: function(){
+            $("#id_task_assignee").empty();
+        },
+        success: function(json){
+            $("#id_task_assignee").append("<option values=''> Select Option </option>");
             $.each(json, function(idx, data){
-                $("#id_task_type").append("<option value="+data+">"+data+"</option>");
+                $("#id_task_assignee").append("<option values="+data+">"+data+"</option>");
             });
+	if (assignee){
+	    $("#id_task_assignee").val(assignee);
+	}
         }
     });
 }
@@ -5423,17 +6728,6 @@ function get_task_types(type_name){
 var s = $(name).closest("li").find('a').text();
 set_project_name(s);
 
-/*function create_shots(){
-    $("#id_name").prop("disabled",false);
-    *//*var seq = $(name).closest('tr').find('td:eq(0)').text(); //$("#project_table tbody tr td:first").text();
-    set_sequence_name(seq);*//*
-    var prj_name = get_project_name();
-    var seq_name = get_sequence_name();
-    $('#id_parent_object_type').val(prj_name + ":" + seq_name).prop('disabled', true);
-    $("#shotModal").modal('toggle');
-    $("#submit_shot_details").show();
-    $("#update_shot_details").hide();
-}*/
 /*
     show sequence modal
     on update click
@@ -5441,12 +6735,16 @@ set_project_name(s);
 function update_sequences(name){
     $("#id_sequence_parent_object_type").val(get_project_name());
     var seq_name = $(name).closest('tr').find('td:eq(0)').text();//$("#project_table tbody tr td:first").text();
+    var entity_id = $(name).closest('tr').attr('id');
     $("#id_sequence_name").val(seq_name);
     $("#id_sequence_name").prop("disabled", true);
     $("#Update_sequence_details").show();
     $("#submit_sequence_details").hide();
-    get_details_before_update(get_project_name(), 'sequence', seq_name, '', '');
+    get_details_before_update(get_project_name(), 'sequence', seq_name, '', '', entity_id);
     $("#sequenceModal").modal('show');
+
+   set_entity_id($(name).closest('tr').attr('id'));
+   set_entity_name($(name).closest('tr').attr('data-object'));
 }
 
 //update sequence
@@ -5454,24 +6752,50 @@ $("#Update_sequence_details").click(function(){
 
     var sequence_name = $('#id_sequence_name').val();
     var description = $('#id_sequence_description').val();
-    var status = $('#id_sequence_status').val();
+    var status = $('#id_sequence_status option:selected').text().trim();
     var priority = $('#id_sequence_priority').val();
-    var entity_name = $('#id_sequence_entity_name').val();
+    //var entity_name = $('#id_sequence_entity_name').val();
     var prj_name = get_project_name();
-    //var old_seq_name = get_sequence_name();
     var flag_status = 'update';
 
-    if(sequence_name == ''){
-        alert("Field must not be empty!!!!");
+    var pattern = /^[0-9a-zA-Z]+$/;
+    if(!pattern.test(sequence_name)){
+        alert("Sequence must contain alphabets or numbers!!!");
         return false;
     }
+    if(sequence_name == ''){
+        alert("Sequence Name cannot be empty!!!!");
+        return false;
+    }
+    if (status == 'Select Status'){
+        alert("Please select proper status!!!");
+        return false;
+    }
+        
+    var data_array = {};
+    data_array['parent_id'] = get_parent_id();
+    data_array['parent_object'] = get_parent_object();
+    data_array['seq_id'] = get_entity_id();
+    data_array['seq_object'] = get_entity_name();
+    
+    data_array['description'] = description;
+
+    var data_list = [];
+    data_list.push(data_array);
+
+    var entity_name = 'Sequence';
+
+    update_form_data(entity_name,data_list);
+
+    $("#sequenceModal").modal('hide');
+/*
     else{
         $.ajax({
             type: "POST",
             url: "/callajax/",
             data : {'object_name': 'Sequence_Creation',
             'prj_name': prj_name,
-            'new_sequence_name': sequence_name,
+            'sequence_name': sequence_name,
             'description': description,
             'priority': priority,
             'flag_status': flag_status,
@@ -5485,19 +6809,60 @@ $("#Update_sequence_details").click(function(){
         $("#sequenceModal").modal('hide');
         clear_sequence_fields();
     }
+*/
 });
 /*
     function views shots in tabular format
 */
 function display_shots(name){
     var s = $(name).closest('tr').find('td:eq(0)').text();
-
     set_sequence_name(s);
 
-    get_shot_details();
+    var th = $("#project_table thead tr").find("th:eq(0)").text().split(" ")[0];
+    set_table_header(th);
+
+    $("#asset_li").hide();
+    $("#sequence_li").hide();
+    $("#view_asset_li").hide();
+    $("#view_seq_li").hide();
+    $("#shot_view_li").hide();
+    $("#shot_li").hide();
+    $("#task_li").hide();
+    $("#task_view_li").show();
+    //$("#view_task").show();
+    $("#shot_view_li").show();
+    $("#createModal").modal("show");
 
     //set_view_option(view_option);
 }
+/*
+    function which triggers when
+    the view shot button is clicked
+*/
+$("#view_shot").click(function(){
+    $("#createModal").modal("hide");
+    get_shot_details();
+});
+
+/*
+    function which triggers when
+    the view task button is clicked
+*/
+$("#view_task").click(function(){
+    $("#createModal").modal("hide");
+    var type = get_table_header().trim();
+    if (type == "Sequence"){
+        get_task_details(get_project_name(), get_sequence_name(), type);
+        }
+    else if (type == "Shot"){
+        get_task_details(get_project_name(), get_sequence_name(), type);
+        }
+    else if (task == 'Asset'){
+        var asset_name = $("#project_table tbody").closest('tr').find("td:eq(0)").text();
+        get_task_details(get_project_name(), asset_name, type)
+    }
+});
+
 /*
     function to get the
     shot details and display
@@ -5521,19 +6886,96 @@ function get_shot_details(){
         success: function(json){
                 var table = $('#project_table');
                 $.each(json, function(idx, data){
-                    var row = $('<tr>');
+                    var row = $('<tr id="'+data.ftrack_id+'" data-object="Shot">');
                     row.append("<td>" + data.name + "</td>");
                     row.append("<td>" + data.ftrack_status + "</td>");
                     row.append("<td>" + data.type + "</td>");
                     row.append("<td>"+
-                    "<button class='btn btn-sm btn-success' type='button' onclick='create_tasks(this)'>Create Task</button>"+
+                    "<button class='btn btn-sm btn-default' type='button' onclick='create_tasks(this)'>Create Task</button>"+
                     "<button class='btn btn-sm btn-success' type='button' onclick='update_shots(this)'>Update</button>"+
+                    "<button class='btn btn-sm btn-info' type='button' onclick='view_tasks(this)'>View Task</button>"+
                     "</td>");
                     table.append(row);
             });
             $("#table_view").append(table);
         }
     });
+}
+
+/*
+    function to view tasks
+    from shot in tabular format
+*/
+function view_tasks(name){
+
+    var type = $("#project_table thead tr").find("th:eq(0)").text().trim().split(" ")[0];
+
+    set_table_header(type);
+
+    if (type == "Shot"){
+
+        var name = $(name).closest("tr").find("td:eq(0)").text().trim();
+
+        set_shot_name(name);
+
+        get_task_details(get_project_name(), get_sequence_name(), "Shot");
+    }
+    else if (type == "Asset"){
+
+        var name = $(name).closest("tr").find("td:eq(0)").text().trim();
+
+        set_asset_name(name);
+
+        var asset_type_name = $(name).closest("tr").find("td:eq(2)").text().trim()
+
+        set_asset_type(asset_type_name);
+
+        get_task_details(get_project_name(), "", "Asset");
+    }
+}
+/*
+    function to create tasks
+    inside shot
+*/
+//function to get shot name
+var shot_name = '';
+function set_shot_name(name){
+    shot_name = name;
+}
+function get_shot_name(){
+    return shot_name
+}
+function create_tasks(name){
+
+    clear_task_fields();
+    var th = $("#project_table thead tr").find("th:eq(0)").text().split(" ")[0].trim();
+    var asset_type_name = $(name).closest("tr").find("td:eq(2)").text().trim();
+    set_table_header(th);
+    $("#id_task_name").css('display', 'block');
+    $("#task_name_id").css('display', 'block');
+    $("#id_task_name").removeAttr("disabled");
+    get_multiple_assignees();
+    if (th == 'Shot'){
+        get_task_types(get_table_header(), '');
+        var shot_name = $(name).closest("tr").find("td:eq(0)").text().trim();
+        $("#id_task_linked_to").val(get_project_name() + ":" + get_sequence_name() + ":" + shot_name);
+        set_shot_name(shot_name);
+    }
+    else if (th == "Asset"){
+        get_task_types(get_table_header(), asset_type_name);
+        var asset_name = $(name).closest("tr").find("td:eq(0)").text().trim();
+        $("#id_task_linked_to").val(get_project_name() + ":" + asset_name);
+    }
+    $("#submit_task_details").show();
+    $("#update_task_details").hide();
+    $("#taskModal").modal("show");
+
+    id = $(name).closest("tr").attr('id');
+    my_object = $(name).closest("tr").attr('data-object');
+
+    set_parent_object(my_object);
+    set_parent_id(id);
+
 }
 /*
     function to update shot
@@ -5544,16 +6986,21 @@ function update_shots(name){
     var seq_name = get_sequence_name();
     $('#id_parent_object_type').val(prj_name+":"+seq_name).prop('disabled',true);
     var shot_name = $(name).closest('tr').find('td:eq(0)').text();
+    var entity_id = $(name).closest('tr').attr('id');
+
     $("#id_name").val(shot_name);
     $("#id_name").prop('disabled', true);
     $("#id_shot_type").prop("disabled", true);
     $("#id_total_frames").prop("disabled", true);
     $("#id_frame_duration").prop("disabled", true);
     $("#id_key_frames").prop("disabled", true);
-    get_details_before_update(prj_name, 'shot', seq_name, shot_name, '');
+    get_details_before_update(prj_name, 'shot', seq_name, shot_name, '', entity_id);
     $("#shotModal").modal("show");
     $("#submit_shot_details").hide();
     $("#update_shot_details").show();
+
+   set_entity_id(entity_id);
+   set_entity_name($(name).closest('tr').attr('data-object'));
 }
 
 // to update shot
@@ -5573,6 +7020,39 @@ $("#update_shot_details").click(function(){
     var flag_status = 'update';
     //var old_shot_name = get_shot_name();
 
+    var pattern_name = /^[0-9a-zA-Z]+$/;
+    if (!pattern_name.test(name)){
+        alert("Shot name must be alphanumeric!!!!!");
+        return false;
+    }
+    if (status == 'Select Status'){
+        alert("Select proper status!!!!!");
+        return false;
+    }
+    if(frame_end <= frame_start){
+        alert("End frame must be higher than start frame!!!!");
+        return false;
+    }
+    var data_array = {};
+    data_array['parent_id'] = get_parent_id();
+    data_array['parent_object'] = get_parent_object();
+    data_array['shot_id'] = get_entity_id();
+    data_array['shot_object'] = get_entity_name();
+    
+    data_array['description'] = description;
+    data_array['start_frame'] = frame_start;
+    data_array['end_frame'] = frame_end;
+
+    var data_list = [];
+    data_list.push(data_array);
+
+    var entity_name = 'Shot';
+
+    update_form_data(entity_name,data_list);
+
+        $("#shotModal").modal("hide");
+        clear_shot_modal_fields();
+/*
     $.ajax({
         type: "POST",
         url: "/callajax/",
@@ -5598,6 +7078,7 @@ $("#update_shot_details").click(function(){
     });//end of ajax call
         $("#shotModal").modal("hide");
         clear_shot_modal_fields();
+*/
 });
 
 
@@ -5618,6 +7099,9 @@ function get_view_option(){
 
 $("#previous_page").click(function(){
     var prev_name = 'null';
+    var th_name = $("#table_view #project_table").find('th:eq(0)').text();
+    var nm = th_name.split(" ")[0].trim();
+
     if($("#table_view #project_table tbody td").length > 0){//.contains('td')){
         prev_name = $("#table_view #project_table").find('td:eq(2)').text();
         if(prev_name == 'Sequence'){
@@ -5643,10 +7127,23 @@ $("#previous_page").click(function(){
             $("#previous_div").hide();
 //            $('.sidebar-nav').show();
         }
+        else if(nm == 'Task'){
+            $("#table_view").empty();
+            //alert(get_table_header());
+            if (get_table_header().trim() == "Sequence")
+                get_sequence_details();
+            else if (get_table_header().trim() == "Shot")
+                get_shot_details();
+            else if (get_table_header().trim() == "Asset")
+                get_asset_details();
+
+            $("#previous_div").show();
+
+//            $('.sidebar-nav').hide();
+        }
     }
     else{
-        var th_name = $("#table_view #project_table").find('th:eq(0)').text();
-        var nm = th_name.split(" ")[0].trim();
+
         if(prev_name == 'null'){
             if(nm == 'Asset'){
                 $("#table_view").empty();
@@ -5664,6 +7161,17 @@ $("#previous_page").click(function(){
             else if(nm == 'Shot'){
                 $("#table_view").empty();
                 get_sequence_details();
+            }else if(nm == 'Task'){
+                $("#table_view").empty();
+
+                if (get_table_header().trim() == "Sequence")
+                    get_sequence_details();
+
+                else if (get_table_header().trim() == "Shot")
+                    get_shot_details();
+
+                else if (get_table_header().trim() == "Asset")
+                    get_asset_details();
             }
         }
     }
@@ -5756,10 +7264,35 @@ function create_table_display_details(data){
         table.append(thead);
         table.append(tbody);
     }
+    else if( data == 'task'){
+        var headerCell = $('<th style="width: 400px;" class="head_class" name="Task Name" title="Double Click to sort"/>');
+        var header = "Task Name";
+
+        headerCell.html('<i class="glyphicon glyphicon-sort-by-alphabet"></i>&nbsp;'+header);
+        row.append(headerCell);
+
+        headerCell = $('<th style="width: 400px;" class="head_class" name="Ftrack Status" />');
+        header = 'Ftrack Status';
+        headerCell.html(header);
+        row.append(headerCell);
+
+        headerCell = $('<th style="width: 400px;" class="head_class" name="Type" />');
+        header = 'Type';
+        headerCell.html(header);
+        row.append(headerCell);
+
+        headerCell = $('<th style="width: 400px;" class="head_class" name="Action" />');
+        header = 'Action';
+        headerCell.html(header);
+        row.append(headerCell);
+
+        table.append(thead);
+        table.append(tbody);
+    }
     $("#table_view").append(table);
 }
 
-function get_details_before_update(project_name, flag, seq_name, shot_name, asset_name){
+function get_details_before_update(project_name, flag, seq_name, shot_name, asset_name, entity_id){
     $.ajax({
         type:"POST",
         url:"/callajax/",
@@ -5769,12 +7302,14 @@ function get_details_before_update(project_name, flag, seq_name, shot_name, asse
         'sequence_name': seq_name,
         'shot_name': shot_name,
         'asset_name': asset_name,
+        'entity_id': entity_id,
         'flag': flag
         },
         success:function(json){
             if(flag == 'project'){
                 $.each(json, function(idx, data){
                     $('#project_id #id_project_code').val(data.project);
+                    $('#project_id #id_project_code').attr('data-id',data.ftrack_id);
                     $('#project_id #id_start_date').val(data.startdate);
                     $('#project_id #id_end_date').val(data.enddate);
                     $('#project_id #id_status').val(data.status);
@@ -5809,9 +7344,96 @@ function get_details_before_update(project_name, flag, seq_name, shot_name, asse
                     $('#id_asset_status').val(data.ftrack_status);
                 });
             }
+            if (flag == 'Asset_Task'){
+                set_values_asset_sequence_shot_task(json);
+            }
+            if (flag == 'Sequence_Task'){
+                set_values_asset_sequence_shot_task(json);
+            }
+            if (flag == 'Shot_Task'){
+                set_values_asset_sequence_shot_task(json);
+            }
         }
     });
 }
+
+function set_values_asset_sequence_shot_task(json){
+    $.each(json, function(idx, data){
+        $("#id_task_name").val(data.type);
+        $("#id_task_description").val(data.description);
+        get_multiple_assignees(data.current_assignee);
+        $("#id_task_bid_days").val(data.bid);
+        $("#id_task_priority").val(data.priority);
+//        $("#id_task_status").val(data.ftrack_status);
+	set_ftrack_status(data.ftrack_status);
+        $("#startdate").val(data.startdate);
+        $("#enddate").val(data.enddate);
+    });
+}
+
+function set_ftrack_status(ftrack_status){
+
+    $("#id_task_status > option").each(function(){
+    if (ftrack_status == this.text){
+	$('select[name="task_status"]').find('option[value='+this.value+']').attr("selected", true);
+	return false;
+    }
+    });
+
+}
+
+/*
+    checkbox to load asset through csv
+*/
+$("#asset_csv").click(function(){
+    if ($(this).prop("checked"))
+        $("#asset_creation .container").css('display', 'none');
+    else
+        $("#asset_creation .container").css('display', 'block');
+});
+
+/*
+    on click of asset csv button
+*/
+$("#submit_asset_details_csv").click(function(){
+
+    /*var form = $("#asset_creation")[0];
+    alert(form);
+
+    var form_data = new FormData(form);
+    alert(form_data);
+
+    form_data.append('file',$("#asset_creation").get(0).files);
+    console.log(form_data);*/
+
+    //var form_data = new FormData($('asset_form').get(0));
+
+    /*jQuery.each($('input[name^="asset_file"]').files, function(i, file){
+        form_data.append(i, file);
+    });*/
+
+    //console.log(form_data);
+
+    var filename = $("#id_asset_file").val();
+  //  alert(filename);
+
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: //form_data,
+        {
+        'object_name': 'asset_csv_upload',
+        'project_name': get_project_name(),
+        'filename': filename
+        },
+        /*processData: false,
+        contentType: false,
+        cache: false,*/
+        success:function(json){
+            alert("success");
+        }
+    });
+});
 
 // Reload page here
 window.onload = function() {

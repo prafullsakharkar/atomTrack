@@ -6,34 +6,7 @@
 <div class="ch-container">
   <div class="row">
     <!-- leftside menu start -->
-    <div class="col-sm-1" id="task_menu1" style="display:none">
-      <div class="sidebar-nav">
-        <div class="nav-canvas">
-          <ul class="nav nav-pills nav-stacked main-menu">
-            <li class="nav-header"><img class="dashboard-avatar" alt=""
-                                        src="http://192.168.1.18/Employees/{{emp_code}}.jpg"></li>
-            <li class="nav-header">Main</li>
-            {% if data.user_role == 'Supervisor' %}
-            <li id="mgm_dashboard_page"><a class="ajax-link" href="/mgm_dashboard"><i
-              class="glyphicon glyphicon-dashboard"></i>&nbsp;&nbsp;<span> Management</span></a></li>
-            <li><a class="ajax-link" href="/dashboard"><i class="glyphicon glyphicon-dashboard"></i>&nbsp;&nbsp;<span> Dashboard</span></a>
-            </li>
-            {% endif %}
-            <li id="artist_tasks"><a class="ajax-link" href="/tasks"><i
-              class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;<span> To Do List</span></a>
-            </li>
-            <li><a class="ajax-link" href="/status"><i
-              class="glyphicon glyphicon-th"></i><span>&nbsp;&nbsp; Task Status</span></a>
-            </li>
-            {% if data.user_role == 'Co-ordinator' or data.user_role == 'Supervisor' %}
-            <li><a class="ajax-link" href="/review"><i class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;<span> Review Tasks</span></a>
-            <li><a class="ajax-link" href="/ftp"><i class="glyphicon glyphicon-cloud-upload"></i>&nbsp;&nbsp;<span> FTP Upload</span></a>
-            </li>
-            {% endif %}
-          </ul>
-        </div>
-      </div>
-    </div>
+    {% include "left_side_menu.html" %}
     <!-- leftside menu start -->
     <div id="panel_big" class="col-at-12">
       <div class="box sidebar-nav">

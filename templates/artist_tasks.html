@@ -17,36 +17,7 @@
 
   <div class="row">
     <!-- leftside menu start -->
-    <div class="col-sm-1" id="task_menu1" style="display:none">
-      <div class="sidebar-nav">
-        <div class="nav-canvas">
-          <ul class="nav nav-pills nav-stacked main-menu">
-            <li class="nav-header"><img class="dashboard-avatar" alt=""
-                                        src="http://192.168.1.18/Employees/{{emp_code}}.jpg"></li>
-            <li class="nav-header">Main</li>
-            {% if data.user_role == 'Supervisor' %}
-            <li id="mgm_dashboard_page"><a class="ajax-link" href="/mgm_dashboard"><i
-              class="glyphicon glyphicon-dashboard"></i>&nbsp;&nbsp;<span> Management</span></a></li>
-            <li><a class="ajax-link" href="/dashboard"><i class="glyphicon glyphicon-dashboard"></i>&nbsp;&nbsp;<span> Dashboard</span></a>
-            </li>
-            {% endif %}
-            <li class="active" id="artist_tasks"><a class="ajax-link" href="/tasks"><i
-              class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;<span> To Do List</span></a>
-            </li>
-            <li><a class="ajax-link" href="/status"><i
-              class="glyphicon glyphicon-th"></i><span>&nbsp;&nbsp; Task Status</span></a>
-            </li>
-            {% if data.user_role == 'Co-ordinator' or data.user_role == 'Supervisor' %}
-            <li><a class="ajax-link" href="/review"><i class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;<span> Review Tasks</span></a>
-            <li><a class="ajax-link" href="/ftp"><i class="glyphicon glyphicon-cloud-upload"></i>&nbsp;&nbsp;<span> FTP Upload</span></a>
-            </li>
-            {% endif %}
-
-
-          </ul>
-        </div>
-      </div>
-    </div>
+    {% include "left_side_menu.html" %}
     <!-- leftside menu start -->
 
     <div class="col-at-12" id="panel_big">
@@ -121,6 +92,7 @@
                   <th>Bid Hours</th>
                   <th>Time Spend</th>
                   <th>Time Left</th>
+                  <th>Action</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -131,6 +103,32 @@
           </div>
         </div>
       </div>
+      <!-- Pause Model start --->
+      <!--<div class="modal fade" id="myPauseModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"-->
+           <!--data-backdrop="static" data-keyboard="false" aria-hidden="true">-->
+
+        <!--<div class="modal-dialog modal-md">-->
+          <!--<div class="modal-content">-->
+            <!--<div class="modal-header">-->
+              <!--<button type="button" class="close" data-dismiss="modal">×</button>-->
+                <!--<div id="task_details_loader" style="text-align: center;"><h3>Why you want to pause the task ?</h3></div>-->
+
+                <!--<div class="box">-->
+                  <!--<textarea id="pause_reason" rows="5" cols="20" placeholder="Write a reason..."-->
+                            <!--class="x-form-field x-form-text x-form-textarea" autocomplete="off"-->
+                            <!--style="width: 88%; height: 53px; border-radius: 6px;">-->
+
+                  <!--</textarea>-->
+                  <!--<button class="btn btn-inverse btn-default btn-lg" id="btn_pause_reason" title="Add Reason"-->
+                          <!--style="width: 60px;float: right;"><i class="glyphicon glyphicon-send icon-white"></i>-->
+                  <!--</button>-->
+                <!--</div>-->
+            <!--</div>-->
+          <!--</div>-->
+        <!--</div>-->
+        <!--&lt;!&ndash; model end &ndash;&gt;-->
+      <!--</div>-->
+      <!-- Pause Model End --->
 
       <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
            data-backdrop="static" data-keyboard="false" aria-hidden="true">

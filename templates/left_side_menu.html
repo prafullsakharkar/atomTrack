@@ -1,0 +1,51 @@
+<div class="col-sm-1" id="task_menu1" style="display:none">
+  <div class="sidebar-nav">
+    <div class="nav-canvas">
+      <ul class="nav nav-pills nav-stacked main-menu">
+        <li class="nav-header"><img class="dashboard-avatar" alt=""
+                                    src="http://192.168.1.18/Employees/{{emp_code}}.jpg"></li>
+        <li class="nav-header">Main</li>
+        {% if data.user_role == 'Supervisor' %}
+        <li id="mgm_dashboard_page" class="{% if request.path == '/mgm_dashboard/' %}active{% endif %}">
+          <a class="ajax-link" href="/mgm_dashboard"><i class="glyphicon glyphicon-briefcase"></i>&nbsp;&nbsp;
+            <span> Management</span>
+          </a>
+        </li>
+        <li id="dashboard_page" class="{% if request.path == '/dashboard/' %}active{% endif %}">
+          <a class="ajax-link" href="/dashboard"><i class="glyphicon glyphicon-dashboard"></i>&nbsp;&nbsp;
+            <span> Dashboard</span>
+          </a>
+        </li>
+        {% endif %}
+        <li id="artist_tasks" class="{% if request.path == '/tasks/' %}active{% endif %}">
+          <a class="ajax-link" href="/tasks"><i class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;
+            <span> To Do List</span>
+          </a>
+        </li>
+        <li class="{% if request.path == '/status/' %}active{% endif %}">
+          <a class="ajax-link" href="/status"><i class="glyphicon glyphicon-th"></i>
+            <span>&nbsp;&nbsp; Task Status</span>
+          </a>
+        </li>
+        {% if data.user_role == 'Co-ordinator' or data.user_role == 'Supervisor' %}
+        <li class="{% if request.path == '/review/' %}active{% endif %}">
+          <a class="ajax-link" href="/review"><i class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;
+          <span> Review Tasks</span>
+        </a>
+        </li>
+        <li class="{% if request.path == '/ftp/' %}active{% endif %}">
+          <a class="ajax-link" href="/ftp"><i class="glyphicon glyphicon-cloud-upload"></i>&nbsp;&nbsp;
+            <span> FTP Upload</span>
+          </a>
+        </li>
+        <li class="{% if request.path == '/create/' %}active{% endif %}" id="create_project_page">
+          <a class="ajax-link" href="/create"><i class="glyphicon glyphicon-new-window"></i>&nbsp;&nbsp;
+            <span> Create Entities</span>
+          </a>
+        </li>
+        {% endif %}
+
+      </ul>
+    </div>
+  </div>
+</div>
