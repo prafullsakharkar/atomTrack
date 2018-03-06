@@ -6,7 +6,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="v000" />
     <orderEntry type="module" module-name="gen8TMS" />
-    <orderEntry type="module" module-name="projftrack" />
   </component>
   <component name="TestRunnerService">
     <option name="PROJECT_TEST_RUNNER" value="Unittests" />

@@ -16,6 +16,11 @@
             <span> Dashboard</span>
           </a>
         </li>
+        <li class="{% if request.path == '/artist_prod/' %}active{% endif %}" id="artist_productivity_reports">
+          <a class="ajax-link" href="/artist_prod"><i class="glyphicon glyphicon-new-window"></i>&nbsp;&nbsp;
+            <span> Artist Productivity</span>
+          </a>
+        </li>
         {% endif %}
         <li id="artist_tasks" class="{% if request.path == '/tasks/' %}active{% endif %}">
           <a class="ajax-link" href="/tasks"><i class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;

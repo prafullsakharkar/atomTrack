@@ -533,7 +533,8 @@ $('a.toggle_task_left').click(function () {
 })();
 
 function remove_rows(tablename) { 
-    $(tablename).find("tr:gt(0)").remove();        
+//    $(tablename).find("tbody tr:gt(0)").remove();        
+    $(tablename).find("tbody tr").remove();        
 }
 
 function reset_object(){
@@ -1701,6 +1702,10 @@ $('#div_task_details').on('scroll', function(){
    var translate = "translate(0,"+this.scrollTop+"px)";
    this.querySelector("thead").style.transform = translate;
 });
+$('#div_user_details').on('scroll', function(){
+   var translate = "translate(0,"+this.scrollTop+"px)";
+   this.querySelector("thead").style.transform = translate;
+});
 
 function update() {
             var doc = new jsPDF();
@@ -1831,7 +1836,7 @@ function show_versions(context){
     task_name = $('#selectVersionTask').val();
     asset_type = $('#selectVersionTaskAssetTypes').val();
     object_type = $('#selectObject').val();
-
+    task_for = $(context).attr('data-for-artist');
 
     if (task_name == ''){
 	alert("Please select task");
@@ -1841,8 +1846,14 @@ function show_versions(context){
 	return null;
     }
 
+    //var object_id = $('#data-modal-object-id').val();
+    //console.log("object_id: " + object_id)
+    if (task_for == 'to_do'){
+	var object_id = $('#data-modal-object-id').attr('data-modal-parent-id');
+    }else{
     var object_id = $('#data-modal-object-id').val();
-    
+    }
+
     $select_elem = $('#selectTaskVersion');
     if (object_id){
 	load_versions(object_id, task_name, asset_type, object_type, $select_elem)
@@ -1945,7 +1956,14 @@ function create_version_note(version_id){
 
     $textarea_id = $('#text_version_note');
     var note_text = $textarea_id.val().trim();
-    var note_category = $('#selectVersionNoteCategory').val();
+    //var note_category = $('#selectVersionNoteCategory').val();
+    task_for = $('#selectVersionNoteCategory').attr('data-for-artist');
+    if (task_for == 'to_do'){
+        var note_category = 'Internal';
+    }
+    else{
+        var note_category = $('#selectVersionNoteCategory').val();
+    }
 
     if (!(note_text.length && version_id)){
 	alert("invalid note ...");
@@ -1970,6 +1988,14 @@ function create_version_note(version_id){
     create_new_note(version_id, note_text, note_category, note_for, $div_element, $textarea_id, note_task, attach_files);
 
     $textarea_id.parent().find('table[id=gallery_versions] tbody').html('');
+
+    // for internal reject
+    if($('#internal-reject').prop("checked") == true){
+        internal_reject_task(version_id, note_text, note_category, note_for, note_task, attach_files);
+
+    }
+
+
 }
 
 function add_version_notes(obj,id,idx){
@@ -2728,6 +2754,7 @@ function add_version_rows(idx,obj){
 }
 
 $('#upload_ftp').click(function(){
+    $('#upload_ftp').prop("disabled",true);
     var ftp_version = []
     side = $('#selectFtpVersionSide').val();
     upload_status = $('#selectFtpStatus').val();
@@ -2796,6 +2823,7 @@ function upload_files(data_array,side,copy_opt,dest_path,upload_status,dept) {
             console.log(error);
         }
     });
+    $('#upload_ftp').removeAttr("disabled");
 }
 $('#selectFtpStatus').change(function(){
     upload_notes()
@@ -2834,7 +2862,11 @@ function show_model(context) {
     reset_model_drop_down();
 
     task_id = $(context).closest('td').attr('data-task-id');
+    //task_parent_id = $(context).closest('tr').attr('data-task-parent-id');
+    task_parent_id = $('#data-modal-object-id').attr('data-modal-parent-id');
+    task_assignee = $(context).closest('td').attr('data-task-assignee');
     obj_name = $('#selectObject').val();
+
     if (obj_name){
 	if (obj_name == 'Shot Asset Build'){
 	    obj_name = 'Asset Build';
@@ -2860,7 +2892,7 @@ function show_model(context) {
 
     last_row = 15;
 
-    load_task_details(task_id,obj_name,last_row);
+    load_task_details(task_id,obj_name,last_row,task_assignee);
 
     $('#version_note_details').html('');
 
@@ -2883,6 +2915,10 @@ function show_model(context) {
     load_asset_versions(task_id,obj_name,last_row,task);
 
     // 4. Version Notes Tab
+    //
+
+//    html = '<input type="hidden" id="data-modal-object-id01" value="'+task_parent_id+'" />'
+//    $('#selection_tab').append(html);
     $('#note_attach').val('');
     $('#version_note_details').html('');
     version_notes(task_id,obj_name,last_row,ver_note_task);
@@ -2963,12 +2999,12 @@ function reset_model_drop_down(){
 
 }
 
-function load_task_details(task_id,obj_name,last_row){
+function load_task_details(task_id,obj_name,last_row,task_assignee){
     $("#task_details_loader").show();
     $.ajax({
 	type: "POST",
 	url:"/callajax/",
-	data: { 'task_id': task_id , 'type_name': obj_name, 'object_name': 'Show Task Details' , 'last_row' : last_row},
+	data: { 'task_id': task_id , 'type_name': obj_name, 'object_name': 'Show Task Details' , 'last_row' : last_row, 'task_assignee': task_assignee},
 	success: function(json){
 	$.each(json, function (idx, obj) {
 	    add_task_details(idx, obj);
@@ -2983,7 +3019,10 @@ function load_task_details(task_id,obj_name,last_row){
 }
 
 function add_task_details(idx, obj){
-    html = '<input type="hidden" id="data-modal-object-id" value="'+obj.object_id+'" /><h3>'+obj.name+'</h3><label>'+obj.object_type+' ('+obj.type_name+')</label></br><small>'+obj.link_path+'</small>';
+    var path = obj.link_path
+    var task_parent_path = path.substring(0, path.lastIndexOf('/'));
+
+    html = '<input type="hidden" id="data-modal-object-id" data-modal-parent-id="'+obj.parent_id+'" task_assignee="'+task_assignee+'" task_parent_path="'+task_parent_path+'" value="'+obj.object_id+'" /><h3>'+obj.name+'</h3><label>'+obj.object_type+' ('+obj.type_name+')</label></br><small>'+obj.link_path+'</small>';
 
     status_label = obj.status.replace(/ /g,'_').toLowerCase();
     priority_label = obj.priority.replace(/ /g,'_');
@@ -3003,6 +3042,19 @@ function add_task_details(idx, obj){
 </div>\
 ';
     $('#modal_header').html(table);
+
+    //for asset_task list
+
+    $select_elem = $('#selectVersionTask');
+    $select_elem.empty();
+	$.each(obj.asset_task_dict, function (task_id,task_name) {
+		$select_elem.append('<option value="'+task_name+'" data-id="'+task_id +'">'+task_name+'</option>');
+            });
+	    $select_elem.trigger("chosen:updated");
+	    $select_elem.trigger("liszt:updated");
+	    //$select_elem.data("chosen").destroy().chosen();
+
+
 }
 
 function load_task_notes(task_id, obj_name, last_row, note_task){
@@ -3602,7 +3654,32 @@ function reject_task(param){
     });
 
 }
+// Function for internal rejection
+function internal_reject_task(version_id, note_text, note_category, note_for, note_task, attach_files){
+    var users = $('#data-modal-object-id').attr('task_assignee');
+    var task_name = $("#selectVersionTask option:selected").text();
+    var selected = $('#selectVersionTask').find('option:selected');
+    var object_id = selected.data('id');
+    var task_parent_path = $('#data-modal-object-id').attr('task_parent_path');
+    var task_path = task_parent_path.replace(/\s/g, "").replace(/\//g, ':') + ":" + String(task_name)
+    var version = $("#selectTaskVersion option[value='"+ version_id +"']").text(); //$('#selectTaskVersion:selected').text();
+    var my_status = 'Pending Internal Review';
+	var change_status = 'Internal Reject';
+	var change_status_label = 'internal_reject';
+	var note_category = 'Internal';
+ 	var note_text = note_text; //$(this).parent().find('textarea[id=task_reject_note]').val().trim();
 
+    object_status_change(change_status, my_status , object_id, 'Task');
+
+	if (version_id){
+	    object_status_change(change_status, my_status , version_id, 'AssetVersion');
+	}
+
+    insert_db_note(note_text, note_category, object_id, change_status, users, task_path, version);
+
+}
+
+//
 $('#selectMGMDashProject').change(function(){
     mgm_dashboard();
 
@@ -3739,6 +3816,109 @@ function create_asset_build_table(data){
 	$("#tbl_asset_build").append(tr_wip+tr_done+tr_approved)
     
     });
+}
+
+$('#show_prod_records').click(function(){
+    artist_productivity();
+
+});
+
+function artist_productivity(){
+
+    project_id = $('#selectDashProject').val();
+    if(!project_id){
+	alert("Please select valid project !!!");
+    }
+
+    project = $("#selectDashProject option[value='"+project_id+"']").text(); 
+    duration = $('#reportrange span').html();
+    if(!duration){
+	alert("Please select valid duration !!!");
+    }
+
+    artist = $('#selectUsers').val();
+
+    dur_arr = duration.split(' : ');
+
+    first = dur_arr[0];
+    last = dur_arr[1];
+
+    $.ajax({
+	type: "POST",
+	url: "/callajax/",
+	data : {'object_name': 'Artist Productivity', 'project': project, 'first': first, 'last': last, 'artist': artist},
+	beforeSend: function(){
+	    remove_rows('#tbl_task');
+            $('#panel_big').plainOverlay('show');
+        },
+	success: function(json){
+	    $.each(json,function(idx,obj){
+		row = artist_prod_table(obj);
+		$("#tbl_task tbody").append(row);
+	    });	    
+            $('#panel_big').plainOverlay('hide');
+	},
+	error: function(error){
+	    console.log("Error:"+error);
+	}
+
+    });
+}
+
+function show_task_dialog(artist,tasks){
+
+    all_tasks = tasks.replace(/,/g,'<br>')
+    $('#show_artist_prod_task').html('');
+    $('#show_artist_prod_task').append('<p>Artist Name : <strong style="color: #00ff1e;">'+artist+'<strong></p>');
+    $('#show_artist_prod_task').append('<p><strong>Tasks : <strong></p><p>'+all_tasks+'</p>');
+    $("#myModal").modal('show');
+}
+
+function artist_prod_table(data){
+
+    row = '<tr>\
+	<td nowrap><strong>'+data.artist+'</strong></td>\
+	<td onclick="show_task_dialog(\''+data.artist+'\',\''+data.tasks+'\')"><strong style="color: #00ff1e;">'+data.task_count+'</strong></td>\
+	<td><strong>'+data.frame_sec+'</strong></td>\
+	<td><strong>'+data.bid_days+'</strong></td>\
+	<td><strong>'+data.actual_bid+'</strong></td>\
+	<td><strong>'+data.variance+'</strong></td>\
+	<td><strong>'+data.avg_per_day+'</strong></td>\
+    ';
+	tda = '\
+	<td onclick="show_task_dialog(\''+data.artist+'\',\''+data.Urgent.tasks+'\')"><strong style="color: #00ff1e;">'+data.Urgent.task_count+'</strong></td>\
+	<td><strong>'+data.Urgent.frame_sec+'</strong></td>\
+	<td><strong>'+data.Urgent.bid_days+'</strong></td>\
+	<td><strong>'+data.Urgent.actual_bid+'</strong></td>\
+	<td><strong>'+data.Urgent.variance+'</strong></td>\
+	<td><strong>'+data.Urgent.avg_per_day+'</strong></td>\
+	';
+	tdb = '\
+	<td onclick="show_task_dialog(\''+data.artist+'\',\''+data.High.tasks+'\')"><strong style="color: #00ff1e;">'+data.High.task_count+'</strong></td>\
+	<td><strong>'+data.High.frame_sec+'</strong></td>\
+	<td><strong>'+data.High.bid_days+'</strong></td>\
+	<td><strong>'+data.High.actual_bid+'</strong></td>\
+	<td><strong>'+data.High.variance+'</strong></td>\
+	<td><strong>'+data.High.avg_per_day+'</strong></td>\
+	';
+	tdc = '\
+	<td onclick="show_task_dialog(\''+data.artist+'\',\''+data.Medium.tasks+'\')"><strong style="color: #00ff1e;">'+data.Medium.task_count+'</strong></td>\
+	<td><strong>'+data.Medium.frame_sec+'</strong></td>\
+	<td><strong>'+data.Medium.bid_days+'</strong></td>\
+	<td><strong>'+data.Medium.actual_bid+'</strong></td>\
+	<td><strong>'+data.Medium.variance+'</strong></td>\
+	<td><strong>'+data.Medium.avg_per_day+'</strong></td>\
+	';
+	tdd = '\
+	<td onclick="show_task_dialog(\''+data.artist+'\',\''+data.Low.tasks+'\')"><strong style="color: #00ff1e;">'+data.Low.task_count+'</strong></td>\
+	<td><strong>'+data.Low.frame_sec+'</strong></td>\
+	<td><strong>'+data.Low.bid_days+'</strong></td>\
+	<td><strong>'+data.Low.actual_bid+'</strong></td>\
+	<td><strong>'+data.Low.variance+'</strong></td>\
+	<td><strong>'+data.Low.avg_per_day+'</strong></td>\
+	';
+    row = row + tda + tdb + tdc + tdd + '</tr>';
+    return row
 }
 
 $('#show_records').click(function(){
@@ -4320,7 +4500,7 @@ function show_artist_tasks(){
                   <td>\
                     <strong>'+obj.task+'</strong>\
                   </td>\
-                  <td style="width:400px;" data-task-id="'+obj.task_id+'">\
+                  <td style="width:400px;" data-task-id="'+obj.task_id+'" data-task-assignee="'+obj.user_name+'">\
                     <strong><a href="#" id="task_object"\
                                onclick="show_model(this)">[ '+obj.path+' ]</a></strong>\
                   </td>\
@@ -4957,12 +5137,27 @@ function clear_asset_modal_fields(){
 */
 var cnt = 1;
 var max = $('#id_project_code').attr("maxlength");
+var pattern_name = /^[0-9a-zA-Z]+$/;
+/*
 $('#id_project_name').keydown(function(){
     console.log(max);
     len = $('#id_project_code').val().length;
     if(len < 3){
         $('#id_project_code').val($(this).val().toLowerCase());
         //cnt++
+    }
+    else{
+        $('#id_project_code').prop("disabled", true);
+    }
+});
+*/
+$('#id_project_name').focusout(function(){
+    nm = $('#id_project_name').val();
+    if (!pattern_name.test(nm)){
+        error_message("Project name must be alphanumeric");
+        $('#id_project_code').val('');
+        $('#id_project_name').val('');
+        $("#projectModal").modal("hide");
     }
 });
 
@@ -4989,35 +5184,35 @@ $('#submit_details').click(function(){
     var data_array = {};
 
     if(project_name == ''){
-        alert("project name field must not be empty!!!!!!!");
+        error_message("project name field must not be empty");
         return false;
     }
     
     var pattern_name = /^[0-9a-zA-Z]+$/;
     if(!pattern_name.test(project_name)){
-        alert("Project name must be alphanumeric!!!");
+        error_message("Project name must be alphanumeric");
         return false;
     }
     data_array['project_name'] = project_name;
 
     if(project_code == ''){
-        alert("project code field must not be empty!!!!!!!");
+        error_message("project code field must not be empty");
         return false;
     }
     var pattern = /^[0-9a-zA-Z]+$/;
     if(!pattern.test(project_code)){
-        alert("Project code must contain alphabets and numbers!!!");
+        error_message("Project code must contain alphabets and numbers");
         return false;
     }
     data_array['project_code'] = project_code;
 
     var fps_pattern = /^[0-9]+$/;
     if(!fps_pattern.test(fps)){
-        alert("Fps must be integer only!!!!");
+        error_message("Fps must be integer only");
         return false;
     }
     if(!fps_pattern.test(start_frame)){
-        alert("Start frame must be integer!!!");
+        error_message("Start frame must be integer");
         return false;
     }
     data_array['fps'] = fps;
@@ -5041,17 +5236,17 @@ $('#submit_details').click(function(){
 //        }
 //    }
     if(start_date == '' && end_date == ''){
-        alert("Start and end date must not be empty!!!!!!!");
+        error_message("Start and end date must not be empty");
         return false;
     }
 
     if(start_date == ''){
-        alert("start date field must not be empty!!!!!!!");
+        error_message("start date field must not be empty");
         return false;
     }
 
     if(end_date == ''){
-        alert("end date field must not be empty!!!!!!!");
+        error_message("end date field must not be empty");
         return false;
     }
     //return false;
@@ -5059,13 +5254,13 @@ $('#submit_details').click(function(){
     var sdate = new Date(start_date);
 
     if(sdate > edate){
-        alert("Start date must not exceed end date!!!!!!!");
+        error_message("Start date must not exceed end date");
         return false;
     }
     data_array['start_date'] = start_date;
     data_array['end_date'] = end_date;
     data_array['start_frame'] = start_frame;
-
+    data_array['resolution'] = resolution;
     var data_list = [];
     data_list.push(data_array);
 
@@ -5179,15 +5374,15 @@ $("#update_details").click(function(){
     var sdate = new Date(start_date);
     var edate = new Date(end_date);
     if (sdate > edate){
-        alert("start date must not exceed end date!!!!");
+        error_message("start date must not exceed end date");
         return false;
     }
     if(start_date == '' || end_date == ''){
-        alert("start or end date field must not be empty!!!!!!!");
+        error_message("start or end date field must not be empty");
         return false;
     }
     if(end_date == '' && start_date == ''){
-        alert("Date fields must not be blank!!!!!!!");
+        error_message("Date fields must not be blank");
         return false;
     }
     data_array['project_id'] = project_id;
@@ -5328,6 +5523,14 @@ $('#id_frame_end').change(function(){
     var seq_name = get_sequence_name();
     console.log(sf +"====>"+ parseInt(ef));
 
+    calculate_fps(sf, ef, prj_name, seq_name);
+});
+/*
+ *  fps calculation and append
+ *  frame duration.
+ */
+function calculate_fps(sf, ef, prj_name, seq_name){   
+     
     $("#id_total_frames").val(parseInt(ef) - (parseInt(sf) - 1));
 
     $.ajax({
@@ -5345,7 +5548,7 @@ $('#id_frame_end').change(function(){
             $("#id_frame_duration").val(json + "sec");
         }
     });
-});
+}
 
 //Ajax call to create shot
 $('#submit_shot_details').click(function(){
@@ -5710,54 +5913,90 @@ $("#update_asset_details").click(function(){
     on key press to fill the task name
 */
 $("#startdate").css('display','block');
-/*$(document).ready(function() {
-$("#task_creation").formValidation({
 
-    framework: 'bootstrap',
-    icon: {
-        valid: 'glyphicon glyphicon-ok',
-        invalid: 'glyphicon glyphicon-remove',
-        validating: 'glyphicon glyphicon-refresh'
-    },
-    fields: {
-        task_bid_days: {
-            notEmpty: {
-                message: 'This field is required'
-            }
-        }
+$("#id_task_bid_days").change(function(){
+
+    var v = $("#id_task_bid_days").val().trim();
+    if ($("#startdate").val() != ''){
+        bool_val = check_bid_days(v);
+        assign_end_date_bid_days_start_date(v, $("#startdate").val());
+    }
+    else{
+        bool_val = check_bid_days(v);
     }
 });
-});*/
-/*$("#id_task_bid_days").change(function(){
 
-    var v = $("#id_task_bid_days").value;
-    //alert(isNaN(v));
-    if (isNaN(v) == 'true'){
-        if (v.indexOf(".")){
-            var len = v.split(".")[1].length;
-            if (len > 1){
-                $("#id_task_bid_days").innerHTML("<span class='error'>Only 2 decimal places allowed</span>");
+/*
+ *     function to check bid_days
+ */
+function check_bid_days(bid_days){
+
+    if (!isNaN(parseFloat(bid_days))){
+        if(parseInt(bid_days.indexOf(".")) != -1){
+            var len = bid_days.toString();
+            len = len.split(".")[1].length;
+            if (len > 2){
+                error_message("Only 2 decimal allowed");
+                $("#taskModal").modal("hide");
+                clear_task_fields();
+                $("#startdate").hide();
+                return false;
+            }
+            else
+            {
+                $("#startdate").css("display", "block");
+                return true;
             }
         }
         else{
-            $("#startdate").css('display','block');
+            var int_str = bid_days.toString();
+            if (int_str.length > 2){
+                error_message("Only 2 digits allowed");
+                $("#taskModal").modal("hide");
+                clear_task_fields();
+                $("#startdate").hide();
+            }
+            else{
+                $("#startdate").css("display", "block");
+                return true;
+            }
         }
     }
     else{
-        alert("Only numbers are allowed");
-        $("#id_task_bid_days").show().append("<span class='error'>Only numbers are allowed</span>");
+        $("#startdate").css("display", "none");
+        error_message("Only numbers are allowed");
+         $("#taskModal").modal("hide");
+        clear_task_fields();
+        return false;
     }
-});*/
+}
 
 /*
-    on key change event to fill in
-    the due date based on bid days
-*/
-$("#startdate").on("select", function(){
+ *     function to print error messages
+ */
+function error_message(error_msg){
+    $.notify(error_msg + "!!!!",
+    {
+        position:"top center",
+        autoHide: true,
+        autoHideDelay: 800
+    });
+}
+
+
+/* on key change event to fill in
+   the due date based on bid days
+ */
+$("#startdate").on("change", function(){
 
     var bid_days = $("#id_task_bid_days").val();
+    var sval = $("#startdate").val();
 
-    var sval = $("#startdate").val();//datepicker("getDate");
+    assign_end_date_bid_days_start_date(bid_days, sval);
+
+});// end of key press event on bid days
+
+function assign_end_date_bid_days_start_date(bid_days, sval){
 
     var sdate = new Date(sval);
 
@@ -5790,8 +6029,7 @@ $("#startdate").on("select", function(){
 
     $("#enddate").val(nm + "/" + nd + "/" + n.getFullYear()).prop("disabled", true);
     return false;
-});// end of key press event on bid days
-
+}
 /*
     onchange event
     on select to check
@@ -5844,14 +6082,12 @@ function check(data){
     //alert("in check" + data);
     s = JSON.stringify(data);
     if(s == 'false'){
-        console.log("false");
-        //$("#id_task_name").html("<span class='success'>Available</span>");
         $("#submit_task_details").removeAttr("disabled");
     }
     if(s == 'true'){
-        console.log("true");
-        //$("#id_task_name").html("<span class='error'>Already Present</span>");
-        $("#submit_task_details").prop("disabled", true);
+        error_message("Task name already exists");
+        $("#taskModal").modal("hide");
+        clear_task_fields();
     }
 }
 
@@ -5875,8 +6111,12 @@ $("#id_asset_type").change(function(){
         },
         success: function(json){
                var s = JSON.stringify(json);
-               if (s == 'true')
+               if (s == 'true'){
+                    error_message("Asset Already Exists");
                     $("#submit_asset_details").prop("disabled", true);
+                    $("#assetModal").modal("hide");
+                    clear_asset_modal_fields();
+                }
                if (s == 'false')
                     $("#submit_asset_details").removeAttr("disabled");
         }
@@ -5905,7 +6145,7 @@ $("#id_project_name").focusout(function(){
         success: function(json){
             var s = JSON.stringify(json);
             if (s == 'true'){
-                alert("Project Name already exists!!!");
+                error_message("Project Name already exists");
                 $("#projectModal").modal("hide");
                 clear_project_fields();
             }
@@ -5989,6 +6229,8 @@ $("#submit_task_details").click(function(){
         alert("Date field must not be empty!!!!");
         return false;
     }
+    
+    bid_days = 60*60*8*bid_days
 
     var data_array = {};
     data_array['parent_id'] = get_parent_id();
@@ -6245,6 +6487,9 @@ $("#update_task_details").click(function(){
         alert("Bid Days must not be empty!!!");
         return false;
     }
+    
+    bid_days = 60*60*8*bid_days
+    
     var data_array = {};
     data_array['task_id'] = get_entity_id();
     data_array['task_object'] = get_entity_name();
@@ -6725,8 +6970,8 @@ function get_multiple_assignees(assignee){
     function to show shot
     modal on create button click
 */
-var s = $(name).closest("li").find('a').text();
-set_project_name(s);
+//var s = $(name).closest("li").find('a').text();
+//set_project_name(s);
 
 /*
     show sequence modal
@@ -6760,15 +7005,15 @@ $("#Update_sequence_details").click(function(){
 
     var pattern = /^[0-9a-zA-Z]+$/;
     if(!pattern.test(sequence_name)){
-        alert("Sequence must contain alphabets or numbers!!!");
+        error_message("Sequence must contain alphabets or numbers");
         return false;
     }
     if(sequence_name == ''){
-        alert("Sequence Name cannot be empty!!!!");
+        error_message("Sequence Name cannot be empty!!!!");
         return false;
     }
     if (status == 'Select Status'){
-        alert("Please select proper status!!!");
+        error_message("Please select proper status!!!");
         return false;
     }
         
@@ -7022,15 +7267,15 @@ $("#update_shot_details").click(function(){
 
     var pattern_name = /^[0-9a-zA-Z]+$/;
     if (!pattern_name.test(name)){
-        alert("Shot name must be alphanumeric!!!!!");
+        error_message("Shot name must be alphanumeric!!!!!");
         return false;
     }
     if (status == 'Select Status'){
-        alert("Select proper status!!!!!");
+        error_message("Select proper status!!!!!");
         return false;
     }
     if(frame_end <= frame_start){
-        alert("End frame must be higher than start frame!!!!");
+        error_message("End frame must be higher than start frame!!!!");
         return false;
     }
     var data_array = {};
@@ -7052,33 +7297,6 @@ $("#update_shot_details").click(function(){
 
         $("#shotModal").modal("hide");
         clear_shot_modal_fields();
-/*
-    $.ajax({
-        type: "POST",
-        url: "/callajax/",
-        data : {'object_name': 'Shot_Creation',
-        'shot_type': shot_type,
-        'name': name,
-        'description': description,
-        'status': status,
-        'priority': priority,
-        'entity_name': entity_name,
-        'frame_start': frame_start,
-        'frame_end': frame_end,
-        'key_frames': key_frames,
-        'prj_name': get_project_name(),
-        'sequence_name': sequence_name,
-        'flag_status': flag_status,
-        //'old_shot_name': old_shot_name
-        },
-        success: function(json){
-            alert("successfully updated shot!!!!");
-            get_shot_details();
-        }
-    });//end of ajax call
-        $("#shotModal").modal("hide");
-        clear_shot_modal_fields();
-*/
 });
 
 
@@ -7313,9 +7531,9 @@ function get_details_before_update(project_name, flag, seq_name, shot_name, asse
                     $('#project_id #id_start_date').val(data.startdate);
                     $('#project_id #id_end_date').val(data.enddate);
                     $('#project_id #id_status').val(data.status);
-                    $('#project_id #id_project_folder').val(data.root);
+                    $('#project_id #id_fps').val(data.fps);
                     $('#project_id #id_resolution').val(data.resolution);
-                    $('#project_id #id_client_label').val(data.clientlabel_proj);
+                    $('#project_id #id_start_frame').val(data.startframe);
                 });
             }
             if(flag == 'sequence'){
@@ -7330,8 +7548,9 @@ function get_details_before_update(project_name, flag, seq_name, shot_name, asse
                     $('#id_description').val(data.description);
                     $('#id_sequence_entity_name').val(data.entity_name);
                     $('#id_sequence_priority').val(data.priority);
-                    $('#id_frame_start').val(data.fstart);
-                    $('#id_frame_end').val(data.fend);
+                    $('#id_frame_start').val(data.startframe);
+                    $('#id_frame_end').val(data.endframe);
+                    calculate_fps(data.startframe, data.endframe, project_name, seq_name);
                 });
             }
             if(flag == 'asset'){
@@ -7447,10 +7666,9 @@ window.onload = function() {
         show_artist_tasks();
     }
     if($('#create_project_page').attr('class') == 'active'){
-        //create_table_display_details();
         get_project_details();
-
-        /*create_table_display_details();
-        $('#panel_thumbnail').hide();*/
+    }
+    if($('#artist_productivity_reports').attr('class') == 'active'){
+        artist_productivity();
     }
 }

@@ -178,7 +178,7 @@
     ]
   },
   "prafull.sakharkar": {
-    "role": "Co-ordinator",
+    "role": "Supervisor",
     "columns": [
       "Animation",
       "Animation Stereo",
@@ -349,7 +349,7 @@
     "departments": []
   },
   "kunal.jamdade": {
-    "role": "Supervisor",
+    "role": "Co-ordinator",
     "columns": [
       "Animation",
       "Animation Stereo",
@@ -410,13 +410,13 @@
       "Texturing"
     ]
   },
-  "sachin.patekar": {
+  "mukesh.patil": {
     "role": "Co-ordinator",
     "columns": [
       "Rigging"
     ],
     "group": "Sup",
-    "name": "sachin.patekar",
+    "name": "mukesh.patil",
     "departments": [
       "Rigging"
     ]
@@ -479,10 +479,13 @@
     "columns": [
       "Animation",
       "Layout",
+      "Shot Finaling",
       "Blocking",
       "Modeling",
+      "Cloth",
       "Texturing",
       "Blend Shape",
+      "CFX",
       "Rigging",
       "Foliage",
       "Sim Modeling",
@@ -492,7 +495,9 @@
       "Previz",
       "Animation Stereo",
       "Final Animation Stereo",
-      "Layout Stereo"
+      "Layout Stereo",
+      "FX",
+      "Shave Hair"
     ],
     "group": "Production",
     "name": "shradha.hada",
@@ -534,6 +539,21 @@
       "Animation"
     ]
   },
+  "shishir.singh": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Animation",
+      "Layout",
+      "Blocking",
+      "Previz",
+      "Anim Tech Check"
+    ],
+    "group": "Production",
+    "name": "shishir.singh",
+    "departments": [
+      "Animation"
+    ]
+  },
   "dilip.rathod": {
     "role": "Supervisor",
     "columns": [],
@@ -549,6 +569,48 @@
     "group": "Production",
     "name": "vinod.sawant",
     "departments": []
+  },
+  "vikas.bhargav": {
+    "role": "Supervisor",
+    "columns": [
+      "Animation",
+      "Animation Stereo",
+      "Anim Tech Check",
+      "Anim Texture",
+      "Blend Shape",
+      "Blocking",
+      "Foliage",
+      "CFX",
+      "Previz",
+      "Cloth",
+      "Final Animation Stereo",
+      "Fur Shape",
+      "FX",
+      "Layout",
+      "Layout Rig",
+      "Layout Stereo",
+      "Lighting",
+      "Modeling",
+      "Matte Painting",
+      "PreLighting",
+      "Proxy Set",
+      "Render",
+      "Rigging",
+      "Set Dressing",
+      "Shave Hair",
+      "Shot Finaling",
+      "Sim Modeling",
+      "Stereo Comp",
+      "Stereo Render",
+      "Rig Test",
+      "Texturing"
+    ],
+    "group": "Sup",
+    "name": "vikas.bhargav",
+    "departments": [
+      "Lighting",
+      "FX"
+    ]
   },
   "nitin.kashyap": {
     "role": "Co-ordinator",

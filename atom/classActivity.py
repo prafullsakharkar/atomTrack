@@ -26,6 +26,7 @@ from settings import BASE_DIR, PROJ_BASE_DIR
 
 from pprint import pprint
 from socket import socket, AF_INET, SOCK_DGRAM, gethostname, gethostbyname
+from subprocess import check_output
 
 from .forms import CreateProject, CreateSequence, CreateShot, CreateAsset, CreateTask, AttachmentForm
 from .models import Attachment
@@ -50,16 +51,32 @@ from .models import Attachment
 
 class Activity:
     def __init__(self):
+
         self.session = ase_session.Session()
+        mongo_server = '192.168.1.19'
+
+        try:
+            ips = check_output(['hostname', '--all-ip-addresses'])
+            ip_address = ips.strip()
+        # self.ipaddress = gethostbyname(self.machinename)
+        except:
+            ip_address = '127.0.0.1'
+
+        if ip_address not in ['192.168.1.20', '192.168.1.19']:
+            mongo_server = '192.168.1.128'
+            os.environ['FTRACK_SERVER'] = "http://192.168.1.99"
+
         self.reload_session()
-        print os.environ['FTRACK_SERVER']
+
+        mongo_server = '192.168.1.19'
+        print os.environ['FTRACK_SERVER'], mongo_server, ip_address
+
         self.password_str = base64.b64decode("bWFkQHBpcDE=")
         self.projects = {}
         self.object_types = {}
         self.sequences = {}
         self.asset_builds = {}
         self.shots = {}
-        mongo_server = '192.168.1.128'
         self.employee_details_jfile = os.path.join(BASE_DIR, 'atomTrack/static/json/employee_details.json')
         self.user_details_jfile = os.path.join(BASE_DIR, 'atomTrack/static/json/user_details.json')
         self.email_jfile = os.path.join(BASE_DIR, 'atomTrack/static/json/email.json')
@@ -119,7 +136,7 @@ class Activity:
         self.ftp, self.sftp = '', ''
         self.project = ''
 
-	# list to store all statuses of task
+        # list to store all statuses of task
         self.list_task_statuses = ''
         # list to store all types of task
         self.list_task_types = ''
@@ -167,6 +184,9 @@ class Activity:
         # password = request.user.password
         self.username = username
 
+        # Creating ftrack user
+        self.create_new_ftrack_user(username)
+
         self.get_user_columns(username)
         print datetime.datetime.now(), "User Login : %s" % username
 
@@ -193,11 +213,11 @@ class Activity:
             if request.is_ajax():
                 proj_id = request.POST.get('proj_id')
                 object_name = request.POST.get('object_name')
-		if object_name == 'Update Form Data':
+                if object_name == 'Update Form Data':
                     entity_name = request.POST.get('entity_name')
                     data_list = request.POST.get('data_list')
-		    data = self.update_form_data(entity_name,data_list)
-                if object_name == 'Sequence':
+                    data = self.update_form_data(entity_name, data_list)
+                elif object_name == 'Sequence':
                     data = self.get_sequences(proj_id)
                 elif object_name == 'Shot':
                     parent_id = request.POST.get('parent_id')
@@ -302,7 +322,8 @@ class Activity:
                 elif object_name == 'Show Task Details':
                     task_id = request.POST.get('task_id')
                     type_name = request.POST.get('type_name')
-                    data = self.show_task_details(type_name, task_id)
+                    task_assignee = request.POST.get('task_assignee')
+                    data = self.show_task_details(type_name, task_id, task_assignee)
                 elif object_name == 'Show Note Details':
                     task_id = request.POST.get('task_id')
                     type_name = request.POST.get('type_name')
@@ -354,198 +375,10 @@ class Activity:
                 elif object_name == 'Review Tasks':
                     project = request.POST.get('project')
                     data = self.get_review_tasks(project)
-                elif object_name == 'Project_Creation':
-                    flag_status = request.POST.get('flag_status')
-                    project_name = request.POST.get('project_name')
-                    project_code = request.POST.get('project_code')
-                    start_date = request.POST.get('start_date')
-                    end_date = request.POST.get('end_date')
-                    workflow_schema = request.POST.get('workflow_schema')
-                    status = request.POST.get('status')
-                    scope = request.POST.get('scope')
-                    disk = request.POST.get('disk')
-                    project_folder = request.POST.get('project_folder')
-                    entity_name = request.POST.get('entity_name')
-                    resolution = request.POST.get('resolution')
-                    start_frame = request.POST.get('start_frame')
-                    fps = request.POST.get('fps')
-                    version = request.POST.get('version')
-                    client_label = request.POST.get('client_label')
-
-                    data = self.create_project(project_name, project_code, start_date, end_date,
-                                               workflow_schema, status, scope, disk, project_folder,
-                                               entity_name, resolution, start_frame, fps, version, client_label,
-                                               flag_status
-                                               )
-                elif object_name == 'Shot_Creation':
-                    flag_status = request.POST.get('flag_status')
-                    if flag_status == 'update':
-                        parent_object_type = 'None'
-                        task_template = 'None'
-                        shot_type = request.POST.get('shot_type')
-                        name = request.POST.get('name')
-                        description = request.POST.get('description')
-                        assigned_users = "None"
-                        status = request.POST.get('status')
-                        priority = request.POST.get('priority')
-                        scope = "None"
-                        entity_name = request.POST.get('entity_name')
-                        version = "None"
-                        frame_start = request.POST.get('frame_start')
-                        frame_end = request.POST.get('frame_end')
-                        key_shot = "None"
-                        key_frames = request.POST.get('key_frames')
-                        frame_handles = "None"
-                        prj_name = request.POST.get('prj_name')
-                        self.sequence_name = request.POST.get('sequence_name')
-                        old_shot_name = ''
-                    else:
-                        parent_object_type = request.POST.get('parent_object_type')
-                        task_template = request.POST.get('task_template')
-                        shot_type = request.POST.get('shot_type')
-                        name = request.POST.get('name')
-                        description = request.POST.get('description')
-                        assigned_users = ''
-                        status = request.POST.get('status')
-                        priority = request.POST.get('priority')
-                        scope = request.POST.get('scope')
-                        entity_name = request.POST.get('entity_name')
-                        version = request.POST.get('version')
-                        frame_start = request.POST.get('frame_start')
-                        frame_end = request.POST.get('frame_end')
-                        key_shot = request.POST.get('key_shot')
-                        key_frames = request.POST.get('key_frames')
-                        frame_handles = request.POST.get('frame_handles')
-                        prj_name = request.POST.get('prj_name')
-                        self.sequence_name = request.POST.get('sequence_name')
-                        old_shot_name = ''
-
-                    data = self.create_shot(parent_object_type, task_template, shot_type, name, description,
-                                            assigned_users, status, priority, scope, entity_name, version,
-                                            frame_start, frame_end, key_shot, key_frames, frame_handles,
-                                            prj_name, self.sequence_name, flag_status, old_shot_name,
-                                            )
-                elif object_name == 'Sequence_Creation':
-                    flag_status = request.POST.get('flag_status')
-                    if flag_status == 'update':
-                        parent_object_type = 'None'
-                        task_template = 'None'
-                        sequence_type = 'None'
-                        self.sequence_name = request.POST.get('new_sequence_name')
-                        description = request.POST.get('description')
-                        assigned_users = 'None'
-                        status = 'None'
-                        priority = 'None'
-                        scope = 'None'
-                        entity_name = request.POST.get('entity_name')
-                        version = 'None'
-                        prj_name = request.POST.get('prj_name')
-                        old_seq_name = ''
-                    else:
-                        parent_object_type = request.POST.get('parent_object_type')
-                        task_template = request.POST.get('task_template')
-                        sequence_type = request.POST.get('sequence_type')
-                        self.sequence_name = request.POST.get('sequence_name')
-                        description = request.POST.get('description')
-                        assigned_users = request.POST.get('assigned_users')
-                        assigned_users = assigned_users[:-1]
-
-                        status = request.POST.get('status')
-                        priority = request.POST.get('priority')
-                        scope = request.POST.get('scope')
-                        entity_name = request.POST.get('entity_name')
-                        version = request.POST.get('version')
-                        prj_name = request.POST.get('prj_name')
-                        old_seq_name = ''
-
-                    data = self.create_sequence(parent_object_type, task_template, sequence_type, self.sequence_name,
-                                                description, assigned_users, status, priority, scope, entity_name,
-                                                version, prj_name, flag_status, old_seq_name
-                                                )
-                elif object_name == 'Asset_Creation':
-                    flag_status = request.POST.get('flag_status')
-                    if flag_status == 'update':
-                        asset_type = request.POST.get('asset_type')
-                        asset_name = request.POST.get('asset_name')
-                        asset_desc = request.POST.get('asset_desc')
-                        asset_status = request.POST.get('asset_status')
-                        asset_priority = request.POST.get('asset_priority')
-                        asset_entity_name = request.POST.get('asset_entity_name')
-                        asset_version = request.POST.get('asset_version')
-                        asset_client_label = request.POST.get('asset_client_label')
-                        asset_sub_category = request.POST.get('asset_sub_category')
-                        prj_name = request.POST.get('prj_name')
-                    else:
-                        asset_type = request.POST.get('asset_type')
-                        asset_name = request.POST.get('asset_name')
-                        asset_desc = request.POST.get('asset_desc')
-                        asset_status = request.POST.get('asset_status')
-                        asset_priority = request.POST.get('asset_priority')
-                        asset_entity_name = request.POST.get('asset_entity_name')
-                        asset_version = request.POST.get('asset_version')
-                        asset_client_label = request.POST.get('asset_client_label')
-                        asset_sub_category = request.POST.get('asset_sub_category')
-                        prj_name = request.POST.get('prj_name')
-
-                    data = self.create_asset(
-                        asset_type, asset_name, asset_desc, asset_status, asset_priority,
-                        asset_entity_name, asset_version, asset_client_label,
-                        asset_sub_category, prj_name, flag_status
-                    )
-		elif object_name == 'Task_Creation':
-                    flag_status = request.POST.get('flag_status')
-                    # if flag_status == 'create':
-                    #     task_type = request.POST.get("task_type")
-                    #     task_name = request.POST.get('task_name')
-                    #     description = request.POST.get('description')
-                    #     assignee = request.POST.get('assignee')
-                    #     bid_days = request.POST.get('bid_days')
-                    #     task_status = request.POST.get('task_status')
-                    #     task_priority = request.POST.get('task_priority')
-                    #     start_date = request.POST.get('start_date')
-                    #     due_date = request.POST.get('due_date')
-                    #     task_scope = request.POST.get('task_scope')
-                    #     entity_name = request.POST.get('entity_name')
-                    #     project_name = request.POST.get("project_name")
-                    #     sequence_name = request.POST.get("sequence_name")
-                    # else:
-                    task_type = request.POST.get("task_name")
-                    task_name = request.POST.get('task_name') or None
-                    description = request.POST.get('description')
-                    assignee = request.POST.get('assignee')
-                    bid_days = request.POST.get('bid_days')
-                    task_status = request.POST.get('task_status')
-                    task_priority = request.POST.get('task_priority')
-                    start_date = request.POST.get('start_date')
-                    due_date = request.POST.get('due_date')
-                    task_scope = request.POST.get('task_scope')
-                    entity_name = request.POST.get('entity_name')
-                    project_name = request.POST.get("project_name")
-                    sequence_name = request.POST.get("sequence_name")
-                    shot_name = request.POST.get("shot_name")
-                    asset_name = request.POST.get("asset_name")
-                    type_name = request.POST.get("type")
-
-                    if flag_status == 'create':
-                        data = self.create_task(
-                            task_type, task_name, description, assignee, bid_days,
-                            task_status, task_priority, start_date, due_date, task_scope,
-                            entity_name, flag_status, project_name, sequence_name, shot_name,
-                            asset_name, type_name
-                        )
-                    else:
-                        data = self.create_task(
-                            task_type, task_name, description, assignee, bid_days,
-                            task_status, task_priority, start_date, due_date, task_scope,
-                            entity_name, flag_status, project_name, sequence_name, shot_name,
-                            asset_name, type_name
-                        )
-
                 elif object_name == 'display_project_thumbnail_manner':
                     project_name = ''
                     project_ftrack_id = ''
                     data = self.display_project_thumbnail_manner(project_name, project_ftrack_id)
-
                 elif object_name == 'display_sequence_details':
                     project_name = request.POST.get('project_name')
                     data = self.display_sequence_details(project_name)
@@ -553,7 +386,7 @@ class Activity:
                     data = self.display_shot_details(request.POST.get('seq_name'), request.POST.get('prj_name'))
                 elif object_name == 'display_asset_details':
                     data = self.display_asset_details(request.POST.get('project_name'))
-		elif object_name == 'display_task_details':
+                elif object_name == 'display_task_details':
                     project_name = request.POST.get('project_name')
                     name = request.POST.get('name')
                     type_name = request.POST.get("type")
@@ -561,36 +394,14 @@ class Activity:
                     asset_name = request.POST.get("asset_name")
                     data = self.display_task_details(project_name, name, type_name, shot_name, asset_name)
                 elif object_name == 'get_details':
-                    flag = request.POST.get('flag')
-                    name = seq_name = shot_name = asset_name = ''
                     name = request.POST.get('project_name')
                     entity_id = request.POST.get('entity_id')
-                    if flag == 'project':
-                        name = request.POST.get('project_name')
-                        seq_name = request.POST.get("sequence_name")
-                        shot_name = request.POST.get("shot_name")
-                        asset_name = request.POST.get("asset_name")
-                    elif flag == 'sequence':
-                        name = request.POST.get('project_name')
-                        seq_name = request.POST.get("sequence_name")
-                        shot_name = request.POST.get("shot_name")
-                        asset_name = request.POST.get("asset_name")
-                    elif flag == 'shot':
-                        name = request.POST.get('project_name')
-                        seq_name = request.POST.get("sequence_name")
-                        shot_name = request.POST.get("shot_name")
-                        asset_name = request.POST.get("asset_name")
-                    elif flag == 'asset':
-                        name = request.POST.get('project_name')
-                        seq_name = request.POST.get("sequence_name")
-                        shot_name = request.POST.get("shot_name")
-                        asset_name = request.POST.get("asset_name")
-                    data = self.get_details_before_update(name, flag, seq_name, shot_name, asset_name, entity_id)
+                    data = self.get_details_before_update(name, entity_id)
                 elif object_name == 'Task_types':
                     type_name = request.POST.get('type_name')
-		    asset_type_name = request.POST.get("asset_type_name")
-                    data = self.get_task_types(type_name,asset_type_name)
-		elif object_name == 'Multiple_assignees':
+                    asset_type_name = request.POST.get("asset_type_name")
+                    data = self.get_task_types(type_name, asset_type_name)
+                elif object_name == 'Multiple_assignees':
                     data = self.get_multiple_assignees()
                 elif object_name == 'asset_csv_upload':
                     filename = request.POST.get('filename')
@@ -614,13 +425,19 @@ class Activity:
                     entity = request.POST.get('create_entity')
                     parent_id = request.POST.get('parent_id')
                     file_path = request.POST.get('file_path')
-                    data = self.show_upload_data(file_path,entity,parent_id,project)
+                    data = self.show_upload_data(file_path, entity, parent_id, project)
+                elif object_name == 'Artist Productivity':
+                    project = request.POST.get('project')
+                    first = request.POST.get('first')
+                    last = request.POST.get('last')
+                    artist = request.POST.get('artist')
+                    data = self.get_artist_productivity_reports(project, first, last, artist)
 
             if request.FILES:
                 data = self.attach_upload_files(request)
 
+            #            pprint(data)
             data = json.dumps(data)
-#            pprint(data)
             return HttpResponse(data, content_type="application/json")
 
             # return JsonResponse(data)
@@ -647,14 +464,14 @@ class Activity:
             finally:
                 data_file.close()
 
-	    if username in json_data:
+            if username in json_data:
                 self.user_role = json_data[username]['role']
                 self.users_columns = (',').join(json_data[username]['columns'])
 
-#            if (username in json_data) and (
-#                    json_data[username]['role'] == 'Supervisor' or json_data[username]['role'] == 'Co-ordinator'):
-#                self.user_role = json_data[username]['role']
-#                self.users_columns = ','.join(json_data[username]['columns'])
+                #            if (username in json_data) and (
+                #                    json_data[username]['role'] == 'Supervisor' or json_data[username]['role'] == 'Co-ordinator'):
+                #                self.user_role = json_data[username]['role']
+                #                self.users_columns = ','.join(json_data[username]['columns'])
 
     def get_projects(self):
         """
@@ -1202,7 +1019,7 @@ class Activity:
         print version_list
         return version_list
 
-    def show_task_details(self, type_name, task_id):
+    def show_task_details(self, type_name, task_id, task_assignee):
 
         type_name = type_name.replace(' ', '')
         task_obj = self.session.query('%s where id is "%s"' % (type_name, task_id)).first()
@@ -1220,6 +1037,11 @@ class Activity:
             details['priority'] = task_obj['priority']['name']
             details['status'] = task_obj['status']['name']
             details['object_id'] = task_id
+            details['parent_id'] = task_obj['parent_id']
+            # for load task list
+            asset_task_dict = self.get_asset_task(task_obj['name'], task_obj['parent_id'])
+            details['asset_task_dict'] = asset_task_dict
+            details['task_assignee'] = task_assignee
 
         details_list.append(details)
 
@@ -1345,10 +1167,14 @@ class Activity:
                     version_hash['asset_type'] = i['asset']['type']['name']
                     version_hash['status_name'] = i['status']['name']
                     version_hash['published_on'] = i['date'].format('DD-MM-YYYY HH:mm:ss')
-                    version_hash['published_by'] = i['user']['username']
                     version_hash['user_role'] = self.user_role
                 except ValueError:
                     print "Some version details missing .."
+
+                try:
+                    version_hash['published_by'] = i['user']['username']
+                except:
+                    version_hash['published_by'] = 'unknown'
 
                 list_versions.append(version_hash)
 
@@ -1458,6 +1284,20 @@ class Activity:
 
         bulk.execute()
         self.session.commit()
+
+    def create_new_ftrack_user(self, user_name):
+
+        ftrack_user = self.session.query('User where username is "%s"' % user_name).first()
+        if not ftrack_user:
+            print datetime.datetime.now(), ": Creating new Ftack user : %s" % user_name
+            data = dict()
+            data['username'] = user_name
+            data['first_name'] = user_name.split('.')[0]
+            data['last_name'] = user_name.split('.')[-1]
+            data['is_active'] = False
+            data['email'] = '%s@intra.madassemblage.com' % user_name
+            ftrack_user = self.session.create('User', data)
+            self.session.commit()
 
     def create_new_task(self, element_name, change_value, parent_id, task_name, object_type):
 
@@ -1727,6 +1567,8 @@ class Activity:
 
         my_query = "AssetVersion where %s is '%s' and task.name is '%s' and asset.type.name is '%s'" % (
             parent, object_id, task_name, asset_type)
+
+        print my_query
         versions = self.session.query(my_query)
 
         ver_list = []
@@ -1736,6 +1578,17 @@ class Activity:
 
         ver_list = sorted(ver_list, key=lambda x: x['name'], reverse=True)
         return ver_list
+
+    def get_asset_task(self, object_name, task_parent_id):
+
+        my_query = "Task where parent_id is '%s'" % (task_parent_id)
+        tasks = self.session.query(my_query)
+        tasks_dict = {}
+        for tsk in tasks:
+            tasks_dict[tsk['id']] = tsk['name']
+
+        # ver_list = sorted(ver_list, key=lambda x: x['name'], reverse=True)
+        return tasks_dict
 
     def get_tasks_template(self):
 
@@ -1811,178 +1664,182 @@ class Activity:
         form = AttachmentForm(request.POST, request.FILES)
         if form.is_valid():
             photo = form.save()
-	    name = os.path.basename(photo.file.name)
+            name = os.path.basename(photo.file.name)
             data = {'is_valid': True, 'name': name, 'url': photo.file.url}
         else:
             data = {'is_valid': False}
         return data
 
-    def show_upload_data(self,file_path,entity,parent_id,project):
+    def show_upload_data(self, file_path, entity, parent_id, project):
 
-	csv_file = PROJ_BASE_DIR + '/' + file_path
-	print csv_file,entity,parent_id,project
+        csv_file = PROJ_BASE_DIR + '/' + file_path
+        print csv_file, entity, parent_id, project
 
-	csv_data = dict()
-	if os.path.isfile(csv_file):
-	    with open(csv_file, 'rb') as csvfile:
-		reader = csv.reader(csvfile, delimiter=',')
-		csv_data_list = list()
-		if entity == 'AssetBuild':
-		    csv_data_list = self.asset_csv_data_validation(reader)
-		elif entity == 'Shot':
-		    csv_data_list = self.shot_csv_data_validation(reader)
+        csv_data = dict()
+        if os.path.isfile(csv_file):
+            with open(csv_file, 'rb') as csvfile:
+                reader = csv.reader(csvfile, delimiter=',')
+                csv_data_list = list()
+                if entity == 'AssetBuild':
+                    csv_data_list = self.asset_csv_data_validation(reader)
+                elif entity == 'Shot':
+                    csv_data_list = self.shot_csv_data_validation(reader)
 
-		csv_data[entity] = csv_data_list
+                csv_data[entity] = csv_data_list
 
         # Delete uploaded files after adding
         for attach in Attachment.objects.all():
             if attach.file.url == file_path:
-		attach.file.delete()
+                attach.file.delete()
                 attach.delete()
 
-	return csv_data
+        return csv_data
 
-    def asset_csv_data_validation(self,reader):
-	duplicate = dict()
-	csv_data_list = list()
-	asset_types = ['Set','FX','Prop','Character','Vehicle','Environment']
-	for row in reader:
-	    invalid = 0
-	    name = row[0]
-	    name = name.strip()
-	    name = name.replace(' ','')
+    def asset_csv_data_validation(self, reader):
+        duplicate = dict()
+        csv_data_list = list()
+        asset_types = ['Set', 'FX', 'Prop', 'Character', 'Vehicle', 'Environment']
+        for row in reader:
+            invalid = 0
+            name = row[0]
+            name = name.strip()
+            name = name.replace(' ', '')
 
-	    asset_type = row[1]
-	    asset_type = asset_type.title()
-	    if asset_type not in asset_types:
-		invalid = 1
+            asset_type = row[1]
+            asset_type = asset_type.title()
+            if asset_type not in asset_types:
+                invalid = 1
 
-	    if name in duplicate:
-		invalid = 1
+            if name in duplicate:
+                invalid = 1
 
-	    csv_data_list.append({'asset_name':name,'asset_type':asset_type,'description':row[2],'invalid':invalid})
-	    duplicate[name] = 1
-	
-	return csv_data_list
+            csv_data_list.append(
+                {'asset_name': name, 'asset_type': asset_type, 'description': row[2], 'invalid': invalid})
+            duplicate[name] = 1
 
-    def shot_csv_data_validation(self,reader):
-	duplicate = dict()
-	csv_data_list = list()
-	for row in reader:
-	    invalid = 0
-	    name = row[0]
-	    name = name.strip()
-	    name = name.replace(' ','')
-	    if re.match('^\d+$',name):
-		name = int(name)
-		name = "%04d" %name
+        return csv_data_list
 
-	    start_frame = row[1]
-	    end_frame = row[2]
-	    if not (start_frame and end_frame):
-		invalid = 1
-	    else:
-		if not re.match('^\d+$',start_frame):
-		    invalid = 1
-		else:
-		    start_frame = int(start_frame)
+    def shot_csv_data_validation(self, reader):
+        duplicate = dict()
+        csv_data_list = list()
+        for row in reader:
+            invalid = 0
+            name = row[0]
+            name = name.strip()
+            name = name.replace(' ', '')
+            if re.match('^\d+$', name):
+                name = int(name)
+                name = "%04d" % name
 
-		if not re.match('^\d+$',end_frame):
-		    invalid = 1
-		else:
-		    end_frame = int(end_frame)
+            start_frame = row[1]
+            end_frame = row[2]
+            if not (start_frame and end_frame):
+                invalid = 1
+            else:
+                if not re.match('^\d+$', start_frame):
+                    invalid = 1
+                else:
+                    start_frame = int(start_frame)
 
-		if isinstance(start_frame, int) and isinstance(end_frame, int):
-		    if end_frame < start_frame:
-			invalid = 1
+                if not re.match('^\d+$', end_frame):
+                    invalid = 1
+                else:
+                    end_frame = int(end_frame)
 
-	    description = row[3]
+                if isinstance(start_frame, int) and isinstance(end_frame, int):
+                    if end_frame < start_frame:
+                        invalid = 1
 
-	    if name in duplicate:
-		invalid = 1
+            description = row[3]
 
-	    csv_data_list.append({'shot_name':name,'start_frame':start_frame,'end_frame':end_frame,'description':description,'invalid':invalid})
-	    duplicate[name] = 1
+            if name in duplicate:
+                invalid = 1
 
-	return csv_data_list
+            csv_data_list.append(
+                {'shot_name': name, 'start_frame': start_frame, 'end_frame': end_frame, 'description': description,
+                 'invalid': invalid})
+            duplicate[name] = 1
 
-    def create_entity_from_csv(self,data_list,parent_id,project,entity):
+        return csv_data_list
 
-	if data_list:
-	    data_list = json.loads(data_list);
+    def create_entity_from_csv(self, data_list, parent_id, project, entity):
+
+        if data_list:
+            data_list = json.loads(data_list);
 
         proj_col = self.mongo_database[project + '_tasks']
 
-	cursor = proj_col.find_one({'ftrack_id':parent_id})
+        cursor = proj_col.find_one({'ftrack_id': parent_id})
 
-	object_type = cursor['object_type']
-	parent_obj = self.session.query('%s where id is "%s"' %(object_type,parent_id)).first()
+        object_type = cursor['object_type']
+        parent_obj = self.session.query('%s where id is "%s"' % (object_type, parent_id)).first()
 
-	msg = ''	
-	if entity == 'AssetBuild':
-	    self.create_asset_build_query(data_list,parent_obj,proj_col)
-	    msg = "Asset Build Successfully Created"
-	    
-	if entity == 'Shot':
-	    self.create_shot_query(data_list,parent_obj,proj_col)
-	    msg = "Shot Successfully Created"
+        msg = ''
+        if entity == 'AssetBuild':
+            self.create_asset_build_query(data_list, parent_obj, proj_col)
+            msg = "Asset Build Successfully Created"
 
-	return {'message':msg}	
+        if entity == 'Shot':
+            self.create_shot_query(data_list, parent_obj, proj_col)
+            msg = "Shot Successfully Created"
 
-    def create_asset_build_query(self,data_list,parent_obj,proj_col): 
-	for each_asset in data_list:
-	    row = each_asset.split('|')
-	    name = row[0].strip()
-	    asset_type = row[1].strip()
-	    desc = row[2].strip()
-	    
-	    exist = proj_col.find_one({'name':name})
+        return {'message': msg}
 
-	    if exist:
-		print "Asset Build [%s] exists, so skipping ..." % name
-		continue
+    def create_asset_build_query(self, data_list, parent_obj, proj_col):
+        for each_asset in data_list:
+            row = each_asset.split('|')
+            name = row[0].strip()
+            asset_type = row[1].strip()
+            desc = row[2].strip()
 
-	    print name,asset_type,desc
-	    type_obj = self.session.query('Type where name is "%s"' %asset_type).first()
-	    asset_build = self.session.create('AssetBuild', {
-		'name': name,
-		'parent': parent_obj,
-		'type': type_obj,
-		'description': desc
-	    })
+            exist = proj_col.find_one({'name': name})
 
-	self.session.commit()
+            if exist:
+                print "Asset Build [%s] exists, so skipping ..." % name
+                continue
 
-    def create_shot_query(self,data_list,parent_obj,proj_col): 
-	for each_shot in data_list:
-	    row = each_shot.split('|')
-	    name = row[0].strip()
-	    start_frame = int(row[1].strip())
-	    end_frame = int(row[2].strip())
-	    desc = row[3]
-	    
-	    exist = proj_col.find_one({'name':name})
+            print name, asset_type, desc
+            type_obj = self.session.query('Type where name is "%s"' % asset_type).first()
+            asset_build = self.session.create('AssetBuild', {
+                'name': name,
+                'parent': parent_obj,
+                'type': type_obj,
+                'description': desc
+            })
 
-	    if exist:
-		print "Shot [%s] exists, so skipping ..." % name
-		continue
+        self.session.commit()
 
-	    shot = self.session.create('Shot', {
-		'name': name,
-		'parent': parent_obj,
-		'description': desc
-	    })
-	    shot['custom_attributes']['fstart'] = start_frame
-	    shot['custom_attributes']['fend'] = end_frame
-	    
-#	    total_frames = float(end_frame-(start_frame-1))
-#	    shot['custom_attributes']['totFrames'] = total_frames
+    def create_shot_query(self, data_list, parent_obj, proj_col):
+        for each_shot in data_list:
+            row = each_shot.split('|')
+            name = row[0].strip()
+            start_frame = int(row[1].strip())
+            end_frame = int(row[2].strip())
+            desc = row[3]
 
-#	    duration = "%.02f" % (total_frames/24)
+            exist = proj_col.find_one({'name': name})
 
-#	    shot['custom_attributes']['duration'] = duration
+            if exist:
+                print "Shot [%s] exists, so skipping ..." % name
+                continue
 
-	self.session.commit()
+            shot = self.session.create('Shot', {
+                'name': name,
+                'parent': parent_obj,
+                'description': desc
+            })
+            shot['custom_attributes']['fstart'] = start_frame
+            shot['custom_attributes']['fend'] = end_frame
+
+        #	    total_frames = float(end_frame-(start_frame-1))
+        #	    shot['custom_attributes']['totFrames'] = total_frames
+
+        #	    duration = "%.02f" % (total_frames/24)
+
+        #	    shot['custom_attributes']['duration'] = duration
+
+        self.session.commit()
+
     def review_tasks(self, request):
         username = request.user.username
         if not username:
@@ -2028,7 +1885,7 @@ class Activity:
 
         self.username = username
         self.reload_session()
-        user = self.session.query('User where username is "%s"' % username).one()
+        user = self.session.query('User where username is "%s"' % username).first()
         self.user = user
 
         self.user_role = ''
@@ -2174,6 +2031,245 @@ class Activity:
         task_hash['data'] = {'projects': self.projects, 'user_role': self.user_role, 'current_project': project}
 
         return render(request, 'mgm_dashboard.html', task_hash)
+
+    def artist_productivity(self, request):
+        username = request.user.username
+        if not username:
+            return HttpResponseRedirect('/login/')
+
+        self.username = username
+
+        self.get_user_columns(username)
+
+        if not self.user_role or self.user_role != 'Supervisor':
+            return HttpResponseRedirect('/tasks/')
+
+        # Get task details
+        task_hash = {}
+
+        projects = self.get_projects()
+
+        ldap_users = self.ldap_users()
+
+        project = 'ice'
+        duration = 'Monthly'
+        artist = 'all'
+
+        today = datetime.date.today()
+        this_month_first = today.replace(day=1)
+        last = this_month_first - datetime.timedelta(days=1)
+        first = last.replace(day=1)
+
+        reports = dict()
+        reports['project'] = project
+        reports['duration'] = duration
+
+        #        task_hash['reports'] = self.get_artist_productivity_reports(project, first, last, artist)
+
+        self.get_user_details()
+        task_hash['emp_code'] = 'blank'
+        if username in self.employee_details:
+            task_hash['emp_code'] = self.employee_details[username]['emp_code']
+
+        task_hash['user_id'] = username.upper()
+        task_hash['data'] = {'projects': projects, 'user_role': self.user_role, 'durations': self.durations,
+                             'reports': reports, 'current_project': project, 'all_users': ldap_users}
+
+        return render(request, 'artist_productivity.html', task_hash)
+
+    def get_artist_productivity_reports(self, project='ice', first='', last='', artist='all'):
+
+        print project, first, last, artist
+        daily_task_col = self.mongo_database[project + '_daily_task_details']
+
+        task_user_reports = dict()
+        if not (daily_task_col):
+            return task_user_reports
+
+        match_dict = dict()
+        if first and last:
+            first = str(first) + ' 00:00:00'
+            last = str(last) + ' 23:59:59'
+
+            startdate = datetime.datetime.strptime(str(first), '%Y-%m-%d %H:%M:%S')
+            enddate = datetime.datetime.strptime(str(last), '%Y-%m-%d %H:%M:%S')
+
+            match_dict = {
+                'start_date': {'$gte': startdate}, 'stop_date': {'$lte': enddate}
+            }
+
+        if artist != 'all':
+            match_dict['user'] = artist
+
+        aggregate = [{
+            "$match": match_dict
+        },
+            {
+                "$project": {
+                    "task": 1,
+                    "user": 1,
+                    "dateDifference": {
+                        "$subtract": ["$stop_date", "$start_date"]
+                    }
+                }
+            },
+            {
+                "$group": {
+                    "_id": {"task": "$task", "user": "$user"},
+                    "total": {"$sum": "$dateDifference"},
+                }
+            }]
+
+        data = daily_task_col.aggregate(aggregate)
+        obj_col = self.mongo_database[project + '_tasks']
+
+        artist_data = dict()
+
+        one_bid = 8 * 60 * 60
+
+        cur_proj = obj_col.find_one({'name': project, 'object_type': 'Project'}) or ''
+
+        for each in data:
+            task = each['_id']['task']
+
+            cur_task = obj_col.find_one({'path': task, 'parent_object_type': 'Shot'})
+
+            if not cur_task:
+                continue
+
+            user = each['_id']['user']
+            actual_bid = round(float(each['total'] / 1000) / one_bid, 2)
+
+            # Priority data
+            priority = 'Low'
+            if 'priority' in cur_task and cur_task['priority'] != 'None':
+                priority = cur_task['priority']
+
+            if user not in artist_data:
+                artist_data[user] = dict()
+
+            if priority not in artist_data[user]:
+                artist_data[user][priority] = dict()
+
+            if 'task_count' not in artist_data[user]:
+                artist_data[user]['task_count'] = 0
+
+            if 'task_count' not in artist_data[user][priority]:
+                artist_data[user][priority]['task_count'] = 0
+
+            artist_data[user]['task_count'] = artist_data[user]['task_count'] + 1
+            artist_data[user][priority]['task_count'] = artist_data[user][priority]['task_count'] + 1
+
+            if 'bid_days' not in artist_data[user]:
+                artist_data[user]['bid_days'] = 0
+
+            if 'bid_days' not in artist_data[user][priority]:
+                artist_data[user][priority]['bid_days'] = 0
+
+            bid = 0
+            if 'bid' in cur_task:
+                bid = round(float(cur_task['bid']) / one_bid, 2)
+
+            artist_data[user]['bid_days'] = artist_data[user]['bid_days'] + bid
+            artist_data[user][priority]['bid_days'] = artist_data[user][priority]['bid_days'] + bid
+
+            if 'actual_bid' not in artist_data[user]:
+                artist_data[user]['actual_bid'] = 0
+
+            if 'actual_bid' not in artist_data[user][priority]:
+                artist_data[user][priority]['actual_bid'] = 0
+
+            artist_data[user]['actual_bid'] = artist_data[user]['actual_bid'] + actual_bid
+            artist_data[user][priority]['actual_bid'] = round(artist_data[user][priority]['actual_bid'] + actual_bid, 2)
+
+            if 'variance' not in artist_data[user]:
+                artist_data[user]['variance'] = 0
+
+            if 'variance' not in artist_data[user][priority]:
+                artist_data[user][priority]['variance'] = 0
+
+            variance = round(float(bid - actual_bid), 2)
+            artist_data[user]['variance'] = artist_data[user]['variance'] + variance
+            artist_data[user][priority]['variance'] = round(artist_data[user][priority]['variance'] + variance, 2)
+
+            if 'tasks' not in artist_data[user]:
+                artist_data[user]['tasks'] = list()
+
+            if 'tasks' not in artist_data[user][priority]:
+                artist_data[user][priority]['tasks'] = list()
+
+            artist_data[user]['tasks'].append(task)
+            artist_data[user][priority]['tasks'].append(task)
+
+            if 'frame_sec' not in artist_data[user]:
+                artist_data[user]['frame_sec'] = 0
+
+            if 'frame_sec' not in artist_data[user][priority]:
+                artist_data[user][priority]['frame_sec'] = 0
+
+            parent = ':'.join(task.split(':')[:-1])
+
+            cur_parent = obj_col.find_one({'path': parent}) or ''
+
+            totalframe = 0
+            if 'startframe' in cur_parent and 'endframe' in cur_parent:
+                startframe = int(cur_parent['startframe'])
+                endframe = int(cur_parent['endframe'])
+                totalframe = endframe - (startframe - 1)
+
+            fps = 0
+            if 'fps' in cur_proj:
+                fps = int(cur_proj['fps'])
+
+            ftrack_status = ''
+            if 'ftrack_status' in cur_task:
+                ftrack_status = cur_task['ftrack_status']
+
+            if ftrack_status not in ['In progress', 'Ready to start']:
+                try:
+                    total_sec = round(float(totalframe) / fps, 2)
+                    artist_data[user]['frame_sec'] = artist_data[user]['frame_sec'] + total_sec
+                    artist_data[user][priority]['frame_sec'] = artist_data[user][priority]['frame_sec'] + total_sec
+                except:
+                    pass
+
+            try:
+                artist_data[user]['avg_per_day'] = round(
+                    artist_data[user]['frame_sec'] / artist_data[user]['actual_bid'], 2)
+                artist_data[user][priority]['avg_per_day'] = round(
+                    artist_data[user][priority]['frame_sec'] / artist_data[user][priority]['actual_bid'], 2)
+            except:
+                artist_data[user]['avg_per_day'] = 0.00
+                artist_data[user][priority]['avg_per_day'] = 0.00
+
+        data_list = list()
+
+        pri = ['Urgent', 'High', 'Medium', 'Low']
+        default_priority = {'actual_bid': 0.00,
+                            'avg_per_day': 0.00,
+                            'bid_days': 0.00,
+                            'frame_sec': 0.00,
+                            'task_count': 0,
+                            'tasks': [],
+                            'variance': 00.00}
+
+        for key, value in artist_data.items():
+            artist_prod = dict()
+            artist_prod = value
+            artist_prod['variance'] = round(value['variance'], 2)
+            artist_prod['actual_bid'] = round(value['actual_bid'], 2)
+            artist_prod['avg_per_day'] = round(value['avg_per_day'], 2)
+            artist_prod['frame_sec'] = round(value['frame_sec'], 2)
+
+            for each in pri:
+                if each not in artist_prod:
+                    artist_prod[each] = default_priority
+
+            user = key.replace('.', ' ')
+            artist_prod['artist'] = user.title()
+            data_list.append(artist_prod)
+
+        return data_list
 
     def get_project_details(self, project='ice'):
 
@@ -2395,7 +2491,7 @@ class Activity:
 
         data = obj_col.find(search_key,
                             {'current_assignees.$': 1, 'ftrack_id': 1, 'path': 1, 'ftrack_status': 1,
-                             'bid': 1}).sort(
+                             'bid': 1, 'parent_id': 1}).sort(
             "updated_on", -1)
 
         for each in data:
@@ -2416,6 +2512,7 @@ class Activity:
                 task_details['time_left'] = "00:00:00"
                 task_details['project_id'] = 'None'
                 task_details['total_secs'] = 0
+                task_details['parent_id'] = each['parent_id']
 
                 if 'path' in each:
                     task_details['task'] = each['path']
@@ -2474,33 +2571,32 @@ class Activity:
 
         return task_list
 
-    def socket_cilent(self,serverip='', sock_port_no=5000):
+    def socket_cilent(self, serverip='', sock_port_no=5000):
 
-        my_socket = socket( AF_INET, SOCK_DGRAM )
-        my_socket.sendto('Stopped',(serverip,sock_port_no))
+        my_socket = socket(AF_INET, SOCK_DGRAM)
+        my_socket.sendto('Stopped', (serverip, sock_port_no))
 
     def stop_active_task(self, project, task):
 
-	search_key = dict()
+        search_key = dict()
         search_key['user'] = self.username
         search_key['task'] = task
         search_key['active'] = 1
 
-	daily_task_col = self.mongo_database[project + '_daily_task_details']
-	find_obj = daily_task_col.find(search_key).sort('start_date', -1).limit(1)
+        daily_task_col = self.mongo_database[project + '_daily_task_details']
+        find_obj = daily_task_col.find(search_key).sort('start_date', -1).limit(1)
         if find_obj.count():
             ip_address = find_obj[0]['ip_address']
             port_no = find_obj[0]['port_no']
-	    self.socket_cilent(ip_address, port_no)
-	    print "STOP TASK:", task, self.username, ip_address, port_no
-
+            self.socket_cilent(ip_address, port_no)
+            print "STOP TASK:", task, self.username, ip_address, port_no
 
     def apply_artist_action(self, username, project, task_id, action, note_text):
         obj_col = self.mongo_database[project + '_tasks']
         search_key = {'current_assignees.user_name': username, 'ftrack_id': task_id}
 
-	find_obj = obj_col.find_one(search_key)
-	task_path = find_obj['path']
+        find_obj = obj_col.find_one(search_key)
+        task_path = find_obj['path']
 
         update_value = dict()
         if action == 'Started':
@@ -2509,12 +2605,12 @@ class Activity:
             update_value['current_assignees.$.pause_date'] = datetime.datetime.now()
         else:
             update_value['current_assignees.$.finish_date'] = datetime.datetime.now()
-	    self.stop_active_task(project, task_path)
+            self.stop_active_task(project, task_path)
 
         update_value['current_assignees.$.backup_status'] = action
 
         # update backup status
-        obj_col.update_one(search_key, {'$set': update_value }, upsert=True)
+        obj_col.update_one(search_key, {'$set': update_value}, upsert=True)
 
         if task_id and action == 'Started':
             my_obj_status = self.session.query("Status where name is 'In progress'").first()
@@ -2625,11 +2721,15 @@ class Activity:
             else:
                 task_count[task_name] = task_count[task_name] + 1
 
-            data = obj_col.find({'current_assignees.user_name': user, 'path': task},
+            data = obj_col.find({'current_assignees.user_name': user, 'path': task, 'object_type': 'Task'},
                                 {'current_assignees.$': 1, 'ftrack_id': 1, 'path': 1, 'ftrack_status': 1}).sort(
                 "current_assignees.$.start_date", -1)
             for each in data:
-                ftrack_status = each['ftrack_status']
+                try:
+                    ftrack_status = each['ftrack_status']
+                except:
+                    ftrack_status = 'undefined'
+
                 task_user_reports['ftrack_status'] = ftrack_status
 
                 if ftrack_status in status_graph:
@@ -2775,7 +2875,10 @@ class Activity:
                 except ValueError:
                     category = None
                 comments_hash['note_category'] = category
-                comments_hash['note_author'] = note['author']['username']
+                try:
+                    comments_hash['note_author'] = note['author']['username']
+                except:
+                    comments_hash['note_author'] = 'unknown user'
                 comments_hash['note_head'] = note['content'] or 'Null'
                 comments_hash['note_id'] = noteid
                 note_date = note['date'].format('DD-MM-YYYY HH:MM')
@@ -3461,258 +3564,276 @@ class Activity:
 
     # Update form elements
 
-    def update_form_data(self,entity_name,data_list):
+    def update_form_data(self, entity_name, data_list):
 
-	data_list = json.loads(data_list)
+        data_list = json.loads(data_list)
 
-#	pprint(data_list)
-	msg = 'Nothing to happen ...'
-	if entity_name == 'Project':
-	    self.update_project(data_list)
-	    msg = 'Project has been updated ...'
-	elif entity_name == 'AssetBuild':
-	    self.update_asset_build(data_list)
-	    msg = 'Asset Build has been updated ...'
-	elif entity_name == 'Sequence':
-	    self.update_sequence(data_list)
-	    msg = 'Sequence has been updated ...'
-	elif entity_name == 'Shot':
-	    self.update_shot(data_list)
-	    msg = 'Shot has been updated ...'
-	elif entity_name == 'Task':
-	    self.update_task(data_list)
-	    msg = 'Task has been updated ...'
-	    
-	return {'message': msg}
+        #	pprint(data_list)
+        msg = 'Nothing to happen ...'
+        if entity_name == 'Project':
+            self.update_project(data_list)
+            msg = 'Project has been updated ...'
+        elif entity_name == 'AssetBuild':
+            self.update_asset_build(data_list)
+            msg = 'Asset Build has been updated ...'
+        elif entity_name == 'Sequence':
+            self.update_sequence(data_list)
+            msg = 'Sequence has been updated ...'
+        elif entity_name == 'Shot':
+            self.update_shot(data_list)
+            msg = 'Shot has been updated ...'
+        elif entity_name == 'Task':
+            self.update_task(data_list)
+            msg = 'Task has been updated ...'
 
+        return {'message': msg}
 
-    def update_project(self,data_list=[]):
-	if not data_list:
-	    return False
-	
-	self.reload_session()
+    def update_project(self, data_list=[]):
+        if not data_list:
+            return False
 
-	for each in data_list:
-	    if 'project_id' in each:
-		proj_obj = self.session.query("Project where id is '%s'" % each['project_id']).first()
-	    else:
-		if ('project_code' not in each) or ('project_name' not in each):
-		    print "Project code/name not found ..."
-		    continue
+        self.reload_session()
 
-		proj_obj = self.session.create('Project', {
-		    'name': each['project_code'],
-		    'full_name': each['project_code'],
-		    'project_schema': self.project_schemas
-		})
+        for each in data_list:
+            if 'project_id' in each:
+                proj_obj = self.session.query("Project where id is '%s'" % each['project_id']).first()
+            else:
+                if ('project_code' not in each) or ('project_name' not in each):
+                    print "Project code/name not found ..."
+                    continue
 
-	    if 'start_date' in each:
-		proj_obj['start_date'] = each['start_date']
+                proj_obj = self.session.create('Project', {
+                    'name': each['project_code'],
+                    'full_name': each['project_code'],
+                    'project_schema': self.project_schemas
+                })
 
-	    if 'end_date' in each:
-		proj_obj['end_date'] = each['end_date']
+            if 'start_date' in each:
+                start_date = each['start_date']
+                datetime_start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+                start_date = datetime.datetime.strftime(datetime_start_date_obj, "%Y-%m-%dT%H:%M:%S")
+                proj_obj['start_date'] = start_date
+            # proj_obj['start_date'] = each['start_date']
 
-	    if 'resolution' in each:
-		proj_obj['custom_attributes']['resolution'] = each['resolution']
+            if 'end_date' in each:
+                end_date = each['end_date']
+                datetime_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+                end_date = datetime.datetime.strftime(datetime_obj, "%Y-%m-%dT%H:%M:%S")
+                proj_obj['end_date'] = end_date
+            # proj_obj['end_date'] = each['end_date']
 
-	    if 'start_frame' in each:
-		proj_obj['custom_attributes']['startFrame'] = each['start_frame']
+            if 'resolution' in each:
+                proj_obj['custom_attributes']['resolution'] = each['resolution']
 
-	    if 'fps' in each:
-		proj_obj['custom_attributes']['fps'] = each['fps']
+            if 'start_frame' in each:
+                proj_obj['custom_attributes']['startFrame'] = each['start_frame']
 
-	self.session.commit()
+            if 'fps' in each:
+                proj_obj['custom_attributes']['fps'] = each['fps']
 
-    def update_asset_build(self,data_list=[]):
-	if not data_list:
-	    return False
-	
-	self.reload_session()
+        self.session.commit()
 
-	for each in data_list:
-	    if 'asset_build_id' in each:
-		asset_build_obj = self.session.query("AssetBuild where id is '%s'" % each['asset_build_id']).first()
-	    else:
-		if ('asset_build_name' not in each) or ('asset_build_type' not in each):
-		    print "Asset Build type/name not found ..."
-		    continue
+    def update_asset_build(self, data_list=[]):
+        if not data_list:
+            return False
 
-		if ('parent_id' not in each) or ('parent_object' not in each):
-		    print "Asset Build parent_id not found ..."
-		    continue
+        self.reload_session()
 
-		name = each['asset_build_name']
+        for each in data_list:
+            if 'asset_build_id' in each:
+                asset_build_obj = self.session.query("AssetBuild where id is '%s'" % each['asset_build_id']).first()
+            else:
+                if ('asset_build_name' not in each) or ('asset_build_type' not in each):
+                    print "Asset Build type/name not found ..."
+                    continue
 
-		parent_obj = self.session.query('%s where id is "%s"' %(each['parent_object'],each['parent_id'])).first()
+                if ('parent_id' not in each) or ('parent_object' not in each):
+                    print "Asset Build parent_id not found ..."
+                    continue
 
-		type_obj = self.session.query('Type where name is "%s"' % each['asset_build_type']).first()
+                name = each['asset_build_name']
 
-		asset_build_obj = self.session.create('AssetBuild', {
-		    'name': name,
-		    'parent': parent_obj,
-		    'type': type_obj,
-		})
+                parent_obj = self.session.query(
+                    '%s where id is "%s"' % (each['parent_object'], each['parent_id'])).first()
 
-	    if 'description' in each:
-		asset_build_obj['description'] = each['description']
+                type_obj = self.session.query('Type where name is "%s"' % each['asset_build_type']).first()
 
-	self.session.commit()
+                asset_build_obj = self.session.create('AssetBuild', {
+                    'name': name,
+                    'parent': parent_obj,
+                    'type': type_obj,
+                })
 
-    def update_sequence(self,data_list=[]):
-	if not data_list:
-	    return False
-	
-	self.reload_session()
+            if 'description' in each:
+                asset_build_obj['description'] = each['description']
 
-	for each in data_list:
-	    if 'seq_id' in each:
-		seq_obj = self.session.query("Sequence where id is '%s'" % each['seq_id']).first()
-	    else:
-		if ('seq_name' not in each):
-		    print "Sequence name not found ..."
-		    continue
+        self.session.commit()
 
-		if ('parent_id' not in each) or ('parent_object' not in each):
-		    print "Asset Build parent_id not found ..."
-		    continue
+    def update_sequence(self, data_list=[]):
+        if not data_list:
+            return False
 
-		name = each['seq_name']
+        self.reload_session()
 
-		parent_obj = self.session.query('%s where id is "%s"' %(each['parent_object'],each['parent_id'])).first()
+        for each in data_list:
+            if 'seq_id' in each:
+                seq_obj = self.session.query("Sequence where id is '%s'" % each['seq_id']).first()
+            else:
+                if ('seq_name' not in each):
+                    print "Sequence name not found ..."
+                    continue
 
-#		type_obj = self.session.query('Type where name is "%s"' % each['seq_type']).first()
+                if ('parent_id' not in each) or ('parent_object' not in each):
+                    print "Asset Build parent_id not found ..."
+                    continue
 
-		seq_obj = self.session.create('Sequence', {
-		    'name': name,
-#		    'type': type_obj,
-		    'parent': parent_obj
-		})
+                name = each['seq_name']
 
-	    if 'description' in each:
-		seq_obj['description'] = each['description']
+                parent_obj = self.session.query(
+                    '%s where id is "%s"' % (each['parent_object'], each['parent_id'])).first()
 
-	self.session.commit()
+                #		type_obj = self.session.query('Type where name is "%s"' % each['seq_type']).first()
 
-    def update_shot(self,data_list=[]):
-	if not data_list:
-	    return False
-	
-	self.reload_session()
+                seq_obj = self.session.create('Sequence', {
+                    'name': name,
+                    #		    'type': type_obj,
+                    'parent': parent_obj
+                })
 
-	for each in data_list:
-	    if 'shot_id' in each:
-		shot_obj = self.session.query("Shot where id is '%s'" % each['shot_id']).first()
-	    else:
-		if ('shot_name' not in each):
-		    print "Shot name not found ..."
-		    continue
+            if 'description' in each:
+                seq_obj['description'] = each['description']
 
-		if ('parent_id' not in each) or ('parent_object' not in each):
-		    print "Shot parent_id not found ..."
-		    continue
+        self.session.commit()
 
-		name = each['shot_name']
+    def update_shot(self, data_list=[]):
+        if not data_list:
+            return False
 
-		parent_obj = self.session.query('%s where id is "%s"' %(each['parent_object'],each['parent_id'])).first()
+        self.reload_session()
 
-#		type_obj = self.session.query('Type where name is "%s"' % each['seq_type']).first()
+        for each in data_list:
+            if 'shot_id' in each:
+                shot_obj = self.session.query("Shot where id is '%s'" % each['shot_id']).first()
+            else:
+                if ('shot_name' not in each):
+                    print "Shot name not found ..."
+                    continue
 
-		shot_obj = self.session.create('Shot', {
-		    'name': name,
-#		    'type': type_obj,
-		    'status': self.shot_status_object[0], 
-		    'parent': parent_obj
-		})
+                if ('parent_id' not in each) or ('parent_object' not in each):
+                    print "Shot parent_id not found ..."
+                    continue
 
-	    if 'description' in each:
-		shot_obj['description'] = each['description']
+                name = each['shot_name']
 
-	    if 'start_frame' in each:
-		shot_obj['custom_attributes']['fstart'] = each['start_frame']
+                parent_obj = self.session.query(
+                    '%s where id is "%s"' % (each['parent_object'], each['parent_id'])).first()
 
-	    if 'end_frame' in each:
-		shot_obj['custom_attributes']['fend'] = each['end_frame']
+                #		type_obj = self.session.query('Type where name is "%s"' % each['seq_type']).first()
 
+                shot_obj = self.session.create('Shot', {
+                    'name': name,
+                    #		    'type': type_obj,
+                    'status': self.shot_status_object[0],
+                    'parent': parent_obj
+                })
 
-	self.session.commit()
+            if 'description' in each:
+                shot_obj['description'] = each['description']
 
-    def update_task(self,data_list=[]):
-	if not data_list:
-	    return False
-	
-	self.reload_session()
+            if 'start_frame' in each:
+                shot_obj['custom_attributes']['fstart'] = each['start_frame']
 
-	for each in data_list:
-	    if 'task_id' in each:
-		task_obj = self.session.query("Task where id is '%s'" % each['task_id']).first()
-	    else:
-		if ('task_name' not in each):
-		    print "Task name not found ..."
-		    continue
+            if 'end_frame' in each:
+                shot_obj['custom_attributes']['fend'] = each['end_frame']
 
-		if ('parent_id' not in each) or ('parent_object' not in each):
-		    print "Task parent_id not found ..."
-		    continue
+        self.session.commit()
 
-		name = each['task_name']
+    def update_task(self, data_list=[]):
+        if not data_list:
+            return False
 
-		parent_obj = self.session.query('%s where id is "%s"' %(each['parent_object'],each['parent_id'])).first()
+        self.reload_session()
 
-		task_type = name
-		if name in self.type_name:
-		    task_type = self.type_name[name]
-	
-		type_obj = self.session.query('Type where name is "%s"' % task_type).first()
+        for each in data_list:
+            if 'task_id' in each:
+                task_obj = self.session.query("Task where id is '%s'" % each['task_id']).first()
+            else:
+                if ('task_name' not in each):
+                    print "Task name not found ..."
+                    continue
 
-		task_status = 'Not started'
-		if 'task_status' in each:
-		    task_status = each['task_status']
-		
-		status_obj = self.session.query('Status where name is "%s"' % task_status).first()
+                if ('parent_id' not in each) or ('parent_object' not in each):
+                    print "Task parent_id not found ..."
+                    continue
 
-		task_obj = self.session.create('Task', {
-		    'name': name,
-		    'type': type_obj,
-		    'status': status_obj, 
-		    'parent': parent_obj
-		})
+                name = each['task_name']
 
-	    if 'description' in each:
-		task_obj['description'] = each['description']
+                parent_obj = self.session.query(
+                    '%s where id is "%s"' % (each['parent_object'], each['parent_id'])).first()
 
-	    if 'start_date' in each:
-		task_obj['start_date'] = each['start_date']
+                task_type = name
+                if name in self.type_name:
+                    task_type = self.type_name[name]
 
-	    if 'end_date' in each:
-		task_obj['end_date'] = each['end_date']
+                type_obj = self.session.query('Type where name is "%s"' % task_type).first()
 
-	    if 'bid' in each:
-		task_obj['bid'] = each['bid']
+                task_status = 'Not started'
+                if 'task_status' in each:
+                    task_status = each['task_status']
 
-	    if 'priority' in each:
-		pri_obj = self.session.query('Priority where name is "%s"' % each['priority']).first()
-		task_obj['priority'] = pri_obj
+                status_obj = self.session.query('Status where name is "%s"' % task_status).first()
 
-	    if not task_obj['project_id']:
-		project_id = parent_obj['project_id']
-	    else:
-		project_id = task_obj['project_id']
+                task_obj = self.session.create('Task', {
+                    'name': name,
+                    'parent': parent_obj,
+                    'status': status_obj,
+                    'type': type_obj
+                })
 
-	    if 'assignee' in each:
-		user = each['assignee']
-		obj_user = ase_ftrack.add_user_in_project(self.session, user, project_id, True)
+            if 'description' in each:
+                task_obj['description'] = each['description']
 
-		app = self.session.query("Appointment where context_id is '%s'" % task_obj['id']).first()
+            if 'start_date' in each:
+                start_date = each['start_date']
+                start_date_datetime_obj = datetime.datetime.strptime(start_date, "%m/%d/%Y")
+                start_date = datetime.datetime.strftime(start_date_datetime_obj, "%Y-%m-%dT%H:%M:%S")
+                task_obj['start_date'] = start_date
+            # task_obj['start_date'] = each['start_date']
 
-		if not app:
-		    self.session.create('Appointment', {
-			'context': task_obj,
-			'resource': obj_user,
-			'type': 'assignment'
-		    })
+            if 'end_date' in each:
+                end_date = each['end_date']
+                end_date_datetime_obj = datetime.datetime.strptime(end_date, "%m/%d/%Y")
+                end_date = datetime.datetime.strftime(end_date_datetime_obj, "%Y-%m-%dT%H:%M:%S")
+                task_obj['end_date'] = end_date
+            # task_obj['end_date'] = each['end_date']
 
-	self.session.commit()
+            if 'bid' in each:
+                task_obj['bid'] = each['bid']
 
+            if 'priority' in each:
+                pri_obj = self.session.query('Priority where name is "%s"' % each['priority']).first()
+                task_obj['priority'] = pri_obj
+
+            if not task_obj['project_id']:
+                project_id = parent_obj['project_id']
+            else:
+                project_id = task_obj['project_id']
+
+            if 'assignee' in each:
+                user = each['assignee']
+                obj_user = ase_ftrack.add_user_in_project(self.session, user, project_id, True)
+
+                app = self.session.query("Appointment where context_id is '%s' and resource_id is '%s'" % (
+                    task_obj['id'], obj_user['id'])).first()
+
+                if not app:
+                    self.session.create('Appointment', {
+                        'context': task_obj,
+                        'resource': obj_user,
+                        'type': 'assignment'
+                    })
+
+        self.session.commit()
 
     '''
         Author:- Kunal Jamdade
@@ -3722,429 +3843,6 @@ class Activity:
 
     '''
 
-    def create_project_form(self, request):
-        template_name = 'project_creation.html'
-
-        username = request.user.username
-        if not username:
-            return HttpResponseRedirect('/login/')
-        self.username = username
-
-	user_columns = self.self.get_user_columns(username)
-	
-        if not self.user_role or self.user_role not in ['Supervisor']:
-            return HttpResponseRedirect('/tasks/')
-
-        task_hash = {}
-        task_temp_data = self.get_tasks_template()
-        asset_types = self.get_asset_types()
-
-        task_hash['task_temp_data'] = task_temp_data
-        task_hash['asset_types'] = asset_types
-
-        task_hash['data'] = {
-            'projects': self.get_projects(), 'columns': user_columns, 'all_tasks': self.all_tasks
-        }
-
-        # self.project_schemas = self.session.query("ProjectSchema")[3]
-        #
-        # self.task_status_object = self.project_schemas.get_statuses("Task")
-        #
-        # self.task_types_object = self.project_schemas.get_types("Task")
-
-        self.list_task_types = [(each_type['id'], each_type['name']) for each_type in self.task_types_object]
-        # statuses = self.allStatus()
-        self.list_task_statuses = [(each_status['id'], each_status['name']) for each_status in self.task_status_object]
-
-        self.list_shot_statuses = [(each_status['id'], each_status['name']) for each_status in self.shot_status_object]
-
-        self.list_sequence_statuses = [(each_status['id'], each_status['name']) for each_status in
-                                       self.sequence_status_object]
-
-        self.list_asset_sequences = [(each_status['id'], each_status['name']) for each_status in
-                                     self.asset_status_object]
-
-        assignees_list = [each for each in self.ldap_users()]
-
-        if request.method == "POST":
-            project_creation_form = CreateProject(request.POST)
-
-            shot_creation_form = CreateShot(request.POST)
-            sequence_creation_form = CreateSequence(request.POST)
-            asset_creation_form = CreateAsset(request.POST)
-            task_creation_form = CreateTask(request.POST)
-
-            if shot_creation_form.is_valid() and project_creation_form.is_valid() \
-                    and sequence_creation_form.is_valid() and asset_creation_form.is_valid()\
-                    and task_creation_form.is_valid():
-                return HttpResponseRedirect(template_name)
-        else:
-            project_creation_form = CreateProject()
-            shot_creation_form = CreateShot()
-            sequence_creation_form = CreateSequence()
-            asset_creation_form = CreateAsset()
-            task_creation_form = CreateTask(self.list_task_statuses, request.FILES)
-
-        return render(request, template_name,
-                      {
-                          'shot_form': shot_creation_form, 'project_form': project_creation_form,
-                          'sequence_form': sequence_creation_form, 'asset_form': asset_creation_form,
-                          'task_form': task_creation_form, 'task_hash': task_hash
-                      }
-                      )
-
-    '''
-        Ajax call function to create
-        project collection inside DB
-        using monngoengine
-    '''
-
-    def create_project(self,
-                       project_name, project_code, start_date, end_date,
-                       workflow_schema, status, scope, disk, project_folder,
-                       entity_name, resolution, start_frame, fps, version,
-                       client_label, flag_status
-                       ):
-        if flag_status == 'Update':
-
-            project_obj = self.session.query('Project where name is' + project_name).first()
-            project_obj['start_date'] = datetime.datetime.strptime(start_date, "%Y-%m-%d")
-            project_obj['end_date'] = datetime.datetime.strptime(end_date, "%Y-%m-%d")
-
-            if not project_folder == '':
-                project_obj['root'] = project_folder
-
-            if not resolution == '':
-                project_obj['custom_attributes']['resolution'] = resolution
-
-            if not start_frame == '':
-                project_obj['custom_attributes']['startFrame'] = start_frame
-
-            if not fps == '':
-                project_obj['custom_attributes']['fps'] = fps
-
-            if not client_label == '':
-                project_obj['custom_attributes']['clientlabel_proj'] = client_label
-
-            self.session.commit()
-        else:
-            import ftrack
-            workflow = ftrack.getProjectSchemes()[-3]
-            project = self.session.create("Project",{
-                'name': project_code,
-                'full_name': project_name,
-                'project_schema': self.project_schemas
-            })
-            project['start_date'] = datetime.datetime.strptime(start_date, "%Y-%m-%d")
-            project['end_date'] = datetime.datetime.strptime(end_date, "%Y-%m-%d")
-            project['custom_attributes']['resolution'] = resolution
-            project['custom_attributes']['startFrame'] = start_frame
-            project['custom_attributes']['fps'] = fps
-
-            self.session.commit()
-            # self.set_ftrack_project(project_name, project_code, workflow)
-            # self.project = self.get_ftrack_project_object()
-            # self.project.set('startdate', datetime.datetime.strptime(start_date, "%Y-%m-%d"))
-            # self.project.set('enddate', datetime.datetime.strptime(end_date, "%Y-%m-%d"))
-            # self.project.set('status', self.project.get('status'))
-            # self.project.set('root', project_folder)
-            # self.project.set('entity_name', entity_name)
-            # self.project.set('resolution', resolution)
-            # self.project.set('startFrame', start_frame)
-            # self.project.set('fps', fps)
-            # self.project.set('ver', version)
-            # self.project.set('clientlabel_proj', client_label)
-
-        return True
-
-
-    '''
-        Ajax call function to create
-        shot collection inside DB
-        using monngoengine
-    '''
-    def create_shot(self, parent_object_type, task_template, shot_type, name,
-                    description, assigned_users, status, priority, scope, entity_name,
-                    version, frame_start, frame_end, key_shot, key_frames, frame_handles,
-                    prj_name, sequence_name, flag_status, old_shot_name
-                    ):
-
-        if flag_status == 'update':
-
-            print sequence_name, name, prj_name
-            shot_result = self.session.query("Shot where name is {0} and parent.name is {1} and project.name is {2}"
-                                             .format(name, sequence_name, prj_name)).first()
-            shot_obj = ''
-            print shot_result.keys()
-            # for ele in shot_result:
-            #     if ele['parent']['name'] == sequence_name:
-            #         shot_obj = ele
-
-            if not name == '':
-                shot_result['name'] = name
-            if not description == '':
-                shot_result['description'] = description
-            if not frame_start == '':
-                shot_result['custom_attributes']['fstart'] = frame_start
-            if not frame_start == '':
-                shot_result['custom_attributes']['fend'] = frame_end
-
-            self.session.commit()
-
-        else:
-            import ftrack
-            prj_list = ftrack.getProjects()
-            prj_obj = [prj for prj in prj_list if prj_name == prj.getName()][0]
-            seq_list = prj_obj.getSequences()
-            seq_obj = [seq for seq in seq_list if sequence_name == seq.getName()][0]
-
-            shot_object = seq_obj.createShot(name)
-            shot_object.set('description', description)
-            shot_object.set('entity_name', entity_name)
-            shot_object.set('ver', version)
-            shot_object.set('fstart', frame_start)
-            shot_object.set('fend', frame_end)
-            shot_object.set('keyframes', key_frames)
-
-        return True
-
-    '''
-        Ajax call function to create
-        sequence collection inside DB
-        using monngoengine
-    '''
-
-    def create_sequence(self, parent_object_type, task_template, sequence_type, sequence_name, description,
-                        assigned_users, status, priority, scope, entity_name, version, prj_name,
-                        flag_status, old_seq_name
-                        ):
-
-        import ftrack
-
-        if flag_status == 'update':
-
-            seq_obj = self.session.query('Sequence where name is {0} and project.name is {1}'
-                                         .format(sequence_name, prj_name)).first()
-            if not sequence_name == '':
-                seq_obj['name'] = sequence_name
-            if not description == '':
-                seq_obj['description'] = description
-            if not priority == '':
-                seq_obj['priority']['name'] = priority
-            self.session.commit()
-        else:
-
-            list_prjs = ftrack.getProjects()
-            prj_obj = ''
-            for ele in list_prjs:
-                if prj_name == ele.getName():
-                    prj_obj = ele
-                    break
-
-            sequence_object = prj_obj.createSequence(sequence_name)
-            sequence_object.set('description', description)
-            sequence_object.set('entity_name', entity_name)
-            sequence_object.set('ver', version)
-
-        return True
-
-    '''
-            Ajax call function to create
-            asset collection inside DB
-            using monngoengine
-    '''
-    def create_asset(self, asset_type, asset_name, asset_desc, asset_status, asset_priority,
-                     asset_entity_name, asset_version, asset_client_label,
-                     asset_sub_category, prj_name, flag_status
-                     ):
-
-        print flag_status
-        if flag_status in 'update':
-            asset_obj = self.session.query('AssetBuild where name is "%s" and project.name is "%s"' % (asset_name, prj_name)
-                                           ).first()
-
-            # status = self.session.query("Status where name is {0}".format(str(asset_status))).one()
-            # priority = self.session.query("Priority where name is {0}".format(asset_priority)).one()
-
-            print asset_desc, asset_name, asset_sub_category,
-
-            if not asset_name == '':
-                asset_obj['name'] = asset_name
-            if not asset_desc == '':
-                asset_obj['description'] = asset_desc
-            if not asset_client_label == '':
-                asset_obj['custom_attributes']['clientlabel_ab'] = asset_client_label
-            if not asset_desc == '':
-                asset_obj['custom_attributes']['subcat'] = asset_sub_category
-
-            self.session.commit()
-        else:
-            import ftrack
-            list_prj = ftrack.getProjects()
-            prj_obj = ''
-            for ele in list_prj:
-                if prj_name == ele.getName():
-                    prj_obj = ele
-                    break
-            list_asset_build_types = prj_obj.getAssetBuildTypes()
-            asset_type_id = ''
-            for ele in list_asset_build_types:
-                if str(asset_type) == ele.get('name'):
-                    asset_type_id = ele.get('typeid')
-                break
-
-            asset_object = prj_obj.createAssetBuild(str(asset_name).lower(), asset_type_id)
-
-            asset_object.set('description', asset_desc)
-            asset_object.set('entity_name', asset_entity_name)
-            asset_object.set('ver', asset_version)
-            asset_object.set('clientlabel_ab', asset_client_label)
-            asset_object.set('subcat', asset_sub_category)
-
-        return True
-
-    def create_task(self, task_type, task_name, description, assignee, bid_days,
-                    task_status, task_priority, start_date, due_date, task_scope,
-                    entity_name, flag_status, project_name, sequence_name, shot_name,
-                    asset_name, type_name
-                    ):
-
-        if flag_status == 'create':
-            import ftrack
-            # project_list = ftrack.getProjects()
-
-            if project_name:
-                project_obj = self.session.query("Project where name is %s" % project_name).first()
-
-            if sequence_name:
-                sequence_obj = self.session.query("Sequence where name is %s and project.name is %s" %
-                                                  (sequence_name, project_name)).first()
-
-            if asset_name:
-                asset_obj = self.session.query("AssetBuild where name is %s and project.name is %s" %
-                                               (asset_name, project_name)).first()
-            if shot_name:
-                shot_obj = self.session.query("Shot where name is %s and parent.name is %s and project.name is %s"
-                                              % (shot_name, sequence_name, project_name)).first()
-
-            project_id = project_obj['id']
-
-            # to get the selected task status id
-            task_status_id = [each for each in self.task_status_object if task_status == each['id']][0]
-
-            if type_name == 'Sequence':
-
-                # task_type_id = [each for each in self.task_types_object if task_type == each['name']]
-                # takes task_name sequence_obj task_status and task type
-                task_object = self.create_tasks(task_type, sequence_obj, task_status_id, task_type)
-
-            elif type_name == "Shot":
-
-                # takes task_name shot_obj task_status and task type
-                task_object = self.create_tasks(task_type, shot_obj, task_status_id, task_type)
-
-            elif type_name == "Asset":
-                # takes task_name asset_obj task_status and task type
-                task_object = self.create_tasks(task_type, asset_obj, task_status_id, task_type)
-
-            obj_user = ase_ftrack.add_user_in_project(self.session, assignee, project_id, True)
-
-            appointment_obj = self.session.create("Appointment", {
-                'context': task_object,
-                'resource': obj_user,
-                'type': 'assignment'
-            })
-
-            self.session.commit()
-
-            # task_object = seq_obj.createTask(task_name, task_type_id, task_status_id)
-            status = self.session.query("Status where id is {0}".format(task_status)).one()
-            priority = self.session.query("Priority where name is {0}".format(task_priority)).one()
-
-            task_object['description'] = description
-            task_object['bid'] = bid_days
-            task_object['start_date'] = datetime.datetime.strptime(start_date, "%m/%d/%Y").strftime("%Y/%m/%d")
-            task_object['end_date'] = datetime.datetime.strptime(due_date, "%m/%d/%Y").strftime("%Y/%m/%d")
-            task_object['status'] = status
-            task_object['priority'] = priority
-
-            # task_object['assignments'] = appointment_obj
-            self.session.commit()
-
-        else:
-            type_name = type_name.split(" ")[0]
-            print "type_name", type_name
-            if type_name == 'Sequence':
-                task_obj = self.session.query("Task where name is '%s' and parent.name is '%s' and parent.parent.name is '%s'" %
-                                              (task_name, sequence_name, project_name)
-                                              ).first()
-            elif type_name == 'Asset':
-                task_obj = self.session.query("Task where name is '%s' and parent.name is '%s' and parent.parent.name is '%s'" %
-                                              (task_name, asset_name, project_name)
-                                              ).first()
-            elif type_name == 'Shot':
-                task_query = "Task where name is '%s' and parent.name is '%s' and parent.parent.name is '%s' " \
-                             "and project.name is '%s'"
-                task_obj = self.session.query(task_query % (task_name, shot_name, sequence_name, project_name)).first()
-
-            print "====================> Updation <============================"
-            print sequence_name, "\n", task_name, "\n", shot_name, "\n", project_name, "\n", task_status, "\t", asset_name
-            print "====================> Updation <============================"
-            print start_date,"<================>", due_date
-
-            self.session.commit()
-
-            task_obj['bid'] = bid_days
-
-            status = self.session.query("Status where id is {0}".format(task_status)).one()
-            priority = self.session.query("Priority where name is {0}".format(task_priority)).one()
-
-            if task_type in self.type_name:
-                _task_type = self.type_name[task_type]
-            else:
-                _task_type = task_type
-
-            obj_type = self.session.query("Type where name is '%s'" % _task_type).first()
-
-            if not task_type == '':
-                task_obj['type'] = obj_type
-            if not description == '':
-                task_obj['description'] = description
-            if not task_status == '':
-                task_obj['status'] = status
-            if not task_priority:
-                task_obj['priority'] = priority
-            if not start_date == '':
-                task_obj['start_date'] = start_date
-            if not due_date == '':
-                task_obj['end_date'] = due_date
-
-            self.session.commit()
-
-        return True
-
-    '''
-        getter and setter to get the project name
-    '''
-    def set_ftrack_project(self, project_name, project_code, workflow):
-        import ftrack
-
-        """
-            Create a project
-            :param fullname: ``str`` the long name of the project
-            :param name: ``str`` the shot name that will be used in scripts
-            :param workflow: ``ProjectScheme`` the project scheme that should be used in this project. Defines types and statuses.
-            :rtype: ``Project``
-        """
-        self.project = ftrack.createProject(project_name, project_code, workflow)
-
-    def get_ftrack_project_object(self):
-        return self.project
-
-    '''
-        function responsible to show the 
-        project data in thumbnail format
-    '''
     def display_project_thumbnail_manner(self, project_name, project_ftrack_id):
         db = self.mongo_database
         project_list = []
@@ -4160,7 +3858,7 @@ class Activity:
                     'type': 'Project'
                 },
                 {
-                    "_id": 0, "name": 1,"ftrack_id": 1,
+                    "_id": 0, "name": 1, "ftrack_id": 1,
                     "ftrack_status": 1, "startdate": 1,
                     "enddate": 1
                 }
@@ -4190,11 +3888,12 @@ class Activity:
     '''
         function to show the details sequence wise 
     '''
+
     def display_sequence_details(self, prj_name):
         db = self.mongo_database
         new_prj_name = prj_name.lower() + "_tasks"
         collection = self.mongo_database[new_prj_name]
-        fetch_project_name = self.session.query('Project where name is'+prj_name).first()
+        fetch_project_name = self.session.query('Project where name is' + prj_name).first()
         fetch_project_id = fetch_project_name.get('id')
         sequence_list = []
 
@@ -4222,13 +3921,15 @@ class Activity:
     '''
         function to show details shot wise  
     '''
+
     def display_shot_details(self, seq_name, prj_name):
         db = self.mongo_database
         new_prj_name = prj_name.lower() + "_tasks"
 
         collection = self.mongo_database[new_prj_name]
         shot_list = []
-        fetch_seq_name = self.session.query('Sequence where name is %s and project.name is %s' % (seq_name, prj_name)).first()
+        fetch_seq_name = self.session.query(
+            'Sequence where name is %s and project.name is %s' % (seq_name, prj_name)).first()
         fetch_seq_id = fetch_seq_name['id']
         # for i in fetch_seq_name:
         #     if i['parent']['name'] == prj_name:
@@ -4248,7 +3949,7 @@ class Activity:
                 'parent_id': fetch_seq_id
             },
             {
-                "type": 1, "ftrack_status": 1, "ftrack_id":1,
+                "type": 1, "ftrack_status": 1, "ftrack_id": 1,
                 "_id": 0, "name": 1
             }
         )
@@ -4265,6 +3966,7 @@ class Activity:
     '''
     function to show details asset wise
     '''
+
     def display_asset_details(self, project_name):
         db = self.mongo_database
         new_prj_name = project_name.lower() + "_tasks"
@@ -4296,6 +3998,7 @@ class Activity:
     '''
         function to show task details
     '''
+
     def display_task_details(self, project_name, seq_name, type_name, shot_name, asset_name):
         new_prj_name = project_name.lower() + "_tasks"
         collection = self.mongo_database[new_prj_name]
@@ -4328,7 +4031,7 @@ class Activity:
             fetch_shot_name = self.session.query(
                 "Shot where name is %s and parent.name is %s and project.name is %s" %
                 (shot_name, seq_name, project_name)
-                ).first()
+            ).first()
             type_id = fetch_shot_name['id']
             pprint(fetch_shot_name['name'])
             # seq_id = fetch_shot_name['id']
@@ -4364,7 +4067,7 @@ class Activity:
                 "parent_id": type_id
             },
             {
-                'type': 1, "ftrack_status": 1, "ftrack_id":1,
+                'type': 1, "ftrack_status": 1, "ftrack_id": 1,
                 "_id": 0, "name": 1
             }
         )
@@ -4379,262 +4082,64 @@ class Activity:
             task_list.append(task_dict)
         pprint(task_list)
         return task_list
+
     '''
         function to get the details before
         update method is called
         
     '''
-    def get_details_before_update(self, name, flag, seq_name, shot_name, asset_name, entity_id):
 
-	if not (name and entity_id):
-	    print "Project Name / Entity id not found"
-	    return False
+    def get_details_before_update(self, name, entity_id):
 
-        collection = self.mongo_database[name.lower() + "_tasks"]
-	result = collection.find_one({'ftrack_id':entity_id},{'_id':0})
-
-	data_list = list()
-	if result:
-	    if 'updated_on' in result:
-		result['updated_on'] = str(result['updated_on']).split('.')[0]
-	    if 'added_on' in result:
-		result['added_on'] = str(result['added_on']).split('.')[0]
-	    if 'current_assignees' in result:
-		result['current_assignee'] = result['current_assignees'][0]['user_name']
-
-	    if 'startdate' in result:
-		startdate = result['startdate'].split('T')
-		result['startdate'] = startdate[0]
-
-	    if 'enddate' in result:
-		enddate = result['enddate'].split('T')
-		result['enddate'] = enddate[0]
-
-	    data_list.append(result)
-
-	return data_list
-
-
-    '''
-    def get_details_before_update(self, name, flag, seq_name, shot_name, asset_name):
+        if not (name and entity_id):
+            print "Project Name / Entity id not found"
+            return False
 
         collection = self.mongo_database[name.lower() + "_tasks"]
-        update_data_list = []
-        if flag == 'project':
-            result = collection.find(
-                {
-                    'name': name
-                },
-                {
-                    "_id": 0, 
-                    "object_type": 0,  # "project": 0,
-                    "updated_on": 0, "projectschemeid": 0,
-                    "added_on": 0, "bid": 0, "parent_id": 0,
-                    "parent_object_name": 0, "endframe": 0
-                }
-            )
-            for ele in result:
-                update_dict = {}
-                for k, v in ele.iteritems():
-                    if 'startdate' in k or 'enddate' in k:
-                        if 'T' in v:
-                            a = datetime.datetime.strptime(str(v), "%Y-%m-%dT%H:%M:%S")
-                            val = datetime.datetime.strftime(a, "%Y-%m-%d")
-                            update_dict[k] = val
-                        else:
-                            update_dict[k] = str(v).encode("utf-8").split(" ")[0]
+        result = collection.find_one({'ftrack_id': entity_id}, {'_id': 0, 'added_on': 0, 'updated_on': 0})
+
+        data_list = list()
+        if result:
+            update_dict = {}
+            for key, value in result.iteritems():
+                if 'startdate' in key or 'enddate' in key:
+                    if 'T' in value:
+                        new_val = str(value).split(".")[0]
+                        a = datetime.datetime.strptime(new_val, "%Y-%m-%dT%H:%M:%S")
+                        val = datetime.datetime.strftime(a, "%Y-%m-%d")
+                        update_dict[key] = str(val)
                     else:
-                        update_dict[k] = v
-                update_data_list.append(update_dict)
-            pprint(update_data_list)
-        elif flag == 'sequence':
-            project_obj = self.session.query("Project where name is"+name).first()
-            project_id = project_obj['id']
-            result = collection.find(
-                {
-                    'name': seq_name,
-                    # "parent_id": project_id
-                },
-                {
-                    "_id": 0, "ftrack_id": 0,
-                    "object_type": 0,  # "project": 0,
-                    "updated_on": 0, "projectschemeid": 0,
-                    "added_on": 0, "bid": 0, "parent_id": 0,
-                    "parent_object_name": 0, "endframe": 0,
-                    'startdate': 0, 'enddate': 0
-                }
-            )
-            for ele in result:
-                update_dict = {}
-                for k, v in ele.iteritems():
-                    update_dict[k] = v
-                update_data_list.append(update_dict)
-            print "sequence details"
-            pprint(update_data_list)
-        elif flag == 'asset':
-            project_obj = self.session.query("Project where name is"+name).first()
-            project_id = project_obj['id']
-            result = collection.find(
-                {
-                    'name': asset_name,
-                    "parent_id": project_id
-                },
-                {
-                    "_id": 0, "ftrack_id": 0,
-                    "object_type": 0,
-                    "updated_on": 0, "projectschemeid": 0,
-                    "added_on": 0, "bid": 0, "parent_id": 0,
-                    "parent_object_name": 0, "endframe": 0,
-                    'startdate': 0, 'enddate': 0
-                }
-            )
-            for ele in result:
-                update_dict = {}
-                for k, v in ele.iteritems():
-                    update_dict[k] = v
-                update_data_list.append(update_dict)
-            print "asset details"
-            pprint(update_data_list)
-        elif flag == 'shot':
-            shot_obj = self.session.query(
-                "Shot where name is {0} and parent.name is {1} and project.name is {2}".format(
-                    shot_name, seq_name, name
-                )
-            ).first()
+                        update_dict[key] = str(value).encode("utf-8").split(" ")[0]
+                elif 'current_assignees' in key:
+                    ll = value[0]
+                    update_dict['current_assignee'] = ll['user_name']
+                elif 'bid' in key:
+                    val = (60 * 60 * 8 * int(value)) / (60 * 60 * 8)
+                    update_dict[key] = val
+                else:
+                    update_dict[key] = value
+            #  if 'updated_on' in result:
+            #   result['updated_on'] = str(result['updated_on']).split('.')[0]
+            #  if 'added_on' in result:
+            #   result['added_on'] = str(result['added_on']).split('.')[0]
+            #  if 'current_assignees' in result:
+            #   result['current_assignee'] = result['current_assignees'][0]['user_name']
+            if 'startframe' not in result:
+                update_dict['startframe'] = '101'
+            if 'fps' not in result:
+                update_dict['fps'] = '24'
+            # if 'resolution' not in result:
+            #   update_dict['resolution'] = '1920X1080'
+            data_list.append(update_dict)
 
-            start_frame = shot_obj['custom_attributes']['fstart']
-            print start_frame
-            end_frame = shot_obj['custom_attributes']['fend']
-            print end_frame
-
-            sequence_obj = self.session.query("Sequence where name is {0} and project.name is {1}"
-                                              .format(seq_name, name)).first()
-            sequence_id = sequence_obj['id']
-            result = collection.find(
-                {
-                    'name': shot_name,
-                    "parent_id": sequence_id
-                },
-                {
-                    "_id": 0, "ftrack_id": 0,
-                    "object_type": 0,  # "project": 0,
-                    "updated_on": 0, "projectschemeid": 0,
-                    "added_on": 0, "bid": 0, "parent_id": 0,
-                    "parent_object_name": 0, "endframe": 0,
-                    'startdate': 0, 'enddate': 0
-                }
-            )
-            for ele in result:
-                update_dict = {}
-                for k, v in ele.iteritems():
-                    update_dict[k] = v
-                if 'fstart' not in ele:
-                    update_dict['fstart'] = start_frame
-                if 'fend' not in ele:
-                    update_dict['fend'] = end_frame
-
-                update_data_list.append(update_dict)
-            print "shot details"
-            pprint(update_data_list)
-        elif flag == 'Asset_Task':
-            asset_task_obj = self.session.query("Task where name is '{0}' and parent.name is '{1}' and project.name is '{2}'"
-                                                .format(seq_name, asset_name, name)
-                                                ).first()
-
-            task_id = asset_task_obj['id']
-            asset_task_id = asset_task_obj['parent']['id']
-            update_data_list = self.get_data_before_update(flag, asset_task_id, collection, task_id)
-
-        elif flag == 'Sequence_Task':
-            sequence_task_obj = self.session.query(
-                "Task where name is '%s' and parent.name is '%s' and parent.parent.name is '%s'"
-                % (asset_name, seq_name, name)
-                ).first()
-
-            task_id = sequence_task_obj['id']
-            sequence_task_id = sequence_task_obj['parent']['id']
-
-            update_data_list = self.get_data_before_update(flag, sequence_task_id, collection, task_id)
-
-            # result = collection.find(
-            #     {
-            #         'ftrack_id': task_id,
-            #         'parent_id': sequence_task_id
-            #     },
-            #     {
-            #         "_id": 0, "ftrack_id": 0,
-            #         "object_type": 0, "updated_on": 0,
-            #         "projectschemeid": 0, "added_on": 0,
-            #         "parent_id": 0, "parent_object_name": 0, "endframe": 0
-            #     }
-            # )
-            # for ele in result:
-            #     update_dict = {}
-            #     for k, v in ele.iteritems():
-            #         if 'startdate' in k or 'enddate' in k:
-            #             if 'T' in v:
-            #                 a = datetime.datetime.strptime(str(v), "%Y-%m-%dT%H:%M:%S")
-            #                 val = datetime.datetime.strftime(a, "%Y-%m-%d")
-            #                 update_dict[k] = val
-            #             else:
-            #                 update_dict[k] = str(v).encode("utf-8").split(" ")[0]
-            #         else:
-            #             update_dict[k] = v
-            #     update_data_list.append(update_dict)
-            # print "===============================> RESULT <====================================="
-            # print "sequence task details"
-            # print "===============================> RESULT <====================================="
-            # pprint(update_data_list)
-            # print "===============================> RESULT <====================================="
-
-        elif flag == 'Shot_Task':
-            shot_task_obj = self.session.query(
-                "Task where name is '%s' and parent.name is '%s' and parent.parent.name is '%s' and project.name is '%s'"
-                % (asset_name, shot_name, seq_name, name)
-                ).first()
-
-            task_id = shot_task_obj['id']
-            shot_task_id = shot_task_obj['parent']['id']
-            update_data_list = self.get_data_before_update(flag, shot_task_id, collection, task_id)
-
-            # result = collection.find(
-            #     {
-            #         'name': name,
-            #         'parent_id': shot_task_id
-            #     },
-            #     {
-            #         "_id": 0, "ftrack_id": 0,
-            #         "object_type": 0, "updated_on": 0,
-            #         "projectschemeid": 0, "added_on": 0,
-            #         "parent_id": 0, "parent_object_name": 0, "endframe": 0
-            #     }
-            # )
-            # for ele in result:
-            #     update_dict = {}
-            #     for k, v in ele.iteritems():
-            #         if 'startdate' in k or 'enddate' in k:
-            #             if 'T' in v:
-            #                 a = datetime.datetime.strptime(str(v), "%Y-%m-%dT%H:%M:%S")
-            #                 val = datetime.datetime.strftime(a, "%Y-%m-%d")
-            #                 update_dict[k] = val
-            #             else:
-            #                 update_dict[k] = str(v).encode("utf-8").split(" ")[0]
-            #         else:
-            #             update_dict[k] = v
-            #     update_data_list.append(update_dict)
-            # print "===============================> RESULT <====================================="
-            # print "shot task details"
-            # print "===============================> RESULT <====================================="
-            # pprint(update_data_list)
-            # print "===============================> RESULT <====================================="
-
-        return update_data_list
-    '''
+        pprint(data_list)
+        return data_list
 
     '''
         function to get task data before update
         from asset, sequence and shot
     '''
+
     def get_data_before_update(self, flag, asset_task_id, collection, task_id):
 
         update_data_list = []
@@ -4708,6 +4213,7 @@ class Activity:
         task_status
         task_type
     '''
+
     def create_tasks(self, task_name, parent_obj, task_status, task_type):
 
         if task_type in self.stereo_tasks:
@@ -4765,7 +4271,7 @@ class Activity:
 
         print project_fps
 
-        fps = (int(end_frame) - (int(start_frame) - 1))/project_fps
+        fps = (int(end_frame) - (int(start_frame) - 1)) / project_fps
 
         print round(fps, 2)
 
@@ -4776,7 +4282,7 @@ class Activity:
         print "=================Duplicate Name exists=============="
         collection = self.mongo_database[prj_name.lower() + "_tasks"]
         pprint(prj_name)
-	count = 0;
+        count = 0;
         if flag == 'Sequence_task':
             seq_obj = self.session.query("Sequence where name is '%s' and project.name is '%s'"
                                          % (seq_name, prj_name)
@@ -4788,7 +4294,7 @@ class Activity:
                     'parent_id': ftrack_id
                 }
             )
-	    count = result.count()
+            count = result.count()
         if flag == 'Asset_task':
             asset_name = seq_name
             asset_obj = self.session.query("AssetBuild where name is '%s' and project.name is '%s'"
@@ -4801,12 +4307,12 @@ class Activity:
                     'parent_id': ftrack_id
                 }
             )
-	    count = result.count()
+            count = result.count()
         if flag == 'Shot_task':
             shot_obj = self.session.query(
                 "Shot where name is '%s' and parent.name is '%s' and parent.parent.name is '%s'"
                 % (shot_name, seq_name, prj_name)
-                ).first()
+            ).first()
             ftrack_id = shot_obj['id']
             result = collection.find(
                 {
@@ -4814,7 +4320,7 @@ class Activity:
                     'parent_id': ftrack_id
                 }
             )
-	    count = result.count()
+            count = result.count()
         # if flag == 'asset_name':
         #     asset_name = task_name_check
         #     print asset_name, prj_name

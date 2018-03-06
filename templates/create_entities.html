@@ -1,6 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 {% include "header.html" %}
+<script>
+    var today = new Date();
+    $(document).ready(function(){
+       $('#startdate').datepicker({
+           startDate: new Date()
+       });
+       $('#enddate').datepicker(
+       );
+       $('#id_start_date').datepicker({
+           startDate: today
+       });
+       $('#id_end_date').datepicker({
+           startDate: today
+       });
+});
+</script>
 <body>
 {% include "top_bar.html" %}
 <div class="ch-container">
@@ -108,7 +124,7 @@
               <button type="button" class="close" data-dismiss="modal" style="color: #fff;">×</button>
               <br>
               <div class="container">
-                <form action="{% url 'create_project_form' %}" method="post"
+                <form action="{% url 'create_entities' %}" method="post"
                       id="project_creation" class="form-horizontal">
                   {% csrf_token %}
                   <div class="form-group">
@@ -291,7 +307,7 @@
               <button type="button" class="close" data-dismiss="modal" style="color: #fff;">×</button>
               <br>
               <div class="container">
-                <form action="{% url 'create_project_form' %}" method="post"
+                <form action="{% url 'create_entities' %}" method="post"
                       id="sequence_creation" class="form-horizontal">
                   {% csrf_token %}
                   <div class="form-group" id="linked_to">
@@ -391,7 +407,7 @@
               <button type="button" class="close" data-dismiss="modal" style="color: #fff;">×</button>
               <br>
               <div class="container" id="div_create_shot_manual">
-                <form action="{% url 'create_project_form' %}" method="post"
+                <form action="{% url 'create_entities' %}" method="post"
                       id="shot_creation" class="form-horizontal">
                   {% csrf_token %}
                   <div class="form-group">
@@ -582,7 +598,7 @@
 
               <br>
               <div class="container" id="div_create_asset_manual">
-                <form enctype="multipart/form-data" action="{% url 'create_project_form' %}"
+                <form enctype="multipart/form-data" action="{% url 'create_entities' %}"
                       method="post"
                       id="asset_creation" class="form-horizontal">
                   {% csrf_token %}
@@ -730,7 +746,7 @@
               <button type="button" class="close" data-dismiss="modal" style="color: #fff;">×</button>
               <br>
               <div class="container">
-                <form action="{% url 'create_project_form' %}" method="post"
+                <form action="{% url 'create_entities' %}" method="post"
                       id="task_creation" class="form-horizontal">
                   {% csrf_token %}
                   <div class="form-group">
