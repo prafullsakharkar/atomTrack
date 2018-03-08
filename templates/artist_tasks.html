@@ -110,7 +110,7 @@
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
             <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal">×</button>
+              <button type="button" class="close" data-dismiss="modal" id="myReset">×</button>
               <div id="modal_header">
                 <div id="task_details_loader" style="text-align: left;"><img
                   src="/static/img/loading.gif"></div>
@@ -125,16 +125,16 @@
                       <ul class="nav nav-tabs" role="tablist">
                         <li role="presentation" class="active"><a href="#my_notes"
                                                                   aria-controls="my_notes"
-                                                                  role="tab" data-toggle="tab">Task Notes</a>
+                                                                  role="tab" data-toggle="tab" id="my_not">Task Notes</a>
                         </li>
                         <li role="presentation"><a href="#my_links" aria-controls="my_links"
-                                                   role="tab" data-toggle="tab">Links</a></li>
+                                                   role="tab" data-toggle="tab" id="my_lnk">Links</a></li>
                         <li role="presentation"><a href="#my_versions"
                                                    aria-controls="my_versions" role="tab"
-                                                   data-toggle="tab">Versions</a></li>
+                                                   data-toggle="tab" id="my_vsn" data-id="my_vsn">Versions</a></li>
                         <li role="presentation"><a href="#my_version_notes"
                                                    aria-controls="my_version_notes" role="tab"
-                                                   data-toggle="tab">Version Notes</a></li>
+                                                   data-toggle="tab" id="my_vsn_not">Version Notes</a></li>
                       </ul>
 
                       <!-- Tab panes -->
@@ -197,7 +197,7 @@
                           <div id="version_loader" style="text-align: center;"><img
                             src="/static/img/loading.gif"></div>
                           <div class="box"
-                               style="overflow:auto; overflow-y:auto; height:572px;"
+                               style="overflow:auto; overflow-y:auto; height:572px; overflow-x:auto; width:855px; white-space: nowrap;"
                                id="version_details">
                             <table class="table table-striped" id="tbl_versions">
                               <thead>
@@ -210,6 +210,7 @@
                                 <th>Status</th>
                                 <th>Published On</th>
                                 <th>Published by</th>
+                                <th>Description</th>
                               </tr>
                               </thead>
                               <tbody>
@@ -253,7 +254,7 @@
                                   </option>
                                   <option value="Client">Client</option>
                                 </select>&nbsp;&nbsp;
-                              <input type="checkbox" id="internal-reject" >
+                              <input type="checkbox" id="internal-reject" checked>
                               <span>Reject</span>&nbsp;&nbsp;
                                 <div class="box">
                                   <textarea id="text_version_note" rows="5" cols="20"

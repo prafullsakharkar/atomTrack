@@ -1,5 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
+<style>
+  #fade {
+  display: none;
+  position: fixed;
+  top: 0%;
+  left: 0%;
+  width: 100%;
+  height: 100%;
+  background-color: black;
+  z-index: 1001;
+  -moz-opacity: 0.8;
+  opacity: .80;
+  filter: alpha(opacity=80);
+}
+
+#light {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  max-width: 600px;
+  max-height: 360px;
+  margin-left: -300px;
+  margin-top: -180px;
+  border: 2px solid #FFF;
+  background: #FFF;
+  z-index: 1002;
+  overflow: visible;
+}
+
+#boxclose {
+  float: right;
+  cursor: pointer;
+  color: #fff;
+  border: 1px solid #AEAEAE;
+  border-radius: 3px;
+  background: #222222;
+  font-size: 31px;
+  font-weight: bold;
+  display: inline-block;
+  line-height: 0px;
+  padding: 11px 3px;
+  position: absolute;
+  right: 2px;
+  top: 2px;
+  z-index: 1002;
+  opacity: 0.9;
+}
+
+.boxclose:before {
+  content: "×";
+}
+
+#fade:hover ~ #boxclose {
+  display:none;
+}
+
+.test:hover ~ .test2 {
+  display: none;
+}
+</style>
 {% include "header.html" %}
 <body>
 {% include "top_bar.html" %}
@@ -262,28 +323,28 @@
                             <a href="#my_notes"
                                aria-controls="my_notes"
                                role="tab"
-                               data-toggle="tab">
+                               data-toggle="tab" id="my_not">
                               Notes
                             </a>
                           </li>
                           <li role="presentation">
                             <a href="#my_links"
                                aria-controls="my_links " role="tab"
-                               data-toggle="tab">
+                               data-toggle="tab" id="my_lnk">
                               Links
                             </a>
                           </li>
                           <li role="presentation">
                             <a href="#my_versions"
                                aria-controls="my_versions" role="tab"
-                               data-toggle="tab">
+                               data-toggle="tab" id="my_vsn">
                               Versions
                             </a>
                           </li>
                           <li role="presentation">
                             <a href="#my_version_notes"
                                aria-controls="my_version_notes"
-                               role="tab" data-toggle="tab">
+                               role="tab" data-toggle="tab" id="my_vsn_not">
                               Version
                               Notes
                             </a>
@@ -396,7 +457,7 @@
                             <div id="version_loader" style="text-align: center;"><img
                               src="/static/img/loading.gif"></div>
                             <div class="box"
-                                 style="overflow:auto; overflow-y:auto; height:572px;"
+                                 style="overflow:auto; overflow-y:auto; height:572px; overflow-x:auto; width:855px; white-space: nowrap;"
                                  id="version_details">
                               <table class="table table-striped" id="tbl_versions">
                                 <thead>
@@ -409,6 +470,7 @@
                                   <th>Status</th>
                                   <th>Published On</th>
                                   <th>Published by</th>
+                                  <th>Description</th>
                                 </tr>
                                 </thead>
                                 <tbody>

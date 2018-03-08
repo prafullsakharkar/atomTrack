@@ -68,7 +68,7 @@ class Activity:
 
         self.reload_session()
 
-        mongo_server = '192.168.1.19'
+#        mongo_server = '192.168.1.19'
         print os.environ['FTRACK_SERVER'], mongo_server, ip_address
 
         self.password_str = base64.b64decode("bWFkQHBpcDE=")
@@ -371,7 +371,7 @@ class Activity:
                     task_id = request.POST.get('task_id')
                     action = request.POST.get('action')
                     note_text = request.POST.get('note_text')
-                    data = self.apply_artist_action(username, project, task_id, action, note_text)
+                    self.apply_artist_action(username, project, task_id, action, note_text)
                 elif object_name == 'Review Tasks':
                     project = request.POST.get('project')
                     data = self.get_review_tasks(project)
@@ -406,7 +406,7 @@ class Activity:
                 elif object_name == 'asset_csv_upload':
                     filename = request.POST.get('filename')
                     project_name = request.POST.get("project_name")
-                    data = self.upload_asset_csv(filename, project_name, request)
+                    self.upload_asset_csv(filename, project_name, request)
                 elif object_name == 'fps_calculation':
                     start_frame = request.POST.get('sf')
                     end_frame = request.POST.get("ef")
@@ -466,12 +466,12 @@ class Activity:
 
             if username in json_data:
                 self.user_role = json_data[username]['role']
-                self.users_columns = (',').join(json_data[username]['columns'])
+                self.users_columns = ','.join(json_data[username]['columns'])
 
-                #            if (username in json_data) and (
-                #                    json_data[username]['role'] == 'Supervisor' or json_data[username]['role'] == 'Co-ordinator'):
-                #                self.user_role = json_data[username]['role']
-                #                self.users_columns = ','.join(json_data[username]['columns'])
+                # if (username in json_data) and (
+                #         json_data[username]['role'] == 'Supervisor' or json_data[username]['role'] == 'Co-ordinator'):
+                #     self.user_role = json_data[username]['role']
+                #     self.users_columns = ','.join(json_data[username]['columns'])
 
     def get_projects(self):
         """
@@ -1039,11 +1039,16 @@ class Activity:
             details['object_id'] = task_id
             details['parent_id'] = task_obj['parent_id']
             # for load task list
-            asset_task_dict = self.get_asset_task(task_obj['name'], task_obj['parent_id'])
+            if task_obj['object_type']['name'] == "Task":
+                asset_task_dict = self.get_asset_task(task_obj['name'], task_obj['parent_id'])
+            else:
+                asset_task_dict = self.get_asset_task(task_obj['name'], task_id)
+
             details['asset_task_dict'] = asset_task_dict
             details['task_assignee'] = task_assignee
 
         details_list.append(details)
+
 
         return details_list
 
@@ -1168,6 +1173,8 @@ class Activity:
                     version_hash['status_name'] = i['status']['name']
                     version_hash['published_on'] = i['date'].format('DD-MM-YYYY HH:mm:ss')
                     version_hash['user_role'] = self.user_role
+                    version_hash['comment'] = i['comment']
+
                 except ValueError:
                     print "Some version details missing .."
 
@@ -1296,7 +1303,7 @@ class Activity:
             data['last_name'] = user_name.split('.')[-1]
             data['is_active'] = False
             data['email'] = '%s@intra.madassemblage.com' % user_name
-            ftrack_user = self.session.create('User', data)
+            self.session.create('User', data)
             self.session.commit()
 
     def create_new_task(self, element_name, change_value, parent_id, task_name, object_type):
@@ -2132,10 +2139,12 @@ class Activity:
         for each in data:
             task = each['_id']['task']
 
-            cur_task = obj_col.find_one({'path': task, 'parent_object_type': 'Shot'})
+            cur_task = obj_col.find_one({'path': task})
 
-            if not cur_task:
+            if 'parent_object_type' not in cur_task:
                 continue
+
+	    parent_object_type = cur_task['parent_object_type'].replace(' ','_')
 
             user = each['_id']['user']
             actual_bid = round(float(each['total'] / 1000) / one_bid, 2)
@@ -2145,67 +2154,72 @@ class Activity:
             if 'priority' in cur_task and cur_task['priority'] != 'None':
                 priority = cur_task['priority']
 
-            if user not in artist_data:
-                artist_data[user] = dict()
+            if parent_object_type not in artist_data:
+                artist_data[parent_object_type] = dict()
 
-            if priority not in artist_data[user]:
-                artist_data[user][priority] = dict()
+            if user not in artist_data[parent_object_type]:
+                artist_data[parent_object_type][user] = dict()
 
-            if 'task_count' not in artist_data[user]:
-                artist_data[user]['task_count'] = 0
+            if priority not in artist_data[parent_object_type][user]:
+                artist_data[parent_object_type][user][priority] = dict()
 
-            if 'task_count' not in artist_data[user][priority]:
-                artist_data[user][priority]['task_count'] = 0
+            if 'task_count' not in artist_data[parent_object_type][user]:
+                artist_data[parent_object_type][user]['task_count'] = 0
 
-            artist_data[user]['task_count'] = artist_data[user]['task_count'] + 1
-            artist_data[user][priority]['task_count'] = artist_data[user][priority]['task_count'] + 1
+            if 'task_count' not in artist_data[parent_object_type][user][priority]:
+                artist_data[parent_object_type][user][priority]['task_count'] = 0
 
-            if 'bid_days' not in artist_data[user]:
-                artist_data[user]['bid_days'] = 0
+            artist_data[parent_object_type][user]['task_count'] = artist_data[parent_object_type][user]['task_count'] + 1
+            artist_data[parent_object_type][user][priority]['task_count'] = artist_data[parent_object_type][user][priority]['task_count'] + 1
 
-            if 'bid_days' not in artist_data[user][priority]:
-                artist_data[user][priority]['bid_days'] = 0
+            if 'bid_days' not in artist_data[parent_object_type][user]:
+                artist_data[parent_object_type][user]['bid_days'] = 0
+
+            if 'bid_days' not in artist_data[parent_object_type][user][priority]:
+                artist_data[parent_object_type][user][priority]['bid_days'] = 0
 
             bid = 0
             if 'bid' in cur_task:
                 bid = round(float(cur_task['bid']) / one_bid, 2)
 
-            artist_data[user]['bid_days'] = artist_data[user]['bid_days'] + bid
-            artist_data[user][priority]['bid_days'] = artist_data[user][priority]['bid_days'] + bid
+            artist_data[parent_object_type][user]['bid_days'] = artist_data[parent_object_type][user]['bid_days'] + bid
+            artist_data[parent_object_type][user][priority]['bid_days'] = artist_data[parent_object_type][user][priority]['bid_days'] + bid
 
-            if 'actual_bid' not in artist_data[user]:
-                artist_data[user]['actual_bid'] = 0
+            if 'actual_bid' not in artist_data[parent_object_type][user]:
+                artist_data[parent_object_type][user]['actual_bid'] = 0
 
-            if 'actual_bid' not in artist_data[user][priority]:
-                artist_data[user][priority]['actual_bid'] = 0
+            if 'actual_bid' not in artist_data[parent_object_type][user][priority]:
+                artist_data[parent_object_type][user][priority]['actual_bid'] = 0
 
-            artist_data[user]['actual_bid'] = artist_data[user]['actual_bid'] + actual_bid
-            artist_data[user][priority]['actual_bid'] = round(artist_data[user][priority]['actual_bid'] + actual_bid, 2)
+            artist_data[parent_object_type][user]['actual_bid'] = round(artist_data[parent_object_type][user]['actual_bid'] + actual_bid, 2)
+            artist_data[parent_object_type][user][priority]['actual_bid'] = round(artist_data[parent_object_type][user][priority]['actual_bid'] + actual_bid, 2)
 
-            if 'variance' not in artist_data[user]:
-                artist_data[user]['variance'] = 0
+            if 'variance' not in artist_data[parent_object_type][user]:
+                artist_data[parent_object_type][user]['variance'] = 0
 
-            if 'variance' not in artist_data[user][priority]:
-                artist_data[user][priority]['variance'] = 0
+            if 'variance' not in artist_data[parent_object_type][user][priority]:
+                artist_data[parent_object_type][user][priority]['variance'] = 0
 
             variance = round(float(bid - actual_bid), 2)
-            artist_data[user]['variance'] = artist_data[user]['variance'] + variance
-            artist_data[user][priority]['variance'] = round(artist_data[user][priority]['variance'] + variance, 2)
+            artist_data[parent_object_type][user]['variance'] = round(artist_data[parent_object_type][user]['variance'] + variance, 2)
+            artist_data[parent_object_type][user][priority]['variance'] = round(artist_data[parent_object_type][user][priority]['variance'] + variance, 2)
 
-            if 'tasks' not in artist_data[user]:
-                artist_data[user]['tasks'] = list()
+            if 'tasks' not in artist_data[parent_object_type][user]:
+                artist_data[parent_object_type][user]['tasks'] = list()
 
-            if 'tasks' not in artist_data[user][priority]:
-                artist_data[user][priority]['tasks'] = list()
+            if 'tasks' not in artist_data[parent_object_type][user][priority]:
+                artist_data[parent_object_type][user][priority]['tasks'] = list()
 
-            artist_data[user]['tasks'].append(task)
-            artist_data[user][priority]['tasks'].append(task)
+	    mod_task = task
+#	    mod_task = cur_task['parent_type']+':'+task
+            artist_data[parent_object_type][user]['tasks'].append(mod_task)
+            artist_data[parent_object_type][user][priority]['tasks'].append(mod_task)
 
-            if 'frame_sec' not in artist_data[user]:
-                artist_data[user]['frame_sec'] = 0
+            if 'frame_sec' not in artist_data[parent_object_type][user]:
+                artist_data[parent_object_type][user]['frame_sec'] = 0
 
-            if 'frame_sec' not in artist_data[user][priority]:
-                artist_data[user][priority]['frame_sec'] = 0
+            if 'frame_sec' not in artist_data[parent_object_type][user][priority]:
+                artist_data[parent_object_type][user][priority]['frame_sec'] = 0
 
             parent = ':'.join(task.split(':')[:-1])
 
@@ -2228,23 +2242,23 @@ class Activity:
             if ftrack_status not in ['In progress', 'Ready to start']:
                 try:
                     total_sec = round(float(totalframe) / fps, 2)
-                    artist_data[user]['frame_sec'] = artist_data[user]['frame_sec'] + total_sec
-                    artist_data[user][priority]['frame_sec'] = artist_data[user][priority]['frame_sec'] + total_sec
+                    artist_data[parent_object_type][user]['frame_sec'] = round(artist_data[parent_object_type][user]['frame_sec'] + total_sec, 2)
+                    artist_data[parent_object_type][user][priority]['frame_sec'] = round(artist_data[parent_object_type][user][priority]['frame_sec'] + total_sec, 2)
                 except:
                     pass
 
             try:
-                artist_data[user]['avg_per_day'] = round(
-                    artist_data[user]['frame_sec'] / artist_data[user]['actual_bid'], 2)
-                artist_data[user][priority]['avg_per_day'] = round(
-                    artist_data[user][priority]['frame_sec'] / artist_data[user][priority]['actual_bid'], 2)
+                artist_data[parent_object_type][user]['avg_per_day'] = round(
+                    artist_data[parent_object_type][user]['frame_sec'] / artist_data[parent_object_type][user]['actual_bid'], 2)
+                artist_data[parent_object_type][user][priority]['avg_per_day'] = round(
+                    artist_data[parent_object_type][user][priority]['frame_sec'] / artist_data[parent_object_type][user][priority]['actual_bid'], 2)
             except:
-                artist_data[user]['avg_per_day'] = 0.00
-                artist_data[user][priority]['avg_per_day'] = 0.00
+                artist_data[parent_object_type][user]['avg_per_day'] = 0.00
+                artist_data[parent_object_type][user][priority]['avg_per_day'] = 0.00
 
         data_list = list()
 
-        pri = ['Urgent', 'High', 'Medium', 'Low']
+        complexity = ['Urgent', 'High', 'Medium', 'Low']
         default_priority = {'actual_bid': 0.00,
                             'avg_per_day': 0.00,
                             'bid_days': 0.00,
@@ -2253,21 +2267,22 @@ class Activity:
                             'tasks': [],
                             'variance': 00.00}
 
-        for key, value in artist_data.items():
-            artist_prod = dict()
-            artist_prod = value
-            artist_prod['variance'] = round(value['variance'], 2)
-            artist_prod['actual_bid'] = round(value['actual_bid'], 2)
-            artist_prod['avg_per_day'] = round(value['avg_per_day'], 2)
-            artist_prod['frame_sec'] = round(value['frame_sec'], 2)
+	artist_prod_obj_type = dict()
+        for p_obj_type, data in artist_data.items():
+	    artist_prod_obj_type[p_obj_type] = list()
+	    for key, value in data.items():
+		artist_prod = dict()
+		artist_prod = value
 
-            for each in pri:
-                if each not in artist_prod:
-                    artist_prod[each] = default_priority
+		for each in complexity:
+		    if each not in artist_prod:
+			artist_prod[each] = default_priority
 
-            user = key.replace('.', ' ')
-            artist_prod['artist'] = user.title()
-            data_list.append(artist_prod)
+		user = key.replace('.', ' ')
+		artist_prod['artist'] = user.title()
+		artist_prod_obj_type[p_obj_type].append(artist_prod)
+
+	data_list.append(artist_prod_obj_type)
 
         return data_list
 
@@ -4033,7 +4048,6 @@ class Activity:
                 (shot_name, seq_name, project_name)
             ).first()
             type_id = fetch_shot_name['id']
-            pprint(fetch_shot_name['name'])
             # seq_id = fetch_shot_name['id']
             # result = collection.find(
             #     {
@@ -4080,7 +4094,6 @@ class Activity:
                 else:
                     task_dict[str(key)] = "NA"
             task_list.append(task_dict)
-        pprint(task_list)
         return task_list
 
     '''
@@ -4132,7 +4145,6 @@ class Activity:
             #   update_dict['resolution'] = '1920X1080'
             data_list.append(update_dict)
 
-        pprint(data_list)
         return data_list
 
     '''
@@ -4171,12 +4183,6 @@ class Activity:
                     update_dict[k] = v
             update_data_list.append(update_dict)
 
-        print "===============================> RESULT <====================================="
-        print flag + " details"
-        print "===============================> RESULT <====================================="
-        pprint(update_data_list)
-        print "===============================> RESULT <====================================="
-
         return update_data_list
 
     # function to dynamically assign task types
@@ -4189,11 +4195,6 @@ class Activity:
             return list_type_choices[type_name]['Static shot']
         elif type_name == "Asset":
             if not asset_type_name == '' and asset_type_name in list_type_choices["Asset Build"]:
-                print "============ Asset Type Name ==============="
-                print asset_type_name
-                print "============== List of asset type ==========="
-                pprint(list_type_choices["Asset Build"][asset_type_name])
-                print "==============================================="
                 return list_type_choices["Asset Build"][asset_type_name]
             else:
                 # list_type_choices["Asset Build"]
@@ -4250,38 +4251,23 @@ class Activity:
 
     def upload_asset_csv(self, filename, project_name, request):
 
-        print "==============> CSV DATA <=================="
-
         # str(filename[filename.rindex("\\") + 1:]).encode("utf-8")
         fullname = os.path.join(r"/home/kunal.jamdade/Documents/filesave/testing/", filename)
-        print fullname
         with open(fullname) as csv_file:
             read_csv = csv.reader(csv_file, delimiter=',')
 
-            for each in read_csv:
-                print each
-            print "==============> CSV DATA <=================="
-
     def get_fps_seconds(self, start_frame, end_frame, prj_name, seq_name):
-
-        print "============FPS Calculation=================="
 
         project_obj = self.session.query("Project where name is {0}".format(prj_name)).first()
         project_fps = project_obj['custom_attributes']['fps']
 
-        print project_fps
-
         fps = (int(end_frame) - (int(start_frame) - 1)) / project_fps
-
-        print round(fps, 2)
 
         return round(fps, 2)
 
     def duplicate_name_check(self, task_name_check, prj_name, seq_name, shot_name, flag):
 
-        print "=================Duplicate Name exists=============="
         collection = self.mongo_database[prj_name.lower() + "_tasks"]
-        pprint(prj_name)
         count = 0;
         if flag == 'Sequence_task':
             seq_obj = self.session.query("Sequence where name is '%s' and project.name is '%s'"

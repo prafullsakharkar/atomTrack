@@ -60,28 +60,28 @@ $("#selectFtpObject").change(function(){
     var obj_name = $("#selectFtpObject").val();
     if (obj_name == 'Shot'){
         load_obj_name('FtpSequence','');
-	$("#div_shot_department_name").css({'display':'block'}); 
-	$("#div_asset_department_name").css({'display':'none'}); 
+	$("#div_shot_department_name").css({'display':'block'});
+	$("#div_asset_department_name").css({'display':'none'});
 	$("#selectShotFtpDepartment_chosen").css({"width":"89%"});
 	$('#selectShotFtpDepartment').val('').trigger("liszt:updated").trigger("chosen:updated");
     } else if (obj_name == 'Sequence'){
         load_obj_name('FtpSequence','');
-	$("#div_sequence_department_name").css({'display':'block'}); 
-	$("#div_shot_department_name").css({'display':'none'}); 
-	$("#div_asset_department_name").css({'display':'none'}); 
+	$("#div_sequence_department_name").css({'display':'block'});
+	$("#div_shot_department_name").css({'display':'none'});
+	$("#div_asset_department_name").css({'display':'none'});
 	$("#selectSequenceFtpDepartment_chosen").css({"width":"89%"});
 	$('#selectSequenceFtpDepartment').val('').trigger("liszt:updated").trigger("chosen:updated");
     }else if (obj_name == 'Asset Build'){
 	$select_elem = $("#selectFtpType");
         load_types($select_elem);
-	$("#div_asset_department_name").css({'display':'block'}); 
-	$("#div_shot_department_name").css({'display':'none'}); 
+	$("#div_asset_department_name").css({'display':'block'});
+	$("#div_shot_department_name").css({'display':'none'});
 	$("#selectAssetFtpDepartment_chosen").css({"width":"89%"});
 	$('#selectAssetFtpDepartment').val('').trigger("liszt:updated").trigger("chosen:updated");
     }else{
-	$("#div_shot_department_name").css({'display':'none'}); 
-	$("#div_asset_department_name").css({'display':'none'}); 
-	$("#div_sequence_department_name").css({'display':'none'}); 
+	$("#div_shot_department_name").css({'display':'none'});
+	$("#div_asset_department_name").css({'display':'none'});
+	$("#div_sequence_department_name").css({'display':'none'});
         return null
     }
 
@@ -123,7 +123,7 @@ $("#selectClientObject").change(function(){
         alert("Please select valid Object !!")
         return null
     }
-   
+
     var select_type = $("#selectType").val();
 
     div_check = '#div_'+select_type+'_checkbox';
@@ -528,7 +528,7 @@ $('a.toggle_task_left').click(function () {
         $("#task_menu").css({"display":"block"});
     toggle_selection2=1;
     });
-    
+
 
 })();
 
@@ -700,7 +700,7 @@ function load_obj_name(obj_name,parent_id) {
         data: { 'proj_id': project ,'object_name': obj_name , 'object_type' : select_type, 'parent_id' : parent_id, 'task_name': task_name, 'status_name': status_name, 'upload_for':client_final_combo},
         beforeSend: function(){
             if (!(parent_id)){
-                $select_elem.empty(); 
+                $select_elem.empty();
             }
         },
         success: function(json){
@@ -741,13 +741,13 @@ function load_task(proj_id,parent_id,parent_name) {
         success: function(json){
             $("#div_task_details").css({'display':'block'});
             $.each(json, function (idx, obj) {
-                $('#tbl_task th').each(function(index) { 
+                $('#tbl_task th').each(function(index) {
                     var task_name = this.innerHTML;
                     if (obj.name == task_name){
-                        task_id[index] = obj.id; 
-                        mycol[index] = obj.status; 
-                        mycolusers[index] = obj.users; 
-                        task_parent_ids[index] = obj.parent_id; 
+                        task_id[index] = obj.id;
+                        mycol[index] = obj.status;
+                        mycolusers[index] = obj.users;
+                        task_parent_ids[index] = obj.parent_id;
                     }
                 });
             });
@@ -766,7 +766,7 @@ function add_rows(mycol,parent_id,mycolusers,task_id,task_parent_ids){
     var obj_name = $("#selectObject").val();
     var table = $('#tbl_task tbody');
     row = $(table[0].insertRow(-1));
-    $('#tbl_task th').each(function(index) { 
+    $('#tbl_task th').each(function(index) {
         var th_name = $(this).text();
         var t_status = '---';
         var stat_lbl = 'label-default';
@@ -781,7 +781,7 @@ function add_rows(mycol,parent_id,mycolusers,task_id,task_parent_ids){
             label = mycol[index].replace(/ /g,"_").toLowerCase();
             stat_lbl = 'label-'+label;
         }
-	
+
         if(mycolusers[index]){
             t_stat_user = mycolusers[index];
             stat_usr_lbl = 'label-default';
@@ -800,7 +800,7 @@ function add_rows(mycol,parent_id,mycolusers,task_id,task_parent_ids){
                 show = "";
                 var header = this.innerHTML;
                 col_arr = $('#user_columns').val().split(',');
-                if (col_arr.indexOf(header) > -1){ 
+                if (col_arr.indexOf(header) > -1){
                     on_click_status = "ondblclick='editCell(this)'";
                     on_click_user = "ondblclick='editUserCell(this)'";
                 }
@@ -830,7 +830,7 @@ function add_rows(mycol,parent_id,mycolusers,task_id,task_parent_ids){
         }else{
 
 	    if (mycol[0] != t_status){
-		t_status = t_status+'_'+mycol[0]; 
+		t_status = t_status+'_'+mycol[0];
 	    }
             var cell = $("<td id='"+parent_id+"' data-task-id='"+parent_id+"' />");
             col_data = '<a href="#" id="parent_object" onclick="show_model(this)">'+t_status+'</a>';
@@ -839,8 +839,8 @@ function add_rows(mycol,parent_id,mycolusers,task_id,task_parent_ids){
             usercol_data = '';
         }
 
-        
-        cell.html(col_data); 
+
+        cell.html(col_data);
 	if (usercell != ''){
 	    usercell.html(usercol_data);
 	}
@@ -871,7 +871,7 @@ function create_table(div_check) {
     var headerCell = $('<th name="Name" onclick="sortOrder(this)" title="Double Click to sort"/>');
 //    var headerCell = $('<th name="Name" onclick="sortOrder(this)" colspan="2" title="Double Click to sort"/>');
     var header = 'Name';
-            
+
     headerCell.html('<i class="glyphicon glyphicon-sort-by-alphabet"></i>&nbsp;'+header);
     row.append(headerCell);
 
@@ -891,7 +891,7 @@ function create_table(div_check) {
 
             var class_id = $(this).attr('id');
             var headerCell = $('<th name="'+header+'" class="'+class_id+'" '+show+' colspan="2"/>');
-            
+
             headerCell.html(header);
             row.append(headerCell);
         }
@@ -907,7 +907,7 @@ function create_table(div_check) {
     $(div_check+' input[type="checkbox"]').click(function() {
         var index = $(this).attr('id').match(/\d+/)[0];
         var index2 = index--;
-        $('#tbl_task tr').each(function() { 
+        $('#tbl_task tr').each(function() {
             if($('#show_assignee').is(":checked")){
                 $('td:eq(' + index2 + ')',this).toggle();
             }
@@ -967,7 +967,7 @@ $('#div_elements_checkbox input[type="checkbox"]').each(function() {
 $('#div_elements_checkbox input[type="checkbox"]').click(function() {
     var id = $(this).attr('id');
     var checked = this.checked;
-    $('#tbl_task td').each(function() { 
+    $('#tbl_task td').each(function() {
         td_idx = $(this).index();
         var td_id = $(this).attr('data-id');
         var title = $(this).attr('title');
@@ -988,9 +988,9 @@ $('#div_elements_checkbox input[type="checkbox"]').click(function() {
 });
 
 function reload_tasks(reload){
-   
+
     reload = reload || 0;
- 
+
     var proj_id = $('#selectProject').val();
     var asset_ids = $('#selectAsset').val();
     var shot_ids = $('#selectShot').val();
@@ -1048,7 +1048,7 @@ function load_tasks(parent_ids,pparent_ids,parent_name,reload,parent_object_name
     parent_object_name = parent_object_name || '';
     parent_object_type = parent_object_type || '';
 
-    if (parent_ids.length == 1 || reload == 1){ 
+    if (parent_ids.length == 1 || reload == 1){
         task = 'Task';
     }else{
         task = 'Tasks';
@@ -1076,13 +1076,13 @@ function load_tasks(parent_ids,pparent_ids,parent_name,reload,parent_object_name
 			mycol[0] = obj.parent_name;
 			parent_type = obj.parent_type;
 		    }
-                    $('#tbl_task th').each(function(index) { 
+                    $('#tbl_task th').each(function(index) {
                         var task_name = this.innerHTML;
                         if (obj.name == task_name){
-                            task_id[index] = obj.id; 
-                            mycol[index] = obj.status; 
-                            mycolusers[index] = obj.users; 
-                            task_parent_ids[index] = obj.parent_id; 
+                            task_id[index] = obj.id;
+                            mycol[index] = obj.status;
+                            mycolusers[index] = obj.users;
+                            task_parent_ids[index] = obj.parent_id;
                         }
                     });
                 });
@@ -1267,7 +1267,7 @@ function get_status_hash(){
 
 	    if (flag[first_col][header_name])
 		return true;
-	    
+
 	    flag[first_col][header_name] = 1;
 
             if(!status_hash[status_name])
@@ -1347,7 +1347,7 @@ function show_graphs(){
 	    task_name = key.replace(/ /g,'_');
 	    div_id = task_name +'_chart'
 	    div = div + '<div class="col-lg-4" style="height:415px;" id="'+div_id+'" ></div>';
-	}		
+	}
     }
     $main_div.html(div);
 
@@ -1364,7 +1364,7 @@ function show_graphs(){
 	    chart_type = 'doughnut'
 	    plot_chart(data,div_id,key,chart_type);
 //	    alert(data[0]['name']);
-	}		
+	}
     }
 }
 
@@ -1412,7 +1412,7 @@ function editUserCell(context){
     var OriginalContent = $(context).text();
     OriginalContent = OriginalContent.split(',')
     var row_stat = 'Users';
-   
+
     var clone = $('#users_options').clone(true);
     $clonedChosen = clone.find('select').clone().off()
 
@@ -1459,7 +1459,7 @@ function editCell(context){
 
     $select.trigger('chosen:open');
     $select.on('chosen:hiding_dropdown', function () {
-        status_text = $(this).val(); 
+        status_text = $(this).val();
         change_status(status_text,context,row_stat)
         change_multiple(status_text,context,row_stat);
     });
@@ -1918,7 +1918,6 @@ function show_version_notes(context){
 }
 
 function version_notes(task_id,obj_name,last_row,task) {
-//    alert(task_id+':'+obj_name+':'+last_row+':'+task);
     $("#task_version_notes_loader").show();
     $.ajax({
         type:"POST",
@@ -2901,30 +2900,66 @@ function show_model(context) {
     // 1. Task Note Tab
     load_task_notes(task_id, obj_name, last_row, note_task);
     $('#btn_note_create').attr('data-task-id',task_id);
-
+/*
     // 2. Link Tab
-    $('#link_details').html('');
-    load_task_links(task_id,obj_name,last_row)
+    //$('#link_details').html('');
+    //load_task_links(task_id,obj_name,last_row)
 
     // 3. Versions Tab
-    remove_rows($('#tbl_versions'));
+    /*remove_rows($('#tbl_versions'));
 
     $('#gallery_versions tbody').html('');
     $('#gallery_notes tbody').html('');
 
-    load_asset_versions(task_id,obj_name,last_row,task);
+    //load_asset_versions(task_id,obj_name,last_row,task);
 
     // 4. Version Notes Tab
     //
 
-//    html = '<input type="hidden" id="data-modal-object-id01" value="'+task_parent_id+'" />'
-//    $('#selection_tab').append(html);
     $('#note_attach').val('');
     $('#version_note_details').html('');
     version_notes(task_id,obj_name,last_row,ver_note_task);
+*/
 
     $('#myModal').modal('show');
 
+// Functions call after show model
+
+    //------------- tabs change calls --------------------------//
+    // tab-1
+
+    $('#my_not').on('click', function() {
+        load_task_notes(task_id, obj_name, last_row, note_task);
+        $('#btn_note_create').attr('data-task-id',task_id);
+    });
+
+    // tab-2
+
+    $('#my_lnk').on('click', function() {
+        $('#link_details').html('');
+        load_task_links(task_id,obj_name,last_row)
+
+    });
+    // tab-3
+
+     $('#my_vsn').on('click', function() {
+        $('#tbl_versions tbody').html('');
+        $('#gallery_versions tbody').html('');
+        $('#gallery_notes tbody').html('');
+        last_row = 15
+        load_asset_versions(task_id,obj_name,last_row,task);
+    });
+
+     // tab-4
+
+    $('#my_vsn_not').on('click', function() {
+        $('#note_attach').val('');
+        $('#version_note_details').html('');
+        last_row = 15
+        version_notes(task_id,obj_name,last_row,ver_note_task);
+    });
+
+    //------------- Scroll calls----------------//
     $('#note_details').on('scroll', function() {
         if($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight) {
 	    last_row += 15
@@ -2961,6 +2996,7 @@ function show_model(context) {
         }
     });
 
+    //----------- Drop down change ------------------------//
     $('#selectTask').change(function(){
 	task = $(this).val();
 	last_row = 15;
@@ -2981,7 +3017,60 @@ function show_model(context) {
 	$('#version_note_details').html('');
 	version_notes(task_id, obj_name, last_row, ver_note_task);
     });
+
+
 }
+
+
+
+//--------------
+   /* // tab-1
+
+    $('#my_not').on('click', function() {
+        alert("my_not");
+        load_task_notes(task_id, obj_name, last_row, note_task);
+    });
+
+    // tab-2
+
+    $('#my_lnk').on('click', function() {
+        alert("my_lnk");
+        $('#link_details').html('');
+        remove_rows($('#tbl_versions'));
+        $('#link_details').html('');
+        load_task_links(task_id,obj_name,last_row)
+
+
+    });
+    // tab-3
+
+     $('#my_vsn').on('click', function() {
+        alert("my_vsn");
+        alert("$('#gallery_versions tbody'): " + $('#gallery_versions tbody').html())
+        alert("$('#gallery_notes tbody'): ", $('#gallery_notes tbody').html())
+        $('#gallery_versions tbody').html('');
+        $('#gallery_notes tbody').html('');
+
+
+        load_asset_versions(task_id,obj_name,last_row,task);
+
+
+    });
+
+     // tab-4
+
+    $('#my_vsn_not').on('click', function() {
+        alert("my_vsn_not");
+        $('#note_attach').val('');
+        $('#version_note_details').html('');
+        version_notes(task_id,obj_name,last_row,ver_note_task);
+
+
+    });
+*/
+
+     //-----------------
+
 
 function reset_model_drop_down(){
 
@@ -3047,12 +3136,23 @@ function add_task_details(idx, obj){
 
     $select_elem = $('#selectVersionTask');
     $select_elem.empty();
-	$.each(obj.asset_task_dict, function (task_id,task_name) {
+    $select_elem.append('<option value="">Select Task</option>');
+    $.each(obj.asset_task_dict, function (task_id,task_name) {
 		$select_elem.append('<option value="'+task_name+'" data-id="'+task_id +'">'+task_name+'</option>');
             });
 	    $select_elem.trigger("chosen:updated");
 	    $select_elem.trigger("liszt:updated");
 	    //$select_elem.data("chosen").destroy().chosen();
+
+
+    $select_elem_notes = $('#selectNoteTask');
+    $select_elem_notes.empty();
+    $select_elem_notes.append('<option value="">None</option>');
+    $.each(obj.asset_task_dict, function (task_id,task_name) {
+		$select_elem_notes.append('<option value="'+task_name+'" data-id="'+task_id +'">'+task_name+'</option>');
+            });
+	    $select_elem_notes.trigger("chosen:updated");
+	    $select_elem_notes.trigger("liszt:updated");
 
 
 }
@@ -3118,17 +3218,19 @@ function create_a_note(task_id){
 
     attach_files = JSON.stringify(attachments);
     note_task = $('#selectNoteTask').val();
-    
+
     note_for = obj_name;
     $div_element = $('#note_details');
     create_new_note(task_id, note_text, note_category, note_for, $div_element, $textarea_id, note_task, attach_files);
+    //
 
+
+    //
     $textarea_id.parent().find('table[id=gallery_notes] tbody').html('');
 
 }
 
 function create_new_note(task_id, note_text, note_category, note_for, $div_element, $textarea_id, note_task, attach_files){
-
     $.ajax({
         type:"POST",
         url:"/callajax/",
@@ -3138,7 +3240,7 @@ function create_new_note(task_id, note_text, note_category, note_for, $div_eleme
         success: function(json){
             $.each(json, function (idx, obj) {
             });
-        
+
             noty({
                 text: 'Note added successfully ...',
                 layout: 'topCenter',
@@ -3166,6 +3268,7 @@ function create_new_note(task_id, note_text, note_category, note_for, $div_eleme
     ';
     $div_element.append(my_note);
 
+
 }
 
 function reply_to_note(my_note_id){
@@ -3186,7 +3289,7 @@ function reply_to_note(my_note_id){
         success: function(json){
             $.each(json, function (idx, obj) {
             });
-        
+
             noty({
                 text: 'Reply done ...',
                 layout: 'topCenter',
@@ -3231,17 +3334,19 @@ function add_note_details(idx, obj){
     note_head = obj.note_head;
     note_head = note_head.replace(/\n/g,'</br>');
     task_name = obj.task_name;
-    
+
     note_info = obj.note_info;
-    
+
     if (obj.note_components.length > 0){
 	component = '';
 	for (k in obj.note_components){
 	    my_url = obj.note_components[k].url;
 	    file_type = obj.note_components[k].file_type;
 	    if (file_type == '.mov'){
-		component = component + '&nbsp; <video src="'+my_url+'" webkit-playsinline playsinline data-video="'+my_url+'" loop muted autoplay id="note_video" class="video" height="80" onclick="popup_video(this)">\
-</video> ';
+		// component = component + '&nbsp; <video src="'+my_url+'" webkit-playsinline playsinline data-video="'+my_url+'" loop muted autoplay id="note_video" class="video" height="80" onclick="popup_video(this)">\
+        // </video> ';
+        component = component + '&nbsp; <div id="light"><a class="boxclose" id="boxclose" onclick="lightbox_close();"></a><video id="VisaChipCardVideo"  width="600" controls><source src="'+my_url+'"  type="video/mp4" "></video></div><div><video src="'+my_url+'" webkit-playsinline playsinline data-video="'+my_url+'" loop muted autoplay id="note_video" class="video" height="80" onclick="lightbox_open()"/></div>';
+
 	    }else{
 		component = component + '&nbsp; <a href="'+my_url+'"> <img src="'+my_url+'" height="80" width="auto"> </a>';
 	    }
@@ -3384,9 +3489,9 @@ function add_version_row(table,obj){
 	  <td table-type="versions" data-org-val="'+obj.status_name+'" data-version-id="'+obj.version_id+'" data-id="show_status" '+enable_dblclick+'>\
 	    <span class="label label-'+label_status+'">'+obj.status_name+'</span></td>\
 	  <td class="center" style="width: 207px;">'+obj.published_on+'</td> \
-	  <td class="center">'+obj.published_by+'</td> \
+	  <td class="center">'+obj.published_by+'</td></td><td>'+obj.comment+'</td> \
 	'
-    row.append(row_data);
+	row.append(row_data);
     $(row).click(function(event){
         if(event.ctrlKey === true) {
             $(this).toggleClass("selected")
@@ -3425,12 +3530,12 @@ function toggle_asset_type(param) {
         });
 }
 
-$('#download_user_task').click(function(){
-    $("#tbl_task").table2excel({
-	exclude: ".noExl",
-	name: "UserReports",
-	filename: "user_task_details.xls"
-    });
+$('#tab_shot_reports').click(function(){
+    $('#download_user_task').attr("onclick","$('#tbl_shot_task').table2excel({filename: 'artist_prod_shot',exclude: '.noExl'});");
+});
+
+$('#tab_asset_build_reports').click(function(){
+    $('#download_user_task').attr("onclick","$('#tbl_asset_build_task').table2excel({filename: 'asset_build_prod_shot',exclude: '.noExl'});");
 });
 
 $('#download_task_status').click(function(){
@@ -3848,13 +3953,24 @@ function artist_productivity(){
 	url: "/callajax/",
 	data : {'object_name': 'Artist Productivity', 'project': project, 'first': first, 'last': last, 'artist': artist},
 	beforeSend: function(){
-	    remove_rows('#tbl_task');
+	    remove_rows('#tbl_shot_task');
+	    remove_rows('#tbl_asset_build_task');
             $('#panel_big').plainOverlay('show');
         },
 	success: function(json){
 	    $.each(json,function(idx,obj){
-		row = artist_prod_table(obj);
-		$("#tbl_task tbody").append(row);
+		if (obj.Shot){
+		$.each(obj.Shot,function(idx,data){
+		    row = artist_prod_table(data,'Shot');
+		    $("#tbl_shot_task tbody").append(row);
+		});
+		}
+		if (obj.Asset_Build){
+		$.each(obj.Asset_Build,function(idx,data){
+		    row = artist_prod_table(data,'Asset_Build');
+		    $("#tbl_asset_build_task tbody").append(row);
+		});
+		}
 	    });	    
             $('#panel_big').plainOverlay('hide');
 	},
@@ -3867,6 +3983,16 @@ function artist_productivity(){
 
 function show_task_dialog(artist,tasks){
 
+/*
+    arr_task = [];
+    if (tasks){
+	arr_task = tasks.split(',');
+    }
+    $.each(arr_task, function(idx,task){
+	alert(task);	
+    });
+*/
+    
     all_tasks = tasks.replace(/,/g,'<br>')
     $('#show_artist_prod_task').html('');
     $('#show_artist_prod_task').append('<p>Artist Name : <strong style="color: #00ff1e;">'+artist+'<strong></p>');
@@ -3874,48 +4000,73 @@ function show_task_dialog(artist,tasks){
     $("#myModal").modal('show');
 }
 
-function artist_prod_table(data){
+function artist_prod_table(data, parent_object_type){
+
+    frame_sec = '';
+    avg_per_day = '';
+    A_frame_sec = '';
+    A_avg_per_day = '';
+    B_frame_sec = '';
+    B_avg_per_day = '';
+    C_frame_sec = '';
+    C_avg_per_day = '';
+    D_frame_sec = '';
+    D_avg_per_day = '';
+
+    if (parent_object_type == 'Shot'){
+	frame_sec = '<td><strong>'+data.frame_sec+'</strong></td>';
+	avg_per_day = '<td><strong>'+data.avg_per_day+'</strong></td>';
+
+	A_frame_sec = '<td><strong>'+data.Urgent.frame_sec+'</strong></td>';
+	A_avg_per_day = '<td><strong>'+data.Urgent.avg_per_day+'</strong></td>';
+	B_frame_sec = '<td><strong>'+data.High.frame_sec+'</strong></td>';
+	B_avg_per_day = '<td><strong>'+data.High.avg_per_day+'</strong></td>';
+	C_frame_sec = '<td><strong>'+data.Medium.frame_sec+'</strong></td>';
+	C_avg_per_day = '<td><strong>'+data.Medium.avg_per_day+'</strong></td>';
+	D_frame_sec = '<td><strong>'+data.Low.frame_sec+'</strong></td>';
+	D_avg_per_day = '<td><strong>'+data.Low.avg_per_day+'</strong></td>';
+    }
 
     row = '<tr>\
 	<td nowrap><strong>'+data.artist+'</strong></td>\
 	<td onclick="show_task_dialog(\''+data.artist+'\',\''+data.tasks+'\')"><strong style="color: #00ff1e;">'+data.task_count+'</strong></td>\
-	<td><strong>'+data.frame_sec+'</strong></td>\
+	'+frame_sec+'\
 	<td><strong>'+data.bid_days+'</strong></td>\
 	<td><strong>'+data.actual_bid+'</strong></td>\
 	<td><strong>'+data.variance+'</strong></td>\
-	<td><strong>'+data.avg_per_day+'</strong></td>\
+	'+avg_per_day+'\
     ';
 	tda = '\
 	<td onclick="show_task_dialog(\''+data.artist+'\',\''+data.Urgent.tasks+'\')"><strong style="color: #00ff1e;">'+data.Urgent.task_count+'</strong></td>\
-	<td><strong>'+data.Urgent.frame_sec+'</strong></td>\
+	'+A_frame_sec+'\
 	<td><strong>'+data.Urgent.bid_days+'</strong></td>\
 	<td><strong>'+data.Urgent.actual_bid+'</strong></td>\
 	<td><strong>'+data.Urgent.variance+'</strong></td>\
-	<td><strong>'+data.Urgent.avg_per_day+'</strong></td>\
+	'+A_avg_per_day+'\
 	';
 	tdb = '\
 	<td onclick="show_task_dialog(\''+data.artist+'\',\''+data.High.tasks+'\')"><strong style="color: #00ff1e;">'+data.High.task_count+'</strong></td>\
-	<td><strong>'+data.High.frame_sec+'</strong></td>\
+	'+B_frame_sec+'\
 	<td><strong>'+data.High.bid_days+'</strong></td>\
 	<td><strong>'+data.High.actual_bid+'</strong></td>\
 	<td><strong>'+data.High.variance+'</strong></td>\
-	<td><strong>'+data.High.avg_per_day+'</strong></td>\
+	'+B_avg_per_day+'\
 	';
 	tdc = '\
 	<td onclick="show_task_dialog(\''+data.artist+'\',\''+data.Medium.tasks+'\')"><strong style="color: #00ff1e;">'+data.Medium.task_count+'</strong></td>\
-	<td><strong>'+data.Medium.frame_sec+'</strong></td>\
+	'+C_frame_sec+'\
 	<td><strong>'+data.Medium.bid_days+'</strong></td>\
 	<td><strong>'+data.Medium.actual_bid+'</strong></td>\
 	<td><strong>'+data.Medium.variance+'</strong></td>\
-	<td><strong>'+data.Medium.avg_per_day+'</strong></td>\
+	'+C_avg_per_day+'\
 	';
 	tdd = '\
 	<td onclick="show_task_dialog(\''+data.artist+'\',\''+data.Low.tasks+'\')"><strong style="color: #00ff1e;">'+data.Low.task_count+'</strong></td>\
-	<td><strong>'+data.Low.frame_sec+'</strong></td>\
+	'+D_frame_sec+'\
 	<td><strong>'+data.Low.bid_days+'</strong></td>\
 	<td><strong>'+data.Low.actual_bid+'</strong></td>\
 	<td><strong>'+data.Low.variance+'</strong></td>\
-	<td><strong>'+data.Low.avg_per_day+'</strong></td>\
+	'+D_avg_per_day+'\
 	';
     row = row + tda + tdb + tdc + tdd + '</tr>';
     return row
@@ -7671,4 +7822,29 @@ window.onload = function() {
     if($('#artist_productivity_reports').attr('class') == 'active'){
         artist_productivity();
     }
+}
+
+// for video
+window.document.onkeydown = function(e) {
+  if (!e) {
+    e = event;
+  }
+  if (e.keyCode == 27) {
+    lightbox_close();
+  }
+}
+
+function lightbox_open() {
+  var lightBoxVideo = document.getElementById("VisaChipCardVideo");
+  window.scrollTo(0, 0);
+  document.getElementById('light').style.display = 'block';
+  //document.getElementById('fade').style.display = 'block';
+  lightBoxVideo.play();
+}
+
+function lightbox_close() {
+  var lightBoxVideo = document.getElementById("VisaChipCardVideo");
+  document.getElementById('light').style.display = 'none';
+  //document.getElementById('fade').style.display = 'none';
+  lightBoxVideo.pause();
 }
