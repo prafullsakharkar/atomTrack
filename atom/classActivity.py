@@ -68,7 +68,7 @@ class Activity:
 
         self.reload_session()
 
-#        mongo_server = '192.168.1.19'
+        # mongo_server = '192.168.1.19'
         print os.environ['FTRACK_SERVER'], mongo_server, ip_address
 
         self.password_str = base64.b64decode("bWFkQHBpcDE=")
@@ -436,7 +436,7 @@ class Activity:
             if request.FILES:
                 data = self.attach_upload_files(request)
 
-            #            pprint(data)
+            # pprint(data)
             data = json.dumps(data)
             return HttpResponse(data, content_type="application/json")
 
@@ -1048,7 +1048,6 @@ class Activity:
             details['task_assignee'] = task_assignee
 
         details_list.append(details)
-
 
         return details_list
 
@@ -1706,19 +1705,32 @@ class Activity:
         duplicate = dict()
         csv_data_list = list()
         asset_types = ['Set', 'FX', 'Prop', 'Character', 'Vehicle', 'Environment']
+        prg = re.compile("^[0-9a-zA-Z]+$")
         for row in reader:
             invalid = 0
             name = row[0]
             name = name.strip()
             name = name.replace(' ', '')
-
+            val_match = prg.match(name)
+            if val_match is None:
+                invalid = 1
             asset_type = row[1]
+
+            val_match = prg.match(asset_type)
+            if not val_match:
+                invalid = 1
+
             asset_type = asset_type.title()
+
             if asset_type not in asset_types:
                 invalid = 1
 
             if name in duplicate:
                 invalid = 1
+
+            # val_match = prg.match(row[2])
+            # if not val_match:
+            #     invalid = 1
 
             csv_data_list.append(
                 {'asset_name': name, 'asset_type': asset_type, 'description': row[2], 'invalid': invalid})
@@ -1729,15 +1741,18 @@ class Activity:
     def shot_csv_data_validation(self, reader):
         duplicate = dict()
         csv_data_list = list()
+        prg = re.compile("^[0-9]+$")
         for row in reader:
             invalid = 0
             name = row[0]
             name = name.strip()
             name = name.replace(' ', '')
-            if re.match('^\d+$', name):
+            val = prg.match(name)
+            if val:
                 name = int(name)
                 name = "%04d" % name
-
+            else:
+                invalid = 1
             start_frame = row[1]
             end_frame = row[2]
             if not (start_frame and end_frame):
@@ -1757,13 +1772,14 @@ class Activity:
                     if end_frame < start_frame:
                         invalid = 1
 
-            description = row[3]
-
+            # description = row[3]
+            # if not re.match('^[0-9a-zA-Z]+$', description):
+            #     invalid = 1
             if name in duplicate:
                 invalid = 1
 
             csv_data_list.append(
-                {'shot_name': name, 'start_frame': start_frame, 'end_frame': end_frame, 'description': description,
+                {'shot_name': name, 'start_frame': start_frame, 'end_frame': end_frame, 'description': row[3],
                  'invalid': invalid})
             duplicate[name] = 1
 
@@ -1772,7 +1788,7 @@ class Activity:
     def create_entity_from_csv(self, data_list, parent_id, project, entity):
 
         if data_list:
-            data_list = json.loads(data_list);
+            data_list = json.loads(data_list)
 
         proj_col = self.mongo_database[project + '_tasks']
 
@@ -1924,7 +1940,7 @@ class Activity:
         list_statuses = list()
 
         for ele in statuses:
-            list_statuses.append((ele['id'], ele['name']))
+            list_statuses.append((ele['name'], ele['name']))
 
         if request.method == "POST":
             project_creation_form = CreateProject(request.POST)
@@ -2144,7 +2160,7 @@ class Activity:
             if 'parent_object_type' not in cur_task:
                 continue
 
-	    parent_object_type = cur_task['parent_object_type'].replace(' ','_')
+            parent_object_type = cur_task['parent_object_type'].replace(' ', '_')
 
             user = each['_id']['user']
             actual_bid = round(float(each['total'] / 1000) / one_bid, 2)
@@ -2169,8 +2185,10 @@ class Activity:
             if 'task_count' not in artist_data[parent_object_type][user][priority]:
                 artist_data[parent_object_type][user][priority]['task_count'] = 0
 
-            artist_data[parent_object_type][user]['task_count'] = artist_data[parent_object_type][user]['task_count'] + 1
-            artist_data[parent_object_type][user][priority]['task_count'] = artist_data[parent_object_type][user][priority]['task_count'] + 1
+            artist_data[parent_object_type][user]['task_count'] = artist_data[parent_object_type][user][
+                                                                      'task_count'] + 1
+            artist_data[parent_object_type][user][priority]['task_count'] = \
+                artist_data[parent_object_type][user][priority]['task_count'] + 1
 
             if 'bid_days' not in artist_data[parent_object_type][user]:
                 artist_data[parent_object_type][user]['bid_days'] = 0
@@ -2183,7 +2201,8 @@ class Activity:
                 bid = round(float(cur_task['bid']) / one_bid, 2)
 
             artist_data[parent_object_type][user]['bid_days'] = artist_data[parent_object_type][user]['bid_days'] + bid
-            artist_data[parent_object_type][user][priority]['bid_days'] = artist_data[parent_object_type][user][priority]['bid_days'] + bid
+            artist_data[parent_object_type][user][priority]['bid_days'] = \
+                artist_data[parent_object_type][user][priority]['bid_days'] + bid
 
             if 'actual_bid' not in artist_data[parent_object_type][user]:
                 artist_data[parent_object_type][user]['actual_bid'] = 0
@@ -2191,8 +2210,10 @@ class Activity:
             if 'actual_bid' not in artist_data[parent_object_type][user][priority]:
                 artist_data[parent_object_type][user][priority]['actual_bid'] = 0
 
-            artist_data[parent_object_type][user]['actual_bid'] = round(artist_data[parent_object_type][user]['actual_bid'] + actual_bid, 2)
-            artist_data[parent_object_type][user][priority]['actual_bid'] = round(artist_data[parent_object_type][user][priority]['actual_bid'] + actual_bid, 2)
+            artist_data[parent_object_type][user]['actual_bid'] = round(
+                artist_data[parent_object_type][user]['actual_bid'] + actual_bid, 2)
+            artist_data[parent_object_type][user][priority]['actual_bid'] = round(
+                artist_data[parent_object_type][user][priority]['actual_bid'] + actual_bid, 2)
 
             if 'variance' not in artist_data[parent_object_type][user]:
                 artist_data[parent_object_type][user]['variance'] = 0
@@ -2201,8 +2222,10 @@ class Activity:
                 artist_data[parent_object_type][user][priority]['variance'] = 0
 
             variance = round(float(bid - actual_bid), 2)
-            artist_data[parent_object_type][user]['variance'] = round(artist_data[parent_object_type][user]['variance'] + variance, 2)
-            artist_data[parent_object_type][user][priority]['variance'] = round(artist_data[parent_object_type][user][priority]['variance'] + variance, 2)
+            artist_data[parent_object_type][user]['variance'] = round(
+                artist_data[parent_object_type][user]['variance'] + variance, 2)
+            artist_data[parent_object_type][user][priority]['variance'] = round(
+                artist_data[parent_object_type][user][priority]['variance'] + variance, 2)
 
             if 'tasks' not in artist_data[parent_object_type][user]:
                 artist_data[parent_object_type][user]['tasks'] = list()
@@ -2210,8 +2233,8 @@ class Activity:
             if 'tasks' not in artist_data[parent_object_type][user][priority]:
                 artist_data[parent_object_type][user][priority]['tasks'] = list()
 
-	    mod_task = task
-#	    mod_task = cur_task['parent_type']+':'+task
+            mod_task = task
+            # mod_task = cur_task['parent_type']+':'+task
             artist_data[parent_object_type][user]['tasks'].append(mod_task)
             artist_data[parent_object_type][user][priority]['tasks'].append(mod_task)
 
@@ -2242,16 +2265,20 @@ class Activity:
             if ftrack_status not in ['In progress', 'Ready to start']:
                 try:
                     total_sec = round(float(totalframe) / fps, 2)
-                    artist_data[parent_object_type][user]['frame_sec'] = round(artist_data[parent_object_type][user]['frame_sec'] + total_sec, 2)
-                    artist_data[parent_object_type][user][priority]['frame_sec'] = round(artist_data[parent_object_type][user][priority]['frame_sec'] + total_sec, 2)
+                    artist_data[parent_object_type][user]['frame_sec'] = round(
+                        artist_data[parent_object_type][user]['frame_sec'] + total_sec, 2)
+                    artist_data[parent_object_type][user][priority]['frame_sec'] = round(
+                        artist_data[parent_object_type][user][priority]['frame_sec'] + total_sec, 2)
                 except:
                     pass
 
             try:
                 artist_data[parent_object_type][user]['avg_per_day'] = round(
-                    artist_data[parent_object_type][user]['frame_sec'] / artist_data[parent_object_type][user]['actual_bid'], 2)
+                    artist_data[parent_object_type][user]['frame_sec'] / artist_data[parent_object_type][user][
+                        'actual_bid'], 2)
                 artist_data[parent_object_type][user][priority]['avg_per_day'] = round(
-                    artist_data[parent_object_type][user][priority]['frame_sec'] / artist_data[parent_object_type][user][priority]['actual_bid'], 2)
+                    artist_data[parent_object_type][user][priority]['frame_sec'] /
+                    artist_data[parent_object_type][user][priority]['actual_bid'], 2)
             except:
                 artist_data[parent_object_type][user]['avg_per_day'] = 0.00
                 artist_data[parent_object_type][user][priority]['avg_per_day'] = 0.00
@@ -2267,22 +2294,22 @@ class Activity:
                             'tasks': [],
                             'variance': 00.00}
 
-	artist_prod_obj_type = dict()
+        artist_prod_obj_type = dict()
         for p_obj_type, data in artist_data.items():
-	    artist_prod_obj_type[p_obj_type] = list()
-	    for key, value in data.items():
-		artist_prod = dict()
-		artist_prod = value
+            artist_prod_obj_type[p_obj_type] = list()
+            for key, value in data.items():
+                artist_prod = dict()
+                artist_prod = value
 
-		for each in complexity:
-		    if each not in artist_prod:
-			artist_prod[each] = default_priority
+                for each in complexity:
+                    if each not in artist_prod:
+                        artist_prod[each] = default_priority
 
-		user = key.replace('.', ' ')
-		artist_prod['artist'] = user.title()
-		artist_prod_obj_type[p_obj_type].append(artist_prod)
+                user = key.replace('.', ' ')
+                artist_prod['artist'] = user.title()
+                artist_prod_obj_type[p_obj_type].append(artist_prod)
 
-	data_list.append(artist_prod_obj_type)
+        data_list.append(artist_prod_obj_type)
 
         return data_list
 
@@ -2441,6 +2468,7 @@ class Activity:
         data = obj_col.find({"name": {"$in": user_columns}, "ftrack_status": {"$in": check_status}}).sort(
             "updated_on", -1)
 
+        version_status = 'Pending Client Review'
         for each in data:
             task_details = dict()
             task_details['project'] = 'None'
@@ -2464,7 +2492,8 @@ class Activity:
                 task_details['task_id'] = each['ftrack_id']
 
                 query = 'AssetVersion where task_id is "%s" and task.name is "%s" and ' \
-                        'status.name is "Pending Client Review"' % (ftrack_id, task)
+                        'status.name is "%s"' % (ftrack_id, task, version_status)
+		print query
                 obj_versions = self.session.query(query).first()
                 if obj_versions:
                     task_details['version'] = obj_versions['_link'][-1]['name']
@@ -3694,7 +3723,7 @@ class Activity:
             if 'seq_id' in each:
                 seq_obj = self.session.query("Sequence where id is '%s'" % each['seq_id']).first()
             else:
-                if ('seq_name' not in each):
+                if 'seq_name' not in each:
                     print "Sequence name not found ..."
                     continue
 
@@ -3707,11 +3736,8 @@ class Activity:
                 parent_obj = self.session.query(
                     '%s where id is "%s"' % (each['parent_object'], each['parent_id'])).first()
 
-                #		type_obj = self.session.query('Type where name is "%s"' % each['seq_type']).first()
-
                 seq_obj = self.session.create('Sequence', {
                     'name': name,
-                    #		    'type': type_obj,
                     'parent': parent_obj
                 })
 
@@ -3730,7 +3756,7 @@ class Activity:
             if 'shot_id' in each:
                 shot_obj = self.session.query("Shot where id is '%s'" % each['shot_id']).first()
             else:
-                if ('shot_name' not in each):
+                if 'shot_name' not in each:
                     print "Shot name not found ..."
                     continue
 
@@ -3773,7 +3799,7 @@ class Activity:
             if 'task_id' in each:
                 task_obj = self.session.query("Task where id is '%s'" % each['task_id']).first()
             else:
-                if ('task_name' not in each):
+                if 'task_name' not in each:
                     print "Task name not found ..."
                     continue
 
@@ -3810,14 +3836,14 @@ class Activity:
 
             if 'start_date' in each:
                 start_date = each['start_date']
-                start_date_datetime_obj = datetime.datetime.strptime(start_date, "%m/%d/%Y")
+                start_date_datetime_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d")
                 start_date = datetime.datetime.strftime(start_date_datetime_obj, "%Y-%m-%dT%H:%M:%S")
                 task_obj['start_date'] = start_date
             # task_obj['start_date'] = each['start_date']
 
             if 'end_date' in each:
                 end_date = each['end_date']
-                end_date_datetime_obj = datetime.datetime.strptime(end_date, "%m/%d/%Y")
+                end_date_datetime_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d")
                 end_date = datetime.datetime.strftime(end_date_datetime_obj, "%Y-%m-%dT%H:%M:%S")
                 task_obj['end_date'] = end_date
             # task_obj['end_date'] = each['end_date']
@@ -4020,13 +4046,6 @@ class Activity:
         task_list = []
         type_name = type_name.strip().split(" ")[0]
 
-        print "================= TYPE NAME ================="
-        print type_name
-        print "============================================="
-        print "*************"
-        print shot_name, seq_name, project_name
-        print "============="
-
         if type_name == "Sequence":
             fetch_sequence_name = self.session.query("Sequence where name is %s and project.name is %s" %
                                                      (seq_name, project_name)
@@ -4114,22 +4133,49 @@ class Activity:
         data_list = list()
         if result:
             update_dict = {}
-            for key, value in result.iteritems():
-                if 'startdate' in key or 'enddate' in key:
-                    if 'T' in value:
-                        new_val = str(value).split(".")[0]
-                        a = datetime.datetime.strptime(new_val, "%Y-%m-%dT%H:%M:%S")
-                        val = datetime.datetime.strftime(a, "%Y-%m-%d")
-                        update_dict[key] = str(val)
-                    else:
-                        update_dict[key] = str(value).encode("utf-8").split(" ")[0]
-                elif 'current_assignees' in key:
-                    ll = value[0]
-                    update_dict['current_assignee'] = ll['user_name']
-                elif 'bid' in key:
-                    val = (60 * 60 * 8 * int(value)) / (60 * 60 * 8)
-                    update_dict[key] = val
+            if 'startdate' in result:
+                if 'T' in result['startdate']:
+                    new_val = str(result['startdate']).split(".")[0]
+                    a = datetime.datetime.strptime(new_val, "%Y-%m-%dT%H:%M:%S")
                 else:
+                    new_val = str(result['startdate']).split(" ")[0]
+                    a = datetime.datetime.strptime(new_val, "%Y-%m-%d")
+                val = datetime.datetime.strftime(a, "%Y-%m-%d")
+                update_dict['startdate'] = val
+            if 'enddate' in result:
+                if 'T' in result['enddate']:
+                    new_val = str(result['enddate']).split(".")[0]
+                    a = datetime.datetime.strptime(new_val, "%Y-%m-%dT%H:%M:%S")
+                else:
+                    new_val = str(result['enddate']).split(" ")[0]
+                    a = datetime.datetime.strptime(new_val, "%Y-%m-%d")
+                val = datetime.datetime.strftime(a, "%Y-%m-%d")
+                update_dict['enddate'] = val
+            if 'bid' in result:
+                val = (int(result['bid'])) / (60 * 60 * 8)
+                update_dict['bid'] = val
+            if 'current_assignees' in result:
+                ll = result['current_assignees'][0]
+                update_dict['current_assignees'] = ll['user_name']
+            for key, value in result.iteritems():
+                # if 'startdate' in key or 'enddate' in key and key not in update_dict:
+                #     if 'T' in value:
+                #         new_val = str(value).split(".")[0]
+                #         a = datetime.datetime.strptime(new_val, "%Y-%m-%dT%H:%M:%S")
+                #         val = datetime.datetime.strftime(a, "%Y-%m-%d")
+                #         update_dict[key] = str(val)
+                #     else:
+                #         new_date = str(value).encode("utf-8").split(" ")[0]
+                #         a = datetime.datetime.strptime(new_date, "%Y-%m-%dT%H:%M:%S")
+                #         val = datetime.datetime.strftime(a, "%Y-%m-%d")
+                #         update_dict[key] = str(val)
+                # if 'current_assignees' in key:
+                #     ll = value[0]
+                #     update_dict['current_assignee'] = ll['user_name']
+                # if 'bid' in key:
+                #     val = (60 * 60 * 8 * int(value)) / (60 * 60 * 8)
+                #     update_dict[key] = val
+                if str(key).encode("utf-8") not in update_dict:
                     update_dict[key] = value
             #  if 'updated_on' in result:
             #   result['updated_on'] = str(result['updated_on']).split('.')[0]
@@ -4249,12 +4295,19 @@ class Activity:
         })
         return task_object
 
-    def upload_asset_csv(self, filename, project_name, request):
-
-        # str(filename[filename.rindex("\\") + 1:]).encode("utf-8")
-        fullname = os.path.join(r"/home/kunal.jamdade/Documents/filesave/testing/", filename)
-        with open(fullname) as csv_file:
-            read_csv = csv.reader(csv_file, delimiter=',')
+    # def upload_asset_csv(self, filename, project_name, request):
+    #
+    #     print "==============> CSV DATA <=================="
+    #
+    #     # str(filename[filename.rindex("\\") + 1:]).encode("utf-8")
+    #     fullname = os.path.join(r"/home/kunal.jamdade/Documents/filesave/testing/", filename)
+    #     print fullname
+    #     with open(fullname) as csv_file:
+    #         read_csv = csv.reader(csv_file, delimiter=',')
+    #
+    #         for each in read_csv:
+    #             print each
+    #         print "==============> CSV DATA <=================="
 
     def get_fps_seconds(self, start_frame, end_frame, prj_name, seq_name):
 
@@ -4268,7 +4321,7 @@ class Activity:
     def duplicate_name_check(self, task_name_check, prj_name, seq_name, shot_name, flag):
 
         collection = self.mongo_database[prj_name.lower() + "_tasks"]
-        count = 0;
+        count = 0
         if flag == 'Sequence_task':
             seq_obj = self.session.query("Sequence where name is '%s' and project.name is '%s'"
                                          % (seq_name, prj_name)
@@ -4280,7 +4333,7 @@ class Activity:
                     'parent_id': ftrack_id
                 }
             )
-            count = result.count()
+            # count = result.count()
         if flag == 'Asset_task':
             asset_name = seq_name
             asset_obj = self.session.query("AssetBuild where name is '%s' and project.name is '%s'"
@@ -4293,7 +4346,7 @@ class Activity:
                     'parent_id': ftrack_id
                 }
             )
-            count = result.count()
+            # count = result.count()
         if flag == 'Shot_task':
             shot_obj = self.session.query(
                 "Shot where name is '%s' and parent.name is '%s' and parent.parent.name is '%s'"
@@ -4306,7 +4359,23 @@ class Activity:
                     'parent_id': ftrack_id
                 }
             )
-            count = result.count()
+            # count = result.count()
+        if flag == 'prj_name':
+            result = collection.find({'name': prj_name})
+        if flag == 'asset_name':
+            result = collection.find(
+                {
+                    'type': task_name_check,
+                    'parent_object_type': 'Project'
+                }
+            )
+        if flag == 'seq_name':
+            result = collection.find(
+                {
+                    'name': task_name_check
+                }
+            )
+        count = result.count()
         # if flag == 'asset_name':
         #     asset_name = task_name_check
         #     print asset_name, prj_name

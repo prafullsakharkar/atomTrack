@@ -3345,10 +3345,10 @@ function add_note_details(idx, obj){
 	    if (file_type == '.mov'){
 		// component = component + '&nbsp; <video src="'+my_url+'" webkit-playsinline playsinline data-video="'+my_url+'" loop muted autoplay id="note_video" class="video" height="80" onclick="popup_video(this)">\
         // </video> ';
-        component = component + '&nbsp; <div id="light"><a class="boxclose" id="boxclose" onclick="lightbox_close();"></a><video id="VisaChipCardVideo"  width="600" controls><source src="'+my_url+'"  type="video/mp4" "></video></div><div><video src="'+my_url+'" webkit-playsinline playsinline data-video="'+my_url+'" loop muted autoplay id="note_video" class="video" height="80" onclick="lightbox_open()"/></div>';
+        component = component + '&nbsp; <div id="'+my_url+'" class="light_video_box"><a class="boxclose" id="boxclose" onclick="light_video_box_close(this);"></a><video width="600" controls><source src="'+my_url+'"  type="video/mp4" "></video></div><video src="'+my_url+'" webkit-playsinline playsinline data-video="'+my_url+'" loop muted autoplay  class="video" height="80" onclick="light_video_box_open(this)"/>';
 
 	    }else{
-		component = component + '&nbsp; <a href="'+my_url+'"> <img src="'+my_url+'" height="80" width="auto"> </a>';
+		component = component + '&nbsp; <div id="'+my_url+'" class="light_image_box"><a class="boxclose" id="boxclose" onclick="light_image_box_close(this);"></a><img src="'+my_url+'" height="800" width="auto"></div><img src="'+my_url+'" height="80" width="auto" onclick="light_image_box_open(this)">';
 	    }
 	}
 	note_head = note_head + '<br>' + component;
@@ -3648,20 +3648,35 @@ function approve_task(param){
 
     $td_date = $tr.find('td[data-td=modified_date]');
 
-    change_status = '';
-    change_status_label = '';
-    if (my_status == 'Pending Client Review'){
-	change_status = 'Client Approved';
-	change_status_label = 'client_approved';
-    }else if (my_status == 'Pending Internal Review'){
-	change_status = 'Ready to Publish';
-        change_status_label = 'ready_to_publish';
-    }
+    $td_users = $tr.find('td[data-td=users]');
+    var users = $td_users.text().trim();
+
+    $td_task_path = $tr.find('td[data-td=task_path]');
+    var task_path = $td_task_path.text().trim();
+
+    $td_version = $tr.find('td[data-td=version]');
+    var version = $td_version.text();
+
     object_id = $tr.attr('data-task-id');
     version_id = $tr.attr('data-version-id');
     object_type = $tr.attr('data-object-type');
 
-    if (object_id){
+    change_status = '';
+    change_status_label = '';
+    note_category = '';
+
+    if (my_status == 'Pending Client Review'){
+	change_status = 'Client Approved';
+	change_status_label = 'client_approved';
+	note_category = 'Client feedback';
+    }else if (my_status == 'Pending Internal Review'){
+	change_status = 'Ready to Publish';
+    change_status_label = 'ready_to_publish';
+    version_id = '';
+    note_category = 'Internal';
+    }
+
+    /*if (object_id){
     // changing status here
 	object_status_change(change_status, my_status ,object_id, 'Task');
 
@@ -3677,7 +3692,53 @@ function approve_task(param){
     
 	$(param).css({'display':'none'});
 	$(param).parent().find('[id=task_reject]').css({'display':'none'});
-    }
+    }*/
+
+    $('#task_reject_note').val('');
+    $('#task_details_loader').html('<h3>Approve Note</h3>')
+    var $newModal = $("#myModal").clone();
+    $newModal.modal('show');
+
+    $newModal.on('click', '#btn_note_reject', function(e){
+        e.preventDefault();
+
+        var note_text = $(this).parent().find('textarea[id=task_reject_note]').val().trim();
+        if (!(note_text.length && object_id)){
+            alert("invalid note ...");
+            return null;
+        }
+
+        var attachments = [];
+        $(this).parent().find('table[id=gallery] tr td a').each(function(){
+            href = $(this).attr('href');
+            attachments.push(href);
+        });
+
+        attach_files = JSON.stringify(attachments);
+        if (object_id){
+            // changing status here
+            object_status_change(change_status, my_status , object_id, 'Task');
+
+            if (version_id){
+                object_status_change(change_status, my_status ,version_id, 'AssetVersion');
+                add_task_note(note_text, note_category, version_id, 'AssetVersion', attach_files);
+            }else{
+                add_task_note(note_text, note_category, object_id, 'Task', attach_files);
+            }
+
+            insert_db_note(note_text, note_category, object_id, change_status, users, task_path, version);
+
+            $td_status.html('<span class="label label-'+change_status_label+'">'+change_status+'</span>');
+            $td_status.attr('data-org-val',change_status);
+
+            my_date = new Date().toLocaleFormat('%F %T');
+            $td_date.html('<strong>'+my_date+'</strong>');
+
+            $(param).css({'display':'none'});
+            $(param).parent().find('[id=task_reject]').css({'display':'none'});
+        }
+        $newModal.modal('hide');
+    });
 }
 
 function reject_task(param){
@@ -3734,7 +3795,7 @@ function reject_task(param){
 	});
 
 	attach_files = JSON.stringify(attachments);
-	
+
 	object_status_change(change_status, my_status , object_id, 'Task');
 
 	if (version_id){
@@ -7805,6 +7866,35 @@ $("#submit_asset_details_csv").click(function(){
     });
 });
 
+// for video popup
+
+function light_video_box_open(param) {
+  var id = $(param).prev().attr('id')
+  window.scrollTo(0, 0);
+  document.getElementById(id).style.display = 'block';
+}
+
+function light_video_box_close(param) {
+  var cls_div = $(param).closest('div');
+  var id = $(cls_div).attr('id');
+  document.getElementById(id).style.display = 'none';
+}
+// for image popup
+
+function light_image_box_open(param) {
+    var cls_img = param.closest('img');
+    var id = cls_img.src
+    window.scrollTo(0, 0);
+    document.getElementById(id).style.display = 'block';
+}
+
+function light_image_box_close(param) {
+    var cls_div = param.closest('div');
+    var id = cls_div.id
+    document.getElementById(id).style.display = 'none';
+}
+
+
 // Reload page here
 window.onload = function() {
     if ($('#dashboard_page').attr('class') == 'active'){
@@ -7824,27 +7914,3 @@ window.onload = function() {
     }
 }
 
-// for video
-window.document.onkeydown = function(e) {
-  if (!e) {
-    e = event;
-  }
-  if (e.keyCode == 27) {
-    lightbox_close();
-  }
-}
-
-function lightbox_open() {
-  var lightBoxVideo = document.getElementById("VisaChipCardVideo");
-  window.scrollTo(0, 0);
-  document.getElementById('light').style.display = 'block';
-  //document.getElementById('fade').style.display = 'block';
-  lightBoxVideo.play();
-}
-
-function lightbox_close() {
-  var lightBoxVideo = document.getElementById("VisaChipCardVideo");
-  document.getElementById('light').style.display = 'none';
-  //document.getElementById('fade').style.display = 'none';
-  lightBoxVideo.pause();
-}

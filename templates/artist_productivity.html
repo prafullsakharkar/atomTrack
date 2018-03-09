@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+{% include "header.html" %}
+<body>
+{% include "top_bar.html" %}
+<div class="ch-container">
+  <div class="row">
+  </div>
+  <!--/span-->
+  <!-- left menu ends -->
+
+  <noscript>
+    <div class="alert alert-block col-md-12">
+      <h4 class="alert-heading">Warning!</h4>
+
+      <p>You need to have <a href="http://en.wikipedia.org/wiki/JavaScript" target="_blank">JavaScript</a>
+        enabled to use this site.</p>
+    </div>
+  </noscript>
+  <div class="row">
+    <!-- leftside menu start -->
+    {% include "left_side_menu.html" %}
+    <!-- leftside menu start -->
+
+    <div class="col-at-12" id="panel_big">
+
+      <ul class="breadcrumb">
+        <li>
+          <a href="#">Main</a>
+        </li>
+        <li>
+          <a href="#">Dashboard</a>
+        </li>
+      </ul>
+      <div class="sidebar-nav">
+        <div class="box-content row">
+          <div class="box col-at-11">
+
+            <div class="col-at-sm-3" style="display:block;">
+              <div class="controls">
+                <label class="control-label" for="selectDashProject">Projects : &nbsp;</label>
+                <select id="selectDashProject" data-rel="chosen" style="width: 122px;">
+                  {% for proj,id in data.projects.items %}
+                  {% if data.current_project == proj %}
+                  <option value="{{proj}}" selected>{{proj}}</option>
+                  {% else %}
+                  <option value="{{proj}}">{{proj}}</option>
+                  {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="col-at-3">
+              <div class="controls" id="users_options" style="display:block">
+                <label class="control-label">Users : &nbsp;</label>
+                <select id="selectUsers" data-rel="chosen" data-placeholder="Select one...">
+
+                  <option value="all">All</option>
+                  {% for user in data.all_users %}
+                  <option value="{{user}}">{{user}}</option>
+                  {% endfor %}
+
+                </select>
+              </div>
+            </div>
+            <div class="col-at-3">
+              <label class="control-label">Date Range : &nbsp;</label>
+              <div id="reportrange" class="pull-right"
+                   style="cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; ">
+                <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>&nbsp;
+                <span></span> <b class="caret"></b>
+              </div>
+            </div>
+
+            <div class="col-at-5" style="float:right;">
+              <div class="controls pull-right">
+                <button class="btn btn-inverse btn-default btn-sm" id="show_prod_records">
+                  Show Records
+                </button>&nbsp;
+              </div>
+            </div>
+
+          </div>
+          <div class="box col-at-11">
+            <div class="box-header well">
+              <h2><button class="btn btn-inverse btn-default btn-xs" id="download_user_task"
+                          onclick="$('#tbl_shot_task').table2excel({filename: 'artist_prod_shot',exclude: '.noExl'});">
+                  <i class="glyphicon glyphicon-save icon-white"></i></button>
+                &nbsp; Report : Artist Productivity</h2>
+            </div>
+
+            <div class="card">
+              <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active">
+                  <a href="#shot_reports" aria-controls="shot_reports" role="tab" data-toggle="tab"
+                     id="tab_shot_reports">
+                    Shot
+                  </a>
+                </li>
+                <li role="presentation">
+                  <a href="#asset_build_reports" aria-controls="asset_build_reports" role="tab"
+                     data-toggle="tab" id="tab_asset_build_reports">
+                    Asset Build
+                  </a>
+                </li>
+              </ul>
+
+              <!-- Tab panes -->
+              <div class="tab-content">
+
+                <div role="tabpanel" class="tab-pane active" id="shot_reports">
+                  <div class="controls">
+                    <div style="overflow:auto; overflow-y:auto; height:685px" id="div_shot_user_details">
+                      <table class="table-hover table-condensed table-bordered" id="tbl_shot_task">
+                        <thead>
+                        <tr>
+                          <th colspan="7" rowspan="2">Artist Productivity</th>
+                          <th colspan="24">Complexity of shots handled</th>
+                        </tr>
+                        <tr>
+                          <th colspan="6">A</th>
+                          <th colspan="6">B</th>
+                          <th colspan="6">C</th>
+                          <th colspan="6">D</th>
+                        </tr>
+                        <tr>
+                          <th>Artist</th>
+                          <th nowrap>Task Count</th>
+                          <th>Seconds</th>
+                          <th nowrap>Bid Days</th>
+                          <th nowrap>Actual Days</th>
+                          <th>Variance</th>
+                          <th nowrap>Avg(secs/day)</th>
+                          <!-- Complexity Urgent -->
+                          <th>Count</th>
+                          <th>Seconds</th>
+                          <th>Bids</th>
+                          <th>Actual</th>
+                          <th>variance</th>
+                          <th>Average</th>
+                          <!-- Complexity High -->
+                          <th>Count</th>
+                          <th>Seconds</th>
+                          <th>Bids</th>
+                          <th>Actual</th>
+                          <th>variance</th>
+                          <th>Average</th>
+                          <!-- Complexity Medium -->
+                          <th>Count</th>
+                          <th>Seconds</th>
+                          <th>Bids</th>
+                          <th>Actual</th>
+                          <th>variance</th>
+                          <th>Average</th>
+                          <!-- Complexity Low -->
+                          <th>Count</th>
+                          <th>Seconds</th>
+                          <th>Bids</th>
+                          <th>Actual</th>
+                          <th>variance</th>
+                          <th>Average</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="asset_build_reports">
+                  <div class="controls">
+                    <div style="overflow:auto; overflow-y:auto; height:685px" id="div_asset_user_details">
+                      <table class="table-hover table-condensed table-bordered" id="tbl_asset_build_task">
+                        <thead>
+                        <tr>
+                          <th colspan="5" rowspan="2">Artist Productivity</th>
+                          <th colspan="16">Complexity of shots handled</th>
+                        </tr>
+                        <tr>
+                          <th colspan="4">A</th>
+                          <th colspan="4">B</th>
+                          <th colspan="4">C</th>
+                          <th colspan="4">D</th>
+                        </tr>
+                        <tr>
+                          <th>Artist</th>
+                          <th nowrap>Task Count</th>
+                          <!--<th>Seconds</th>-->
+                          <th nowrap>Bid Days</th>
+                          <th nowrap>Actual Days</th>
+                          <th>Variance</th>
+                          <!--<th nowrap>Avg(secs/day)</th>-->
+                          <!-- Complexity Urgent -->
+                          <th>Count</th>
+                          <!--<th>Seconds</th>-->
+                          <th>Bids</th>
+                          <th>Actual</th>
+                          <th>variance</th>
+                          <!--<th>Average</th>-->
+                          <!-- Complexity High -->
+                          <th>Count</th>
+                          <!--<th>Seconds</th>-->
+                          <th>Bids</th>
+                          <th>Actual</th>
+                          <th>variance</th>
+                          <!--<th>Average</th>-->
+                          <!-- Complexity Medium -->
+                          <th>Count</th>
+                          <!--<th>Seconds</th>-->
+                          <th>Bids</th>
+                          <th>Actual</th>
+                          <th>variance</th>
+                          <!--<th>Average</th>-->
+                          <!-- Complexity Low -->
+                          <th>Count</th>
+                          <!--<th>Seconds</th>-->
+                          <th>Bids</th>
+                          <th>Actual</th>
+                          <th>variance</th>
+                          <!--<th>Average</th>-->
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal start -->
+  <div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-body">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <div style="overflow:auto; overflow-y:auto; height:385px" id="show_artist_prod_task">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+{% include "footer.html" %}
+</html>

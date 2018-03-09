@@ -24,13 +24,12 @@ class CreateProject(forms.Form):
     project_code = forms.CharField(
         max_length=3,
         required=False,
-        #disabled=True,
+        disabled=True,
         widget=forms.TextInput(
             attrs={
                 "placeholder": "Project Code",
-                'style': 'color:black;width: 250px;overflow: auto',
+                'style': 'color:black;width: 250px;overflow: auto;text-transform: lowercase;',
                 'class': 'form-control',
-                'pattern': '[0-9a-zA-Z]',
                 'maxlength': '3'
             }
         )
@@ -41,7 +40,6 @@ class CreateProject(forms.Form):
         widget=forms.DateInput(
             attrs={
                 "placeholder": "Start Date",
-                'type': 'date',
                 'style': 'color:black;width: 250px',
                 'class': 'form-control'
             }
@@ -53,7 +51,6 @@ class CreateProject(forms.Form):
         widget=forms.DateInput(
             attrs={
                 'placeholder': "End Date",
-                'type': 'date',
                 'style': 'color:black;width: 250px',
                 'class': 'form-control'
             }
@@ -133,7 +130,7 @@ class CreateProject(forms.Form):
         widget=forms.TextInput(
             attrs={
                 'placeholder': "Resolution(2048X858)",
-                'style': 'color:black;width: 250px;overflow: auto',
+                'style': 'color:black;width: 250px;overflow: auto;text-transform: uppercase;',
                 'class': 'form-control'
             }
         )
@@ -261,12 +258,6 @@ class CreateShot(forms.Form):
                 'class': 'form-control'
             }
         )
-        # widget=forms.Select(
-        #     attrs={
-        #         'style': 'color:black;width: 250px;overflow: auto',
-        #         'class': 'form-control'
-        #     }
-        # )
     )
 
     # task_template = forms.ChoiceField(
@@ -299,7 +290,6 @@ class CreateShot(forms.Form):
         required=True,
         widget=forms.TextInput(
             attrs={
-                #'value': 'static shot',
                 'style': 'color:black;width: 250px;overflow: auto',
                 'class': 'form-control',
                 'placeholder': 'Shot Name',
@@ -413,6 +403,7 @@ class CreateShot(forms.Form):
     # )#CheckboxInput()
 
     total_frames = forms.CharField(
+        disabled=True,
         widget=forms.TextInput(
             attrs={
                 'value': '0.0',
@@ -422,6 +413,7 @@ class CreateShot(forms.Form):
         )
     )
     frame_duration = forms.CharField(
+        disabled=True,
         widget=forms.TextInput(
             attrs={
                 'value': '0.0',
@@ -458,53 +450,53 @@ class CreateShot(forms.Form):
 
 class CreateSequence(forms.Form):
 
-    linked_choices = [
-        ('AAJ', 'AAJ'),
-        ('ICE', 'ICE'),
-        ('SW9', 'SW9')
-    ]
+    # linked_choices = [
+    #     ('AAJ', 'AAJ'),
+    #     ('ICE', 'ICE'),
+    #     ('SW9', 'SW9')
+    # ]
 
-    task_template_choices = [
-        ('AnimAssetBuildDev', 'AnimAssetBuildDev'),
-        ('SequenceDev', 'SequenceDev'),
-        ('SetAssetBuildDev', 'SetAssetBuildDev'),
-        ('ShotDev', 'ShotDev'),
-        ('StaticAssetBuildDev', 'StaticAssetBuildDev')
-    ]
+    # task_template_choices = [
+    #     ('AnimAssetBuildDev', 'AnimAssetBuildDev'),
+    #     ('SequenceDev', 'SequenceDev'),
+    #     ('SetAssetBuildDev', 'SetAssetBuildDev'),
+    #     ('ShotDev', 'ShotDev'),
+    #     ('StaticAssetBuildDev', 'StaticAssetBuildDev')
+    # ]
 
-    assignee_choices = [
-        ('kunal', 'kunal'),
-        ('nitin', 'nitin'),
-        ('attanu', 'attanu'),
-        ('mahesh', 'mahesh'),
-        ('ganesh', 'ganesh'),
-        ('vishal', 'vishal'),
-        ('ajay', 'ajay'),
-        ('ayush', 'ayush')
-    ]
+    # assignee_choices = [
+    #     ('kunal', 'kunal'),
+    #     ('nitin', 'nitin'),
+    #     ('attanu', 'attanu'),
+    #     ('mahesh', 'mahesh'),
+    #     ('ganesh', 'ganesh'),
+    #     ('vishal', 'vishal'),
+    #     ('ajay', 'ajay'),
+    #     ('ayush', 'ayush')
+    # ]
 
-    status_choice = [
-        ('Select Status', 'Select Status'),
-        ('Not started', 'Not started'),
-        ('Awaiting Data', 'Awaiting Data'),
-        ('Ready to start', 'Ready to start'),
-        ('In progress', 'In progress'),
-        ('Completed', 'Completed'),
-        ('On Hold', 'On Hold'),
-        ('Omitted', 'Omitted'),
-        ('Duplicate', 'Duplicate')
-    ]
+    # status_choice = [
+    #     ('Select Status', 'Select Status'),
+    #     ('Not started', 'Not started'),
+    #     ('Awaiting Data', 'Awaiting Data'),
+    #     ('Ready to start', 'Ready to start'),
+    #     ('In progress', 'In progress'),
+    #     ('Completed', 'Completed'),
+    #     ('On Hold', 'On Hold'),
+    #     ('Omitted', 'Omitted'),
+    #     ('Duplicate', 'Duplicate')
+    # ]
 
-    priority_choices = [
-        ('None', 'None'),
-        ("Urgent", "Urgent"),
-        ("High", "High"),
-        ("Medium", "Medium"),
-        ("Low", "Low")
-    ]
+    # priority_choices = [
+    #     ('None', 'None'),
+    #     ("Urgent", "Urgent"),
+    #     ("High", "High"),
+    #     ("Medium", "Medium"),
+    #     ("Low", "Low")
+    # ]
 
     sequence_parent_object_type = forms.ChoiceField(
-        choices=linked_choices,
+        # choices=linked_choices,
         disabled=True,
         widget=forms.TextInput(
             attrs={
@@ -570,33 +562,27 @@ class CreateSequence(forms.Form):
     #     required=False
     # )
 
-    sequence_status = forms.ChoiceField(
-        choices=status_choice,
-        required=True,
-        widget=forms.Select(
-            attrs={
-                'style': 'color:black;width: 250px;overflow: auto',
-                'class': 'form-control'
-            }
-        )
-        # widget=forms.Select(
-        #     attrs={
-        #         'style': 'color:black;width: 250px;overflow: auto',
-        #         'class': 'form-control'
-        #     }
-        # )
-    )
+    # sequence_status = forms.ChoiceField(
+    #     choices=status_choice,
+    #     required=True,
+    #     widget=forms.Select(
+    #         attrs={
+    #             'style': 'color:black;width: 250px;overflow: auto',
+    #             'class': 'form-control'
+    #         }
+    #     )
+    # )
 
-    sequence_priority = forms.ChoiceField(
-        choices=priority_choices,
-        required=True,
-        widget=forms.Select(
-            attrs={
-                'style': 'color:black;width: 250px;overflow: auto',
-                'class': 'form-control'
-            }
-        )
-    )
+    # sequence_priority = forms.ChoiceField(
+    #     choices=priority_choices,
+    #     required=True,
+    #     widget=forms.Select(
+    #         attrs={
+    #             'style': 'color:black;width: 250px;overflow: auto',
+    #             'class': 'form-control'
+    #         }
+    #     )
+    # )
 
     # sequence_scope = forms.ChoiceField(
     #     widget=forms.TextInput(
@@ -608,18 +594,18 @@ class CreateSequence(forms.Form):
     #     required=False
     # )
 
-    sequence_entity_name = forms.CharField(
-        disabled=True,
-        widget=forms.Textarea(
-            attrs={
-                'rows': '5',
-                'cols': '32',
-                'wrap': 'hard',
-                'style': 'color:black;width: 250px;overflow: auto',
-                'class': 'form-control'
-            }
-        )
-    )
+    # sequence_entity_name = forms.CharField(
+    #     disabled=True,
+    #     widget=forms.Textarea(
+    #         attrs={
+    #             'rows': '5',
+    #             'cols': '32',
+    #             'wrap': 'hard',
+    #             'style': 'color:black;width: 250px;overflow: auto',
+    #             'class': 'form-control'
+    #         }
+    #     )
+    # )
 
     # sequence_version = forms.CharField(
     #     disabled=True,
@@ -688,119 +674,119 @@ class CreateAsset(forms.Form):
         )
     )
 
-    asset_status_choices = [
-        ("Not Started", "Not Started"),
-        ("Awaiting Data", "Awaiting Data"),
-        ("Ready to Start", "Ready to Start"),
-        ("In progress", "In progress"),
-        ("Completed", "Completed"),
-        ("On Hold", "On Hold"),
-        ("Omitted", "Omitted"),
-        ("Duplicate", "Duplicate"),
-        ("Outsource", "Outsource"),
-        ("Outsource Approved", "Outsource Approved"),
-        ("Outsource Reject", "Outsource Reject"),
-    ]
-    asset_status = forms.ChoiceField(
-        choices=asset_status_choices,
-        widget=forms.Select(
-            attrs={
-                'style': 'color:black;width: 250px',
-                'class': 'form-control'
-            }
-        )
-    )
-
-    asset_priority_choices = [
-        ("None", "None"),
-        ("Urgent", "Urgent"),
-        ("High", "High"),
-        ("Medium", "Medium"),
-        ("Low", "Low")
-    ]
-    asset_priority = forms.ChoiceField(
-        choices=asset_priority_choices,
-        widget=forms.Select(
-            attrs={
-                'style': 'color:black;width: 250px',
-                'class': 'form-control'
-            }
-        )
-    )
-
-    asset_scope = forms.CharField(
-        widget=forms.TextInput(
-            attrs={
-                'style': 'color:black;width: 250px',
-                'class': 'form-control'
-            }
-        )
-    )
-
-    asset_entity_name = forms.CharField(
-        disabled=False,
-        widget=forms.Textarea(
-            attrs={
-                'rows': '5',
-                'cols': '32',
-                'wrap': 'hard',
-                'style': 'color:black;width: 250px;overflow: auto',
-                'class': 'form-control'
-            }
-        )
-    )
-
-    asset_version = forms.CharField(
-        disabled=False,
-        widget=forms.Textarea(
-            attrs={
-                'rows': '0',
-                'cols': '10',
-                'wrap': 'hard',
-                'style': 'color:black;width: 250px;overflow: auto',
-                'class': 'form-control'
-            }
-        )
-    )
-
-    asset_client_label = forms.CharField(
-        disabled=False,
-        widget=forms.Textarea(
-            attrs={
-                'rows': '0',
-                'cols': '10',
-                'wrap': 'hard',
-                'style': 'color:black;width: 250px;overflow: auto',
-                'class': 'form-control'
-            }
-        )
-    )
-
-    asset_sub_category = forms.ChoiceField(
-
-        choices=(
-            [
-                ('Primary', 'Primary'),
-                ('Secondary', 'Secondary'),
-                ('Tertiary', 'Tertiary'),
-            ]
-        ),
-        widget=forms.Select(
-            attrs={
-                'style': 'color:black;width: 250px',
-                'class': 'form-control'
-            }
-        )
-    )
-
-    asset_file = forms.FileField(
-        allow_empty_file=False,
-        widget=forms.FileInput(
-            attrs={
-                'accept': '.csv'
-            }
-        )
-    )
+    # asset_status_choices = [
+    #     ("Not Started", "Not Started"),
+    #     ("Awaiting Data", "Awaiting Data"),
+    #     ("Ready to Start", "Ready to Start"),
+    #     ("In progress", "In progress"),
+    #     ("Completed", "Completed"),
+    #     ("On Hold", "On Hold"),
+    #     ("Omitted", "Omitted"),
+    #     ("Duplicate", "Duplicate"),
+    #     ("Outsource", "Outsource"),
+    #     ("Outsource Approved", "Outsource Approved"),
+    #     ("Outsource Reject", "Outsource Reject"),
+    # ]
+    # asset_status = forms.ChoiceField(
+    #     choices=asset_status_choices,
+    #     widget=forms.Select(
+    #         attrs={
+    #             'style': 'color:black;width: 250px',
+    #             'class': 'form-control'
+    #         }
+    #     )
+    # )
+    #
+    # asset_priority_choices = [
+    #     ("None", "None"),
+    #     ("Urgent", "Urgent"),
+    #     ("High", "High"),
+    #     ("Medium", "Medium"),
+    #     ("Low", "Low")
+    # ]
+    # asset_priority = forms.ChoiceField(
+    #     choices=asset_priority_choices,
+    #     widget=forms.Select(
+    #         attrs={
+    #             'style': 'color:black;width: 250px',
+    #             'class': 'form-control'
+    #         }
+    #     )
+    # )
+    #
+    # asset_scope = forms.CharField(
+    #     widget=forms.TextInput(
+    #         attrs={
+    #             'style': 'color:black;width: 250px',
+    #             'class': 'form-control'
+    #         }
+    #     )
+    # )
+    #
+    # asset_entity_name = forms.CharField(
+    #     disabled=False,
+    #     widget=forms.Textarea(
+    #         attrs={
+    #             'rows': '5',
+    #             'cols': '32',
+    #             'wrap': 'hard',
+    #             'style': 'color:black;width: 250px;overflow: auto',
+    #             'class': 'form-control'
+    #         }
+    #     )
+    # )
+    #
+    # asset_version = forms.CharField(
+    #     disabled=False,
+    #     widget=forms.Textarea(
+    #         attrs={
+    #             'rows': '0',
+    #             'cols': '10',
+    #             'wrap': 'hard',
+    #             'style': 'color:black;width: 250px;overflow: auto',
+    #             'class': 'form-control'
+    #         }
+    #     )
+    # )
+    #
+    # asset_client_label = forms.CharField(
+    #     disabled=False,
+    #     widget=forms.Textarea(
+    #         attrs={
+    #             'rows': '0',
+    #             'cols': '10',
+    #             'wrap': 'hard',
+    #             'style': 'color:black;width: 250px;overflow: auto',
+    #             'class': 'form-control'
+    #         }
+    #     )
+    # )
+    #
+    # asset_sub_category = forms.ChoiceField(
+    #
+    #     choices=(
+    #         [
+    #             ('Primary', 'Primary'),
+    #             ('Secondary', 'Secondary'),
+    #             ('Tertiary', 'Tertiary'),
+    #         ]
+    #     ),
+    #     widget=forms.Select(
+    #         attrs={
+    #             'style': 'color:black;width: 250px',
+    #             'class': 'form-control'
+    #         }
+    #     )
+    # )
+    #
+    # asset_file = forms.FileField(
+    #     allow_empty_file=False,
+    #     widget=forms.FileInput(
+    #         attrs={
+    #             'accept': '.csv'
+    #         }
+    #     )
+    # )
 
 
 class CreateTask(forms.Form):
@@ -888,16 +874,16 @@ class CreateTask(forms.Form):
     )
 
     task_priority_choices = [
-        ('High', 'High'),
-        ('Low', 'Low'),
-        ('Medium', 'Medium'),
-        ('Urgent', 'Urgent'),
-        ('None', 'None'),
+        ('Urgent', 'A'),
+        ('High', 'B'),
+        ('Medium', 'C'),
+        ('Low', 'D')
     ]
-
+    # task_priority_choices.insert(0, ('', 'Select Complexity'))
     task_priority = forms.ChoiceField(
         choices=task_priority_choices,
         required=True,
+        # initial='',
         widget=forms.Select(
             attrs={
                 'style': 'color:black;width: 250px',
@@ -908,13 +894,11 @@ class CreateTask(forms.Form):
 
     task_start_date = forms.DateField(
         required=True,
-        input_formats="%Y-%m-%d",
         widget=forms.DateInput(
             attrs={
                 'style': 'color:black;width: 250px',
                 'class': 'form-control',
-                "placeholder": 'mm/dd/yyyy',
-                "id": "startdate"
+                "placeholder": 'yyyy-mm-dd',
             }
         )
     )
@@ -922,13 +906,11 @@ class CreateTask(forms.Form):
     task_due_date = forms.DateField(
         required=True,
         disabled=True,
-        input_formats="%Y-%m-%d",
         widget=forms.DateInput(
             attrs={
                 'style': 'color:black;width: 250px',
                 'class': 'form-control',
                 "placeholder": 'mm/dd/yyyy',
-                "id": "enddate"
             }
         )
     )
