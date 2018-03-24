@@ -5,23 +5,6 @@
         <li class="nav-header"><img class="dashboard-avatar" alt=""
                                     src="http://192.168.1.18/Employees/{{emp_code}}.jpg"></li>
         <li class="nav-header">Main</li>
-        {% if data.user_role == 'Supervisor' %}
-        <li id="mgm_dashboard_page" class="{% if request.path == '/mgm_dashboard/' %}active{% endif %}">
-          <a class="ajax-link" href="/mgm_dashboard"><i class="glyphicon glyphicon-briefcase"></i>&nbsp;&nbsp;
-            <span> Management</span>
-          </a>
-        </li>
-        <li id="dashboard_page" class="{% if request.path == '/dashboard/' %}active{% endif %}">
-          <a class="ajax-link" href="/dashboard"><i class="glyphicon glyphicon-dashboard"></i>&nbsp;&nbsp;
-            <span> Dashboard</span>
-          </a>
-        </li>
-        <li class="{% if request.path == '/artist_prod/' %}active{% endif %}" id="artist_productivity_reports">
-          <a class="ajax-link" href="/artist_prod"><i class="glyphicon glyphicon-new-window"></i>&nbsp;&nbsp;
-            <span> Artist Productivity</span>
-          </a>
-        </li>
-        {% endif %}
         <li id="artist_tasks" class="{% if request.path == '/tasks/' %}active{% endif %}">
           <a class="ajax-link" href="/tasks"><i class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;
             <span> To Do List</span>
@@ -33,7 +16,7 @@
           </a>
         </li>
         {% if data.user_role == 'Co-ordinator' or data.user_role == 'Supervisor' %}
-        <li class="{% if request.path == '/review/' %}active{% endif %}">
+        <li id="review_tasks" class="{% if request.path == '/review/' %}active{% endif %}">
           <a class="ajax-link" href="/review"><i class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;
           <span> Review Tasks</span>
         </a>
@@ -48,6 +31,38 @@
             <span> Create Entities</span>
           </a>
         </li>
+        <li class="{% if request.path == '/task_entity/' %}active{% endif %}" id="task_entity">
+          <a class="ajax-link" href="/task_entity"><i class="glyphicon glyphicon-new-window"></i>&nbsp;&nbsp;
+            <span> Task Entity</span>
+          </a>
+        </li>
+	<li class="accordion">
+	    <a href="#"><i class="glyphicon glyphicon-plus"></i>&nbsp;&nbsp;
+		<span> Reports</span>
+	    </a>
+	    <ul class="nav nav-pills nav-stacked">
+        <li id="mgm_dashboard_page" class="{% if request.path == '/mgm_dashboard/' %}active{% endif %}">
+          <a class="ajax-link" href="/mgm_dashboard"><i class="glyphicon glyphicon-briefcase"></i>&nbsp;&nbsp;
+            <span> Management</span>
+          </a>
+        </li>
+        <li id="dashboard_page" class="{% if request.path == '/dashboard/' %}active{% endif %}">
+          <a class="ajax-link" href="/dashboard"><i class="glyphicon glyphicon-dashboard"></i>&nbsp;&nbsp;
+            <span> Dashboard</span>
+          </a>
+        </li>
+		<li class="{% if request.path == '/month_wise/' %}active{% endif %}" id="month_wise_reports">
+		    <a href="/month_wise"><i class="glyphicon glyphicon-dashboard"></i>&nbsp;&nbsp;
+			<span>Month Wise</span>
+		    </a>
+		</li>
+		<li class="{% if request.path == '/artist_prod/' %}active{% endif %}" id="artist_productivity_reports">
+		    <a class="ajax-link" href="/artist_prod"><i class="glyphicon glyphicon-dashboard"></i>&nbsp;&nbsp;
+			<span> Artist Productivity</span>
+		    </a>
+		</li>
+	    </ul>
+	</li>
         {% endif %}
 
       </ul>

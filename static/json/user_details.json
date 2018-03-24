@@ -69,7 +69,14 @@
   "shahid.shaikh": {
     "role": "Co-ordinator",
     "columns": [
-      "Lighting"
+      "Lighting",
+      "Render",
+      "Shot Finaling",
+      "Cloth",
+      "Shave Hair",
+      "CFX",
+      "Fur Shape",
+      "FX"
     ],
     "group": "Production",
     "name": "shahid.shaikh",
@@ -278,12 +285,35 @@
       "Render",
       "Shot Finaling",
       "Cloth",
-      "Shave Hair"
+      "Shave Hair",
+      "CFX",
+      "Fur Shape",
+      "FX"
     ],
     "group": "Production",
     "name": "urmila.kanse",
     "departments": [
-      "Animation"
+      "Animation",
+      "SHF"
+    ]
+  },
+  "yogesh.nikam": {
+    "role": "Supervisor",
+    "columns": [
+      "Lighting",
+      "Render",
+      "Shot Finaling",
+      "Cloth",
+      "Shave Hair",
+      "CFX",
+      "Fur Shape",
+      "FX"
+    ],
+    "group": "Production",
+    "name": "yogesh.nikam",
+    "departments": [
+      "Animation",
+      "SHF"
     ]
   },
   "swapnil.khotkar": {
@@ -349,7 +379,7 @@
     "departments": []
   },
   "kunal.jamdade": {
-    "role": "Co-ordinator",
+    "role": "Supervisor",
     "columns": [
       "Animation",
       "Animation Stereo",
@@ -511,7 +541,8 @@
       "Rig Test",
       "Layout",
       "Previz",
-      "Animation"
+      "Animation",
+      "Blocking"
     ],
     "group": "Production",
     "name": "sanket.shembekar",

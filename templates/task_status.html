@@ -62,14 +62,15 @@
                 </select>
               </div>
               <div class="controls" id="status_options" style="display:none">
-                <select id="selectStatus" data-rel="chosen" data-placeholder="Select one...">
 
+                <select id="selectStatus" data-rel="chosen" data-placeholder="Select one...">
+	    
                   {% for status in statuses %}
-                  {% if status.name == 'In progress' %}
-                  <option value="{{status.name}}" disabled>{{status.name}}</option>
-                  {% else %}
-                  <option value="{{status.name}}">{{status.name}}</option>
-                  {% endif %}
+		    {% if status.name in disabled_status %}
+			<option value="{{status.name}}" disabled>{{status.name}}</option>
+		    {% else %}
+			<option value="{{status.name}}">{{status.name}}</option>
+		    {% endif %}
                   {% endfor %}
 
                 </select>
@@ -246,7 +247,7 @@
           <div class="modal-dialog modal-lg">
             <div class="modal-content">
               <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">×</button>
+                <button type="button" class="close" data-dismiss="modal" >×</button>
                 <div id="modal_header">
                   <div id="task_details_loader" style="text-align: left;"><img
                     src="/static/img/loading.gif"></div>
@@ -353,9 +354,20 @@
                           <div role="tabpanel" class="tab-pane" id="my_links">
                             <div id="task_link_loader" style="text-align: center;"><img
                               src="/static/img/loading.gif"></div>
+                            <br>
+                          &nbsp;&nbsp;<div class="btn-group left theme-container animated tada">
+                            <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" id="incoming" onclick="show_link_model(this)">
+                              <span class="hidden-sm hidden-xs">
+                                Create Asset Link</span>
+                              </button>
+                            <!--<ul class="dropdown-menu">
+                              <li><a href="#" id="incoming" onclick="show_link_model(this)"> Incoming </a></li>
+                              <li><a href="#" id="outgoing" onclick="show_link_model(this)"> Outgoing </a></li>
+                            </ul>-->
+                          </div>
                             <div class="box"
                                  style="overflow:auto; overflow-y:auto; height:624px;"
-                                 id="link_details"></div>
+                                 id="link_details" asset_ids=""></div>
                           </div>
 
                           <div role="tabpanel" class="tab-pane" id="my_versions">
@@ -508,6 +520,38 @@
             -->
           </div>
         </div>
+      <div class="modal fade" id="linkModel" tabindex="-1" role="dialog" aria-labelledby=""
+           data-backdrop="static" data-keyboard="false" aria-hidden="true">
+
+        <div class="modal-dialog modal-md">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" id="linkReset">×</button>
+              <div id="linkmodal_header">
+                <div id="linktask_details_loader" style="text-align: left;"><img
+                  src="/static/img/loading.gif"></div>
+              </div>
+            </div>
+            <div class="modal-body">
+              <div>
+              <input class="form-control" id="myInput" type="text" style="background-color:  #212f3d;" placeholder="Search..">
+                <br>
+                <div style="overflow-y: auto; height: 650px">
+                <ul class="list-group" id="myList">
+                  <li class="list-group-item"><input type="checkbox" id="1"/>&nbsp;</li>
+
+              </ul>
+                </div>
+              </div>
+              <div class="modal-footer" text-align="center">
+                              <a href="#" class="btn btn-default" data-dismiss="modal">Close</a>
+                              <a href="#" class="btn btn-primary" onclick="add_asset(this)">Save</a>
+                          </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
       </div>
 
       <!-- task count Model-->
@@ -568,6 +612,7 @@
     </div>
   </div>
 </div>
+
 </body>
 {% include "footer.html" %}
 </html>

@@ -26,7 +26,7 @@
           <a href="#">Main</a>
         </li>
         <li>
-          <a href="#">Review Tasks</a>
+          <a href="#">Tasks Entities</a>
         </li>
       </ul>
 
@@ -34,27 +34,19 @@
       <div class="sidebar-nav">
         <div class="box-content row">
           <div class="box col-at-11">
+
             <div class="col-at-sm-3" style="display:block;">
               <div class="controls">
-                <label class="control-label" for="selectReviewProject">Projects : &nbsp;</label>
-                <select id="selectReviewProject" data-rel="chosen" style="width: 122px;">
+                <label class="control-label">Projects : &nbsp;</label>
+                <select id="selectEntityProject" data-rel="chosen" style="width: 122px;">
+                  <option value="" selected>Select Project</option>
                   {% for proj,id in data.projects.items %}
-                  {% if data.project == proj %}
-                  <option value="{{ proj }}" selected>{{ proj }}</option>
-                  {% else %}
-                  <option value="{{ proj }}">{{ proj }}</option>
-                  {% endif %}
+                    <option value="{{ proj }}">{{ proj }}</option>
                   {% endfor %}
                 </select>
               </div>
             </div>
-            <div class="col-at-2" style="float: left;">
-              <input data-errorqtip="" aria-invalid="false" id="search"
-                     data-qtip="Type to filter on task name or description"
-                     placeholder="Type to search ..." class="x-form-field x-form-text x-form-empty-field"
-                     autocomplete="off" type="text">
-              &nbsp; &nbsp;<label id="table_row_count"></label>
-            </div>
+
             <div class="box-icon" style="float: right;">
               <button class="btn btn-inverse btn-default btn-sm" id="refresh"
                       onClick="show_review_tasks()">
@@ -65,8 +57,8 @@
           </div>
           <div class="col-at-12">
             <div class="box" style="overflow:auto; overflow-y:auto; height:688px"
-                 id="div_task_details">
-              <table class="table table-hover table-condensed table-bordered" id="tbl_task">
+                 id="div_task_enitity_details">
+              <table class="table table-hover table-condensed table-bordered" id="tbl_task_enitity">
                 <thead>
                 <tr>
                   <th>Project</th>
@@ -79,8 +71,9 @@
                   <th>Action</th>
                 </tr>
                 </thead>
-		<tbody>
-		</tbody>
+                <tbody>
+
+                </tbody>
               </table>
 
             </div>

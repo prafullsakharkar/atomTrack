@@ -3983,6 +3983,20 @@ a.label:hover,a.label:focus {
 	background-color:#FF6600;
         color: black;
 }
+.label-di_approved {
+	background-color:#85869e;
+        color: black;
+}
+.label-di_reject {
+	background-color:#91859e;
+        color: black;
+}
+.label-review_approved {
+	background-color:#564e6c;
+}
+.label-review_reject {
+	background-color:#654e6c;
+}
 .label-awaiting_data {
 	background-color:#87beda;
         color: black;
@@ -4024,6 +4038,10 @@ a.label:hover,a.label:focus {
 }
 .label-in_progress {
 	background-color:#3498db;
+        color: black;
+}
+.label-received_data {
+	background-color:#ffee58;
         color: black;
 }
 .label-pending_internal_review {
