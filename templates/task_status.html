@@ -247,7 +247,7 @@
           <div class="modal-dialog modal-lg">
             <div class="modal-content">
               <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" >×</button>
+                <button type="button" class="close" data-dismiss="modal" id="myReset">×</button>
                 <div id="modal_header">
                   <div id="task_details_loader" style="text-align: left;"><img
                     src="/static/img/loading.gif"></div>
@@ -298,13 +298,17 @@
                             <div class="box">
 
                               <span>&nbsp;Tasks</span>
+                              <div class="controls">
                               <select id="selectNoteTask" data-rel="chosen"
                                       style="width: 140px;">
-                                <option value="">None</option>
+
+                                <!--<option value="">None</option>
                                 {% for task in data.all_tasks %}
                                 <option value="{{ task }}">{{ task }}</option>
-                                {% endfor %}
-                              </select>&nbsp;&nbsp;
+                                {% endfor %}-->
+
+                              </select>
+                              &nbsp;&nbsp;
                               <span>Category : </span>
                               <select id="selectNoteCategory" data-rel="chosen"
                                       data-placeholder="Select one..."
@@ -318,6 +322,7 @@
                                 </option>
                                 <option value="Client">Client</option>
                               </select>
+                              </div>
                               {% if data.user_role == 'Co-ordinator' or data.user_role == 'Supervisor' %}
                               <div class="box">
                                 <textarea id="text_artist_note" rows="5" cols="20"
@@ -436,7 +441,7 @@
                               <div class="controls">
                                 <select id="selectVersionTask" data-rel="chosen"
                                         style="width: 140px;"
-                                        onchange="show_versions(this)">
+                                        onchange="show_asset_type(this)">
                                   <option value="">Select Task</option>
                                   {% for task in data.all_tasks %}
                                   <option value="{{ task }}">{{ task }}</option>
@@ -445,11 +450,11 @@
                                 <select id="selectVersionTaskAssetTypes"
                                         data-rel="chosen"
                                         style="width: 140px;"
-                                        onchange="show_versions(this)">
+                                        onchange="show_versions(this)">s
                                   <option value="">Select Asset Type</option>
-                                  {% for type in asset_types %}
-                                  <option value="{{type}}">{{type}}</option>
-                                  {% endfor %}
+                                  <!--{% for type in asset_types %}-->
+                                  <!--<option value="{{type}}">{{type}}</option>-->
+                                  <!--{% endfor %}-->
                                 </select>&nbsp;&nbsp;
                                 <select id="selectTaskVersion" data-rel="chosen"
                                         style="width: 240px;">

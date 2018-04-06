@@ -532,7 +532,7 @@ $('a.toggle_task_left').click(function () {
 
 })();
 
-function remove_rows(tablename) { 
+function remove_rows(tablename) {
     $(tablename).find("tbody tr").remove();
 }
 
@@ -743,18 +743,19 @@ function load_choosen_data($div_name,$select_elem,obj_name,parent_id) {
         data: { 'object_name': obj_name , 'parent_id' : parent_id},
         beforeSend: function(){
             $select_elem.empty();
-	    $select_elem.append('<option value="">Select</option>');
+	    $select_elem.append('<option value="">'+obj_name+'</option>');
         },
         success: function(json){
             $div_name.css({'display':'block'});
             $.each(json, function (idx, obj) {
 		opt_id = obj.id
 		opt_text = obj.name
-		$select_elem.append('<option value="'+opt_id+'">' + opt_text + '</option>');
+		opt_path = obj.path
+		$select_elem.append('<option value="'+opt_id+'" data-path="'+opt_path+'">' + opt_text + '</option>');
             });
             $select_elem.trigger("chosen:updated");
             $select_elem.trigger("liszt:updated");
-            $select_elem.data("chosen").destroy().chosen({search_contains:true});
+//            $select_elem.data("chosen").destroy().chosen({search_contains:true});
         },
         error: function(error){
             console.log("Error:");
@@ -868,7 +869,7 @@ function add_rows(mycol,parent_id,mycolusers,task_id,task_parent_ids){
 	    if (mycol[0] != t_status){
 		t_status = t_status+'_'+mycol[0];
 	    }
-            var cell = $("<td id='"+parent_id+"' data-task-id='"+parent_id+"' />");
+            var cell = $("<td id='"+parent_id+"' data-task-id='"+parent_id+"' data-task-parent-id='"+parent_id+"'/>");
             col_data = '<a href="#" id="parent_object" onclick="show_model(this)">'+t_status+'</a>';
 
             var usercell = '';
@@ -1609,8 +1610,8 @@ $("#save_changes").click(function(){
         col.attr('data-org-val',col.text());
     });
     object_name = 'Save Changes';
-    if (data_array.length != 0){ 
-        save_changes(data_array,object_name); 
+    if (data_array.length != 0){
+        save_changes(data_array,object_name);
         removeSelections('tbl_task');
     }
 
@@ -1637,8 +1638,8 @@ $("#save_ver_changes").click(function(){
         col.attr('data-org-val',col.text());
     });
     object_name = 'Save Version Changes';
-    if (data_array.length != 0){ 
-        save_changes(data_array,object_name); 
+    if (data_array.length != 0){
+        save_changes(data_array,object_name);
         removeSelections('tbl_versions');
     }
 
@@ -1655,7 +1656,7 @@ function save_changes(data_array,object_name) {
         success: function(json){
             $.each(json, function (idx, obj) {
             });
-        
+
             noty({
                 text: 'Your changes were saved',
                 layout: 'topCenter',
@@ -1685,7 +1686,7 @@ $("#search").keyup(function(){
         });
     len = $('#tbl_task tbody tr:visible').length;
     $('#table_row_count').html(len);
-}); 
+});
 
 $("#search_version").keyup(function(){
     _this = this;
@@ -1699,9 +1700,9 @@ $("#search_version").keyup(function(){
         if($(this).text().toLowerCase().indexOf($(_this).val().toLowerCase()) === -1)
             $(this).hide();
         else
-            $(this).show();                
+            $(this).show();
         });
-}); 
+});
 $("#search_value").keyup(function(){
     _this = this;
     table = $(this).attr('table_name');
@@ -1715,9 +1716,9 @@ $("#search_value").keyup(function(){
         if($(this).text().toLowerCase().indexOf($(_this).val().toLowerCase()) === -1)
             $(this).hide();
         else
-            $(this).show();                
+            $(this).show();
         });
-}); 
+});
 function demoFromHTML() {
     update()
 }
@@ -1762,37 +1763,37 @@ function update() {
 
 function sortOrder(header){
     var table = $(header).closest('table');
-    
+
     $(header)
         .wrapInner('<span title="sort this column"/>')
         .each(function(){
-            
+
             var th = $(this),
                 thIndex = th.index(),
                 inverse = false;
-            
+
             th.click(function(){
-                
+
                 table.find('td').filter(function(){
-                    
+
                     return $(this).index() === thIndex;
-                    
+
                 }).sortElements(function(a, b){
-                    
+
                     return $.text([a]) > $.text([b]) ?
                         inverse ? -1 : 1
                         : inverse ? 1 : -1;
-                    
+
                 }, function(){
-                    
-                    return this.parentNode; 
-                    
+
+                    return this.parentNode;
+
                 });
-                
+
                 inverse = !inverse;
-                    
+
             });
-                
+
         });
 }
 
@@ -1841,7 +1842,7 @@ function editArtistCell(context){
     }
 
     $select.on('chosen:hiding_dropdown', function () {
-        status_text = $(this).val(); 
+        status_text = $(this).val();
         change_status(status_text,context,row_stat)
         change_multiple(status_text,context,row_stat);
     });
@@ -1877,12 +1878,13 @@ function toggle_linkview(context){
 }
 function show_versions(context){
 
-    task_name = $('#selectVersionTask').val();
+    task_id = $('#selectVersionTask').val();
     asset_type = $('#selectVersionTaskAssetTypes').val();
     object_type = $('#selectObject').val();
+
     task_for = $(context).attr('data-for-artist');
 
-    if (task_name == ''){
+    if (task_id == ''){
 	alert("Please select task");
 	return null;
     }else if (asset_type == ''){
@@ -1891,17 +1893,105 @@ function show_versions(context){
     }
 
     //var object_id = $('#data-modal-object-id').val();
-    //console.log("object_id: " + object_id)
-    if (task_for == 'to_do'){
+    if($('#user_reject_asset').prop("checked") == true){
+        var object_id = $('#selectVersionAssetBuild').val();
+    }else{
+        if (task_for == 'to_do'){
 	var object_id = $('#data-modal-object-id').attr('data-modal-parent-id');
     }else{
     var object_id = $('#data-modal-object-id').val();
+
     }
+    }
+
 
     $select_elem = $('#selectTaskVersion');
     if (object_id){
-	load_versions(object_id, task_name, asset_type, object_type, $select_elem)
+	load_versions(object_id, task_id, asset_type, object_type, $select_elem)
     }
+
+}
+
+// Show Asset Type
+
+function load_asset_type(context){
+
+    /*chk = $('#user_reject_asset').is(':checked');
+    if(chk == true){
+        parent_id = $('#selectVersionAssetBuild').val();
+        parent_name = $('#selectVersionAssetBuild').text();
+
+    }
+    else{
+        parent_id = $('#data-modal-object-id').attr('data-modal-parent-id');
+
+    }*/
+
+    parent_name = $('#selectVersionTask option:selected').text();
+
+    //call
+    $select_elem = $('#selectVersionTaskAssetTypes');
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'parent_name' : parent_name, 'object_name': 'Load Asset Type'},
+        beforeSend: function(){
+	    $select_elem.empty();
+	    $select_elem.append('<option value="">Select Asset Type</option>');
+        },
+        success: function(json){
+            $.each(json, function (idx, obj) {
+		    $select_elem.append('<option value="'+obj+'">' + obj+ '</option>');
+            });
+            $select_elem.trigger("chosen:updated");
+            $select_elem.trigger("liszt:updated");
+            $select_elem.data("chosen").destroy().chosen();
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
+
+}
+
+function show_asset_type(context){
+
+    chk = $('#user_reject_asset').is(':checked');
+    console.log("chk: " + chk);
+    if(chk == true){
+        console.log("if:");
+        parent_id = $('#selectVersionAssetBuild').val();
+    }
+    else{
+        console.log("else:");
+        parent_id = $('#data-modal-object-id').attr('data-modal-parent-id');
+    }
+    console.log("inside show_asset_type parent_id : " + parent_id);
+    //call
+
+    $select_elem = $('#selectVersionTaskAssetTypes');
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'parent_id' : parent_id, 'object_name': 'Ftp Asset Type'},
+        beforeSend: function(){
+	    $select_elem.empty();
+	    $select_elem.append('<option value="">Select Asset Type</option>');
+        },
+        success: function(json){
+            $.each(json, function (idx, obj) {
+		    $select_elem.append('<option value="'+obj.name+'">' + obj.name + '</option>');
+            });
+            $select_elem.trigger("chosen:updated");
+            $select_elem.trigger("liszt:updated");
+            $select_elem.data("chosen").destroy().chosen();
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
 
 }
 
@@ -1926,11 +2016,11 @@ function show_linkversions(context){
     load_versions('',dept_val,atype_val,$select_elem,build_val)
 
 }
-function load_versions(object_id, task_name, asset_type, object_type, $select_elem) {
+function load_versions(object_id, task_id, asset_type, object_type, $select_elem) {
     $.ajax({
         type:"POST",
         url:"/callajax/",
-        data: { 'object_id': object_id ,'object_name': 'Versions', 'asset_type': asset_type , 'task_name': task_name, 'object_type': object_type},
+        data: { 'object_id': object_id ,'object_name': 'Versions', 'asset_type': asset_type , 'task_id': task_id, 'object_type': object_type},
         beforeSend: function(){
         },
         success: function(json){
@@ -1963,10 +2053,7 @@ function show_version_notes(context){
 
 function version_notes(task_id,obj_name,last_row,task) {
 
-    $('#note_attach').val('');
-    $('#version_note_details').html('');
     $("#task_version_notes_loader").show();
-
     $.ajax({
         type:"POST",
         url:"/callajax/",
@@ -1991,7 +2078,7 @@ function version_notes(task_id,obj_name,last_row,task) {
 $('#btn_version_note_create').click(function(){
     version_id = $('#selectTaskVersion').val();
     if(version_id){
-	create_version_note(version_id);
+	create_version_note(version_id, obj_name);
     }else{
 	alert("Please select version !!!");
 	return null;
@@ -1999,7 +2086,7 @@ $('#btn_version_note_create').click(function(){
 
 });
 
-function create_version_note(version_id){
+function create_version_note(version_id, obj_name){
 
     $textarea_id = $('#text_version_note');
     var note_text = $textarea_id.val().trim();
@@ -2032,7 +2119,7 @@ function create_version_note(version_id){
     note_task = '';
     note_for = 'AssetVersion';
     $div_element = $('#version_note_details');
-    create_new_note(version_id, note_text, note_category, note_for, $div_element, $textarea_id, note_task, attach_files);
+    create_new_note(version_id, note_text, note_category, note_for, $div_element, $textarea_id, note_task, attach_files, obj_name);
 
     $textarea_id.parent().find('table[id=gallery_versions] tbody').html('');
 
@@ -2232,7 +2319,7 @@ function reply_note(reply_text,note_id) {
         success: function(json){
             $.each(json, function (idx, obj) {
             });
-        
+
             noty({
                 text: 'Reply has been given ...',
                 layout: 'topCenter',
@@ -2297,7 +2384,7 @@ function save_note(note,ver_id) {
         success: function(json){
             $.each(json, function (idx, obj) {
             });
-        
+
             noty({
                 text: 'Note has been posted',
                 layout: 'topCenter',
@@ -2466,7 +2553,7 @@ function load_client_version(name) {
     var component_select = $("#selectComponent").val();
     var obj_name = $("#selectClientObject").val();
     var asset_build_type = $("#selectClientType").val();
-    
+
     if (component_select == 'Internal'){
         object_name = 'client_version';
     }
@@ -2537,7 +2624,7 @@ function load_ftp_components(parent_id,dept) {
     }
 
     upload_for = $('#selectFtpStatus').val();
-    
+
     $select_elem = $('#selectFtpExt');
     $.ajax({
         type:"POST",
@@ -2633,7 +2720,7 @@ $('#selectFtpAssetName').change(function(){
     }
     $select_elem.trigger("chosen:updated");
     $select_elem.trigger("liszt:updated");
-    $select_elem.data("chosen").destroy().chosen();	
+    $select_elem.data("chosen").destroy().chosen();
 
     obj = $('#selectFtpObject').val();
     if (obj == 'Sequence'){
@@ -2655,7 +2742,7 @@ function show_upload_version(){
     copy_opt = $('input[name="optradio"]:checked').val();
     dest_path = $('#dest_path').val();
     dest_path = dest_path.replace(/\s/g,'');
-   
+
 
     if (!proj){
 	alert("Please select project !!!");
@@ -2682,7 +2769,7 @@ function show_upload_version(){
     var data_array = [];
     proj_name = $("#selectProject option[value='"+proj+"']").text();
     obj = $('#selectFtpObject').val();
-    
+
     if (obj == 'Shot'){
 	dept = $('#selectShotFtpDepartment').val();
 	seq = $('#selectFtpSequence').val();
@@ -2788,7 +2875,7 @@ function add_version_rows(idx,obj){
     else{
 	check_box = '<input type="checkbox" id="cb'+idx+'" data-td-ver = "'+ver+':'+approved_version_number+':'+version_id+':'+source_path+'"/>';
     }
-    version = ver.replace(/,/g, "</br>"); 
+    version = ver.replace(/,/g, "</br>");
     if (!(upload_status == 'Ready to upload')){
         var cell = $("<td id='check_box_1'>"+check_box+"</td><td>"+obj_name+"</td><td>"+trimmed_version+"</td><td>"+approved_version_number+"<td style='color:red;'>"+upload_status+"</td><td>"+task_assignees+"</td>");
     }
@@ -2906,14 +2993,23 @@ $('#allftpcb').change(function(){
 $('#user_reject_asset').change(function(){
     task_parent_id = $(this).attr('data-task-parent-id');
     if($(this).prop('checked')){
-	$('#div_selectVersionAssetType').css({'display':'block'});
-	$('#div_selectVersionAssetBuild').css({'display':'block'});
-	$select_elem = $("#selectVersionAssetType");
+        select_task_elem = $('#selectVersionTask');
+        select_task_elem.empty();
+        select_task_elem.trigger("chosen:updated");
+        $('#div_selectVersionAssetType').css({'display':'block'});
+        $('#div_selectVersionAssetBuild').css({'display':'block'});
+        $select_elem = $("#selectVersionAssetType");
         load_types($select_elem)
     }else{
-	$('#div_selectVersionAssetType').css({'display':'none'});
-	$('#div_selectVersionAssetBuild').css({'display':'none'});
-	load_choosen_data($('#div_selectVersionTask'),$('#selectVersionTask'),'Select Task',task_parent_id);
+        $('#div_selectVersionAssetType').css({'display':'none'});
+        $('#div_selectVersionAssetBuild').css({'display':'none'});
+        reset_model_drop_down();
+	    load_choosen_data($('#div_selectVersionTask'),$('#selectVersionTask'),'Select Task',task_parent_id);
+        load_choosen_data($('#div_selectTaskVersion'),$('#selectTaskVersion'),'Select Version',task_parent_id);
+
+        select_elem = $('#selectVersionTaskAssetTypes');
+        $select_elem.empty();
+	    $select_elem.append('<option value="">Select Asset Type</option>');
     }
 
 });
@@ -2946,19 +3042,11 @@ $('#selectVersionAssetBuild').change(function(){
 function show_model(context) {
     reset_model_drop_down();
     task_id = $(context).closest('td').attr('data-task-id');
-    task_parent_id = $(context).closest('tr').attr('data-task-parent-id');
+    task_parent_id = $(context).closest('td').attr('data-task-parent-id');
     task_assignee = $(context).closest('td').attr('data-task-assignee');
     parent_object_type = $(context).closest('tr').attr('data-parent-object-type');
     project_id = $(context).closest('tr').attr('data-project-id');
 
-    $('#user_reject_asset').attr('data-task-parent-id',task_parent_id);
-    if (parent_object_type == 'Shot'){
-	$('#div_user_reject_asset').css({'display':'block'});
-	$('#user_reject_asset').attr('checked',false);
-	$('#selectVersionAssetType').attr('data-project-id',project_id);
-    }else{
-	$('#div_user_reject_asset').css({'display':'none'});
-    }
 
     obj_name = $('#selectObject').val();
 
@@ -2979,7 +3067,6 @@ function show_model(context) {
     if ($('#selectNoteTask').val()){
 	note_task = $('#selectNoteTask').val();
     }
-
     ver_note_task = '';
     if ($('#selectVersionTask').val()){
 	ver_note_task = $('#selectVersionTask').val();
@@ -2993,111 +3080,169 @@ function show_model(context) {
 
     $('#note_details').html('');
 
-    // 1. Task Note Tab
+    // default Task Note Tab
     load_task_notes(task_id, obj_name, last_row, note_task);
+
+    load_choosen_data($('#div_selectVersionTask'),$('#selectVersionTask'), "Select Task", task_parent_id);
+    load_choosen_data($('#div_selectNoteTask'),$('#selectNoteTask'), "Select Task", task_id);
+    load_choosen_data($('#div_selectTask'),$('#selectTask'), "Select Task", task_id);
+
+    // user_reject_asset
+    $('#user_reject_asset').attr('data-task-parent-id',task_parent_id);
+    $('#user_reject_asset').attr('data-project-id',project_id);
+    if (parent_object_type == 'Shot'){
+	$('#div_user_reject_asset').css({'display':'block'});
+	$('#user_reject_asset').attr('checked',false);
+	$('#selectVersionAssetType').attr('data-project-id',project_id);
+    }else{
+	$('#div_user_reject_asset').css({'display':'none'});
+    }
+
+
     $('#btn_note_create').attr('data-task-id',task_id);
 
+    $('#myModal').attr("obj_name", obj_name);
+    $('#myModal').attr("task", task);
+    $('#myModal').attr("note_task", note_task);
+    $('#myModal').attr("ver_note_task", ver_note_task);
+
     $('#myModal').modal('show');
-
-    //------------- Scroll calls----------------//
-    $('#note_details').on('scroll', function() {
-        if($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight) {
-	    last_row += 15
-	    if (note_task != $('#selectNoteTask').val()){
-		note_task = $('#selectNoteTask').val();
-		last_row = 15;
-		$('#note_details').html('');
-	    }
-            load_task_notes(task_id, obj_name, last_row, note_task);
-        }
-    });
-
-    $('#version_details').on('scroll', function() {
-        if($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight) {
-	    last_row += 15;
-	    if (task && task != $('#selectTask').val()){
-		task = $('#selectTask').val();
-		last_row = 15;
-		remove_rows('#tbl_versions');
-	    }
-            load_asset_versions(task_id,obj_name,last_row,task);
-        }
-    });
-
-    $('#version_note_details').on('scroll', function() {
-        if($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight) {
-	    last_row += 15;
-	    if (ver_note_task && ver_note_task != $('#selectVersionTask').val()){
-		ver_note_task = $('#selectVersionTask').val();
-		last_row = 15;
-		$('#version_note_details').html('');
-	    }
-            version_notes(task_id,obj_name,last_row,ver_note_task);
-        }
-    });
-
-    //----------- Drop down change ------------------------//
-    $('#selectTask').change(function(){
-	task = $(this).val();
-	last_row = 15;
-	remove_rows('#tbl_versions');
-	load_asset_versions(task_id,obj_name,last_row,task);
-    });
-
-    $('#selectNoteTask').change(function(){
-	note_task = $(this).val();
-	last_row = 15;
-	$('#note_details').html('');
-	load_task_notes(task_id, obj_name, last_row, note_task);
-    });
-
-    $('#selectVersionTask').change(function(){
-	ver_note_task = $(this).val();
-	last_row = 15;
-	$('#version_note_details').html('');
-	version_notes(task_id, obj_name, last_row, ver_note_task);
-    });
-
-    
 };
+//----------- Drop down change ------------------------//
+$('#selectTask').change(function(){
+    task_id = $('#data-modal-object-id').val();
+    obj_name = $('#myModal').attr("obj_name");
+    task = $(this).val();
+    last_row = 15;
+    remove_rows('#tbl_versions');
+    load_asset_versions(task_id,obj_name,last_row,task);
+});
+
+$('#selectNoteTask').change(function(){
+    task_id = $('#data-modal-object-id').val();
+    obj_name = $('#myModal').attr("obj_name");
+    note_task = $(this).val();
+    last_row = 15;
+    $('#note_details').html('');
+    load_task_notes(task_id, obj_name, last_row, note_task);
+});
+
+$('#selectVersionTask').change(function(){
+    //task_id = $('#data-modal-object-id').val();
+    task_id = $("#selectVersionTask option:selected").val();
+    obj_name = $('#myModal').attr("obj_name");
+    ver_note_task = $(this).val();
+    last_row = 15;
+    $('#version_note_details').html('');
+    version_notes(task_id, 'Task', last_row, ver_note_task);
+});
+
+//------------- Scroll calls----------------//
+
+$('#note_details').on('scroll', function() {
+	$('#user_reject_asset').attr('data-task-parent-id',task_parent_id);
+    task_id = $('#data-modal-object-id').val();
+    obj_name = $('#myModal').attr("obj_name");
+    if($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight) {
+    last_row += 15
+    if (note_task != $('#selectNoteTask').val()){
+    note_task = $('#selectNoteTask').val();
+    last_row = 15;
+    $('#note_details').html('');
+    }
+        load_task_notes(task_id, obj_name, last_row, note_task);
+    }
+});
+
+$('#version_details').on('scroll', function() {
+    task_id = $('#data-modal-object-id').val();
+    obj_name = $('#myModal').attr("obj_name");
+    if($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight) {
+    last_row += 15;
+    if (task && task != $('#selectTask').val()){
+    task = $('#selectTask').val();
+    last_row = 15;
+    remove_rows('#tbl_versions');
+    }
+        load_asset_versions(task_id,obj_name,last_row,task);
+    }
+});
+
+$('#version_note_details').on('scroll', function() {
+    task_id = $('#data-modal-object-id').val();
+    obj_name = $('#myModal').attr("obj_name");
+    if($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight) {
+    last_row += 15;
+    if (ver_note_task && ver_note_task != $('#selectVersionTask').val()){
+        ver_note_task = $('#selectVersionTask').val();
+        last_row = 15;
+        $('#version_note_details').html('');
+    }
+        version_notes(task_id,obj_name,last_row,ver_note_task);
+    }
+});
+
 
 //------------- tabs change calls --------------------------//
+//
 
     // tab-1
-
-    $('#my_not').on('click', function() {
-        load_task_notes(task_id, obj_name, last_row, note_task);
-        $('#btn_note_create').attr('data-task-id',task_id);
-    });
+$('#my_not').on('click', function() {
+    task_id = $('#data-modal-object-id').val();
+    obj_name = $('#myModal').attr("obj_name");
+    note_task = $('#myModal').attr("note_task");
+    last_row = 15;
+    $('#note_details').html('');
+    load_task_notes(task_id, obj_name, last_row, note_task);
+    $('#btn_note_create').attr('data-task-id',task_id);
+});
 
     // tab-2
-    $('#my_lnk').on('click', function() {
-        $('#link_details').html('');
-        load_task_links(task_id,obj_name,last_row)
+$('#my_lnk').on('click', function() {
+    task_id = $('#data-modal-object-id').val();
+    obj_name = $('#myModal').attr("obj_name");
+    last_row = 15;
+    $('#link_details').html('');
+    load_task_links(task_id,obj_name,last_row)
 
-    });
+});
+
     // tab-3
+ $('#my_vsn').on('click', function() {
+    task_id = $('#data-modal-object-id').val();
+    obj_name = $('#myModal').attr("obj_name");
+    task = $('#myModal').attr("task");
+    last_row = 15;
+    $('#tbl_versions tbody').html('');
+    $('#gallery_versions tbody').html('');
+    $('#gallery_notes tbody').html('');
+    load_asset_versions(task_id,obj_name,last_row,task);
+});
 
-     $('#my_vsn').on('click', function() {
-        $('#tbl_versions tbody').html('');
-        $('#gallery_versions tbody').html('');
-        $('#gallery_notes tbody').html('');
-        last_row = 15
-        load_asset_versions(task_id,obj_name,last_row,task);
+ // tab-4
+$('#my_vsn_not').on('click', function() {
+    task_id = $('#data-modal-object-id').val();
+    obj_name = $('#myModal').attr("obj_name");
+    ver_note_task = $('#myModal').attr("ver_note_task");
+    last_row = 15;
+    $('#note_attach').val('');
+    $('#version_note_details').html('');
+    version_notes(task_id,obj_name,last_row,ver_note_task);
+});
+
+
+//----------- close model ---------------//
+$('#myReset').on('click', function() {
+        $('#myModal').hide("");
+        $('#modal_header').html('');
+        $('#selectVersionTask').html('');
+        $('#selectNoteTask').html('');
+
+        $('.nav-tabs li.active').removeClass('active');
+        $('.nav-tabs li a[href="#my_notes"]').tab('show')
     });
 
-     // tab-4
-
-    $('#my_vsn_not').on('click', function() {
-        $('#note_attach').val('');
-        $('#version_note_details').html('');
-        last_row = 15
-        version_notes(task_id,obj_name,last_row,ver_note_task);
-    });
-
-
-
-// show likModel
+//------------ show likModel ---------------//
 function show_link_model(param){
     $('#myInput').val('');
     var prj_name = $("#selectProject option:selected").text();
@@ -3107,7 +3252,7 @@ function show_link_model(param){
 
 };
 
-// get asset list
+//--------- get asset list ------------------//
 function get_asset_list(proj_id, prj_name){
     var asset_ids = ($('#link_details').attr('asset_ids')).split(",");
     var asset_array = asset_ids.join();
@@ -3145,7 +3290,7 @@ function get_asset_list(proj_id, prj_name){
     });
 }
 
-//add asset
+//-------- add asset ------------------- //
 function add_asset(param){
     $("#linktask_details_loader").show();
 
@@ -3168,7 +3313,6 @@ function add_asset(param){
     });
 
     //call
-
     $.ajax({
 	type: "POST",
 	url:"/callajax/",
@@ -3188,7 +3332,7 @@ function add_asset(param){
 }
 
 
-// for filter asset list
+//----------- for filter asset list ----------//
 $(document).ready(function(){
   $("#myInput").on("keyup", function() {
     var value = $(this).val().toLowerCase();
@@ -3197,10 +3341,6 @@ $(document).ready(function(){
     });
   });
 });
-
-//
-
-
 
 
 function reset_model_drop_down(){
@@ -3213,6 +3353,10 @@ function reset_model_drop_down(){
     $('#selectAssetTypes').val('').trigger("liszt:updated").trigger("chosen:updated");
     $('#selectNoteTask').val('').trigger("liszt:updated").trigger("chosen:updated");
     $('#selectNoteCategory').val('').trigger("liszt:updated").trigger("chosen:updated");
+    $('#selectVersionAssetBuild').val('').trigger("liszt:updated").trigger("chosen:updated");
+
+    $('#div_selectVersionAssetType').css({'display':'none'});
+    $('#div_selectVersionAssetBuild').css({'display':'none'});
 
     $('#note_details').html('');
     $('#version_note_details').html('');
@@ -3242,7 +3386,7 @@ function add_task_details(idx, obj){
     var path = obj.link_path
     var task_parent_path = path.substring(0, path.lastIndexOf('/'));
 
-    html = '<input type="hidden" id="data-modal-object-id" data-modal-parent-id="'+obj.parent_id+'" task_assignee="'+task_assignee+'" task_parent_path="'+task_parent_path+'" value="'+obj.object_id+'" /><h3>'+obj.name+'</h3><label>'+obj.object_type+' ('+obj.type_name+')</label></br><small>'+obj.link_path+'</small>';
+    html = '<input type="hidden" id="data-modal-object-id" data-modal-parent-id="'+obj.parent_id+'" task_assignee="'+task_assignee+'" task_parent_path="'+task_parent_path+'" value="'+obj.object_id+'" /><h3>'+obj.name+'</h3><label>'+obj.object_type+' ('+obj.type_name+')</label></br><small id="from-id">'+obj.link_path+'</small>';
 
     status_label = obj.status.replace(/ /g,'_').toLowerCase();
     priority_label = obj.priority.replace(/ /g,'_');
@@ -3263,6 +3407,7 @@ function add_task_details(idx, obj){
 ';
     $('#modal_header').html(table);
 
+/*
     //for asset_task list
 
     $select_elem = $('#selectVersionTask');
@@ -3285,11 +3430,10 @@ function add_task_details(idx, obj){
 	    $select_elem_notes.trigger("chosen:updated");
 	    $select_elem_notes.trigger("liszt:updated");
 
-
+*/
 }
 
 function load_task_notes(task_id, obj_name, last_row, note_task){
-    $('#note_details').html('');
     $("#task_notes_loader").show();
     $.ajax({
 	type: "POST",
@@ -3311,6 +3455,7 @@ function load_task_notes(task_id, obj_name, last_row, note_task){
 }
 
 $('#btn_note_create').click(function(){
+    
     task_id = $(this).attr('data-task-id');
     if(task_id){
 	create_a_note(task_id);
@@ -3353,16 +3498,12 @@ function create_a_note(task_id){
 
     note_for = obj_name;
     $div_element = $('#note_details');
-    create_new_note(task_id, note_text, note_category, note_for, $div_element, $textarea_id, note_task, attach_files);
-    //
-
-
-    //
+    create_new_note(task_id, note_text, note_category, note_for, $div_element, $textarea_id, note_task, attach_files, obj_name);
     $textarea_id.parent().find('table[id=gallery_notes] tbody').html('');
 
 }
 
-function create_new_note(task_id, note_text, note_category, note_for, $div_element, $textarea_id, note_task, attach_files){
+function create_new_note(task_id, note_text, note_category, note_for, $div_element, $textarea_id, note_task, attach_files, obj_name){
     $.ajax({
         type:"POST",
         url:"/callajax/",
@@ -3370,9 +3511,7 @@ function create_new_note(task_id, note_text, note_category, note_for, $div_eleme
         beforeSend: function(){
         },
         success: function(json){
-            $.each(json, function (idx, obj) {
-            });
-
+            add_note_div(json["note_id"], task_id, obj_name, note_text, note_category);
             noty({
                 text: 'Note added successfully ...',
                 layout: 'topCenter',
@@ -3385,23 +3524,34 @@ function create_new_note(task_id, note_text, note_category, note_for, $div_eleme
             console.log(error);
         }
     });
+}
+
+function add_note_div(note_id,task_id, obj_name, note_text, note_category){
+    var del_var = '';
+    del_var = '<button class="btn btn-xs btn-danger" style="float\:right;" id="delete-note" onclick="delete_note(this)"\
+    task-id="'+task_id+'" obj-name="'+obj_name+' "note-id="'+note_id+'">Delete</button>'
+
     $textarea_id.val('');
     note_author = $div_element.attr('data-user-id').toLowerCase();
     note_date = new Date().toLocaleFormat('%F %T');
     note_head = note_text;
-    note_category = note_category.replace(' ','_');
+//    note_category = 'Internal'
     my_note = '\
-	<div class="box row" id="category-'+note_category+'"> \
-	    <span class="label label-info">'+note_author+'</span>\
-	    <span class="label label-'+note_category+'" style="width\:62%">'+note_category+'</span> \
-	    <span class="label label-info" style="float\:right;">'+note_date+'</span>\
-	    <p>'+note_head+'</p>\
-	</div>\
+    <div class="box row" id="category-'+note_category+'"> \
+        <span class="label label-info">'+note_author+'</span>\
+        <span class="label label-'+note_category+'" style="width\:62%">'+note_category+'</span> \
+        <span class="label label-info" style="float\:right;">'+note_date+'</span>\
+        <p>'+note_head+'</p>\
+        <div class="box row"><strong>'+note_info+'</strong><button class="btn btn-xs btn-primary" style="float\:right;">'+ note_author +'</button>'+del_var+'</div>\
+        '+reply+'\
+        '+do_reply+'\
+    </div>\
     ';
-    $div_element.append(my_note);
-
+    $div_element.prepend(my_note);
 
 }
+
+
 
 function reply_to_note(my_note_id){
 
@@ -3528,12 +3678,12 @@ function add_note_details(idx, obj){
 
     var del_var = '';
     if(note_author == current_user){
-        del_var = '<button class="btn btn-xs btn-primary" style="float\:right;" id="delete-note" onclick="delete_note()"\
+        del_var = '<button class="btn btn-xs btn-danger" style="float\:right;" id="delete-note" onclick="delete_note(this)"\
          task-id="'+task_id+'" obj-name="'+obj_name+' "note-id="'+note_id+'">Delete</button>'
     }
 
     modal_body = '\
-	<div class="box row" id="category-'+note_category+'"> \
+	<div class="box row" id="'+note_id+'" > \
 	    <span class="label label-info" >'+task_name+'</span>\
 	    <span class="label label-'+note_category+'" '+style+'>'+note_category+'</span> \
 	    <span class="label label-info" style="float\:right;">'+note_date+'</span>\
@@ -3548,12 +3698,12 @@ function add_note_details(idx, obj){
 }
 
 
-// delete note
-function delete_note(){
-    var note_id = $('#delete-note').attr('note-id');
-    var cnf = confirm("Are you sure want to delete this note!");
+//------ delete note -----------------//
+function delete_note(param){
+    id = $(param).parent().parent().attr('id');
+    var cnf = confirm("Are you sure. You want to delete this note!");
     if (cnf == true) {
-        var note_id = $('#delete-note').attr('note-id');
+        var note_id = id;
         var task_id = $('#data-modal-object-id').val()
         var obj_name = $('#selectObject').val();
 
@@ -3565,20 +3715,18 @@ function delete_note(){
             obj_name = 'Task';
         }
         // call ajax
-
         $.ajax({
         type: "POST",
         url:"/callajax/",
         data: { 'object_name': 'Delete Note' ,'note_id': note_id},
         success: function(){
-            var tab = $('.nav-tabs li.active a').attr('id');
-
-            if(tab == 'my_vsn_not'){
-                version_notes(task_id,obj_name,15,'');
-            }
-            else{
-                load_task_notes(task_id, obj_name, 15, '');
-            }
+            $("#" +note_id).hide();
+            noty({
+                text: 'Note deleted successfully ...',
+                layout: 'topCenter',
+                closeWith: ['click', 'hover'],
+                type: 'success'
+            });
         },
         error: function(error){
 	    console.log("Error:");
@@ -3586,13 +3734,11 @@ function delete_note(){
 	    }
 
         });
-
     }
 }
 
 
 function load_task_links(task_id,obj_name,last_row){
-    $('#link_details').html('');
     $("#task_link_loader").show();
     body_row_array = []
     asset_ids_array = []
@@ -3657,7 +3803,7 @@ function load_asset_versions(task_id,obj_name,last_row,task){
 function add_version_details(idx, obj){
 
     var table = $('#tbl_versions tbody');
-    add_version_row(table,obj)   
+    add_version_row(table,obj)
 }
 
 function add_version_row(table,obj){
@@ -3737,10 +3883,19 @@ $('#download_task_status').click(function(){
 
 function insert_db_note(note_text, note_category, object_id, change_status, users, task_path, version){
 
+    var from = $('#from-id').text();
+    var to = task_path;
+
+    if (!from){
+	from = task_path;
+    }else{
+	from = from.replace(/\s/g, "").replace(/\//g, ':');
+    }
+
     $.ajax({
 	type: "POST",
 	url: "/callajax/",
-	data: {"object_name": "DB Note", "note_text": note_text, "note_category": note_category, "task_id": object_id, "users": users, "task_path": task_path, "change_status": change_status, "version":version},
+	data: {"object_name": "DB Note", "note_text": note_text, "note_category": note_category, "task_id": object_id, "users": users, "task_path": task_path, "change_status": change_status, "version":version, "from": from, "to": to},
 	success: function(json){
 	},
 	error: function(error){
@@ -3750,7 +3905,6 @@ function insert_db_note(note_text, note_category, object_id, change_status, user
 
 }
 function add_task_note(note, note_category, object_id, note_for, attach_files){
-
     $.ajax({
 	type: "POST",
 	url: "/callajax/",
@@ -3767,7 +3921,6 @@ function add_task_note(note, note_category, object_id, note_for, attach_files){
 	    console.log("Error:"+error);
 	}
     });
-
 }
 
 function object_status_change(new_status, old_status, object_id, status_for){
@@ -3878,7 +4031,7 @@ function approve_task(param){
 
 	my_date = new Date().toLocaleFormat('%F %T');
 	$td_date.html('<strong>'+my_date+'</strong>');
-    
+
 	$(param).css({'display':'none'});
 	$(param).parent().find('[id=task_reject]').css({'display':'none'});
     }*/
@@ -4002,7 +4155,7 @@ function reject_task(param){
 
 	my_date = new Date().toLocaleFormat('%F %T');
 	$td_date.html('<strong>'+my_date+'</strong>');
-    
+
 	$(param).css({'display':'none'});
 	$(param).parent().find('[id=task_approved]').css({'display':'none'});
 
@@ -4014,10 +4167,11 @@ function reject_task(param){
 function internal_reject_task(version_id, note_text, note_category, note_for, note_task, attach_files){
     var users = $('#data-modal-object-id').attr('task_assignee');
     var task_name = $("#selectVersionTask option:selected").text();
-    var selected = $('#selectVersionTask').find('option:selected');
-    var object_id = selected.data('id');
+    var object_id = $("#selectVersionTask option:selected").val();
+//    var selected = $('#selectVersionTask').find('option:selected');
+//    var object_id = selected.data('id');
     var task_parent_path = $('#data-modal-object-id').attr('task_parent_path');
-    var task_path = task_parent_path.replace(/\s/g, "").replace(/\//g, ':') + ":" + String(task_name)
+    var task_path = $("#selectVersionTask option:selected").attr('data-path'); // task_parent_path.replace(/\s/g, "").replace(/\//g, ':') + ":" + String(task_name)
     var version = $("#selectTaskVersion option[value='"+ version_id +"']").text(); //$('#selectTaskVersion:selected').text();
     var my_status = 'Pending Internal Review';
 	var change_status = 'Internal Reject';
@@ -4032,7 +4186,6 @@ function internal_reject_task(version_id, note_text, note_category, note_for, no
 	}
 
     insert_db_note(note_text, note_category, object_id, change_status, users, task_path, version);
-
 }
 
 //
@@ -4448,8 +4601,13 @@ function artist_productivity(){
 
     });
 }
+function create_table_modal(){
+    var table = '<table table class="table-hover table-condensed table-bordered" id="my_modal_table" style="width:100%">'+
+                '<thead><th>Tasks</th><th>Bids</th><th>Actual Bids</th></thead><tbody></tbody></table>';
+    $('#show_artist_prod_task').append(table);
+}
 
-function show_task_dialog(artist,tasks){
+function show_task_dialog(artist,table_tr){
 
 /*
     arr_task = [];
@@ -4461,11 +4619,33 @@ function show_task_dialog(artist,tasks){
     });
 */
     
-    all_tasks = tasks.replace(/,/g,'<br>')
+/*    all_tasks = tasks.replace(/,/g,'<br>')
     $('#show_artist_prod_task').html('');
     $('#show_artist_prod_task').append('<p>Artist Name : <strong style="color: #00ff1e;">'+artist+'<strong></p>');
     $('#show_artist_prod_task').append('<p><strong>Tasks : <strong></p><p>'+all_tasks+'</p>');
+    $("#myModal").modal('show');*/
+
+    $('#show_artist_prod_task').html('');
+    create_table_modal();
+    $('#show_artist_prod_task').append('<p style="padding-left:348px;padding-right:200px;">Artist Name :'+
+    '<strong style="color: #00ff1e;">'+artist+'<strong></p>');
+
+    $("#my_modal_table tbody").append(table_tr);
+
+    $('#show_artist_prod_task').append($("#my_modal_table"));
     $("#myModal").modal('show');
+}
+
+function artist_prod_task_count_table(tasks){
+
+    var table_val = '';
+    $.each(tasks, function(idx, obj){
+        tr = '<tr><td>'+obj.task_name+'</td>';
+        tr += '<td>'+obj.bid+'</td>';
+        tr += '<td>'+obj.actual_bid+'</td></tr>';
+        table_val += tr
+    });
+    return table_val;
 }
 
 function artist_prod_table(data, parent_object_type){
@@ -4500,9 +4680,16 @@ function artist_prod_table(data, parent_object_type){
     if (/^-/.test(data.variance)){
 	color_code = 'style="color:#ff2a0c"';
     }
+    
+    /*
+    * function to just return the table html
+    * data and append it to table on click of td                 
+    */
+    s = artist_prod_task_count_table(data.tasks);
+
     row = '<tr>\
 	<td nowrap><strong>'+data.artist+'</strong></td>\
-	<td style="background-color: #333333;" onclick="show_task_dialog(\''+data.artist+'\',\''+data.tasks+'\')"><strong style="color: #58fffc;">'+data.task_count+'</strong></td>\
+	<td style="background-color: #333333;" onclick="show_task_dialog(\''+data.artist+'\',\''+s+'\')"><strong style="color: #58fffc;">'+data.task_count+'</strong></td>\
 	'+frame_sec+'\
 	<td><strong>'+data.bid_days+'</strong></td>\
 	<td><strong>'+data.actual_bid+'</strong></td>\
@@ -4514,8 +4701,9 @@ function artist_prod_table(data, parent_object_type){
     if (/^-/.test(data.Urgent.variance)){
 	color_code = 'style="color:#ff2a0c"';
     }
-	tda = '\
-	<td style="background-color: #333333;" onclick="show_task_dialog(\''+data.artist+'\',\''+data.Urgent.tasks+'\')"><strong style="color: #58fffc;">'+data.Urgent.task_count+'</strong></td>\
+	ut = artist_prod_task_count_table(data.Urgent.tasks);
+        tda = '\
+	<td style="background-color: #333333;" onclick="show_task_dialog(\''+data.artist+'\',\''+ut+'\')"><strong style="color: #58fffc;">'+data.Urgent.task_count+'</strong></td>\
 	'+A_frame_sec+'\
 	<td><strong>'+data.Urgent.bid_days+'</strong></td>\
 	<td><strong>'+data.Urgent.actual_bid+'</strong></td>\
@@ -4527,8 +4715,9 @@ function artist_prod_table(data, parent_object_type){
     if (/^-/.test(data.High.variance)){
 	color_code = 'style="color:#ff2a0c"';
     }
+        ht = artist_prod_task_count_table(data.High.tasks);
 	tdb = '\
-	<td style="background-color: #333333;" onclick="show_task_dialog(\''+data.artist+'\',\''+data.High.tasks+'\')"><strong style="color: #58fffc;">'+data.High.task_count+'</strong></td>\
+	<td style="background-color: #333333;" onclick="show_task_dialog(\''+data.artist+'\',\''+ht+'\')"><strong style="color: #58fffc;">'+data.High.task_count+'</strong></td>\
 	'+B_frame_sec+'\
 	<td><strong>'+data.High.bid_days+'</strong></td>\
 	<td><strong>'+data.High.actual_bid+'</strong></td>\
@@ -4540,8 +4729,9 @@ function artist_prod_table(data, parent_object_type){
     if (/^-/.test(data.Medium.variance)){
 	color_code = 'style="color:#ff2a0c"';
     }
-	tdc = '\
-	<td style="background-color: #333333;" onclick="show_task_dialog(\''+data.artist+'\',\''+data.Medium.tasks+'\')"><strong style="color: #58fffc;">'+data.Medium.task_count+'</strong></td>\
+	mt = artist_prod_task_count_table(data.Medium.tasks);
+        tdc = '\
+	<td style="background-color: #333333;" onclick="show_task_dialog(\''+data.artist+'\',\''+mt+'\')"><strong style="color: #58fffc;">'+data.Medium.task_count+'</strong></td>\
 	'+C_frame_sec+'\
 	<td><strong>'+data.Medium.bid_days+'</strong></td>\
 	<td><strong>'+data.Medium.actual_bid+'</strong></td>\
@@ -4553,8 +4743,9 @@ function artist_prod_table(data, parent_object_type){
     if (/^-/.test(data.Low.variance)){
 	color_code = 'style="color:#ff2a0c"';
     }
-	tdd = '\
-	<td style="background-color: #333333;" onclick="show_task_dialog(\''+data.artist+'\',\''+data.Low.tasks+'\')"><strong style="color: #58fffc;">'+data.Low.task_count+'</strong></td>\
+	lt = artist_prod_task_count_table(data.Low.tasks);
+        tdd = '\
+	<td style="background-color: #333333;" onclick="show_task_dialog(\''+data.artist+'\',\''+lt+'\')"><strong style="color: #58fffc;">'+data.Low.task_count+'</strong></td>\
 	'+D_frame_sec+'\
 	<td><strong>'+data.Low.bid_days+'</strong></td>\
 	<td><strong>'+data.Low.actual_bid+'</strong></td>\
@@ -5075,7 +5266,7 @@ function show_artist_tasks(){
                   <td>\
                     <strong>'+obj.task+'</strong>\
                   </td>\
-                  <td style="width:400px;" data-task-id="'+obj.task_id+'" data-task-assignee="'+obj.user_name+'">\
+                  <td style="width:400px;" data-task-id="'+obj.task_id+'" data-task-assignee="'+obj.user_name+'" data-task-parent-id="'+obj.parent_id+'">\
                     <strong><a href="#" id="task_object"\
                                onclick="show_model(this)">[ '+obj.path+' ]</a></strong>\
                   </td>\
@@ -5136,6 +5327,9 @@ function show_artist_tasks(){
 $('#selectReviewProject').change(function(){
     show_review_tasks();
 });
+$('#selectReviewStatus').change(function(){
+    show_review_tasks();
+});
 
 function show_review_tasks(){
 
@@ -5144,10 +5338,12 @@ function show_review_tasks(){
 	    alert("Please select valid project !!!");
     }
 
+    review_status = $('#selectReviewStatus').val();
+
     $.ajax({
 	type: "POST",
 	url: "/callajax/",
-	data : {'object_name': 'Review Tasks', 'project': project},
+	data : {'object_name': 'Review Tasks', 'project': project, 'status': review_status},
 	beforeSend: function(){
 	    remove_rows('#tbl_task');
 	    $('#panel_big').plainOverlay('show');

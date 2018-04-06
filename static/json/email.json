@@ -3,7 +3,6 @@
     "Review Task": {
       "ICE": {
         "Lighting": [
-          "priyank.raj@intra.madassemblage.com",
           "ramakant.singh@intra.madassemblage.com",
           "yogesh.nikam@intra.madassemblage.com",
           "urmila.kanse@intra.madassemblage.com",
@@ -13,7 +12,6 @@
           "vinod.sawant@intra.madassemblage.com"
         ],
         "Shave Hair": [
-          "priyank.raj@intra.madassemblage.com",
           "ramakant.singh@intra.madassemblage.com",
           "yogesh.nikam@intra.madassemblage.com",
           "urmila.kanse@intra.madassemblage.com",
@@ -23,7 +21,6 @@
           "vinod.sawant@intra.madassemblage.com"
         ],
         "FX": [
-          "priyank.raj@intra.madassemblage.com",
           "ramakant.singh@intra.madassemblage.com",
           "yogesh.nikam@intra.madassemblage.com",
           "urmila.kanse@intra.madassemblage.com",
@@ -33,8 +30,226 @@
           "vinod.sawant@intra.madassemblage.com"
         ],
         "Layout": [
-          "priyank.raj@intra.madassemblage.com",
           "seshu.kumar@intra.madassemblage.com",
+          "vaishal.shah@intra.madassemblage.com",
+          "vikram.donode@intra.madassemblage.com",
+          "krutika.shinde@intra.madassemblage.com",
+          "atif.khan@intra.madassemblage.com",
+          "sanket.shembekar@intra.madassemblage.com",
+          "pradeep.patel@intra.madassemblage.com",
+          "vinod.sawant@intra.madassemblage.com"
+        ],
+        "Animation": [
+          "vaishal.shah@intra.madassemblage.com",
+          "vikram.donode@intra.madassemblage.com",
+          "krutika.shinde@intra.madassemblage.com",
+          "atif.khan@intra.madassemblage.com",
+          "sanket.shembekar@intra.madassemblage.com",
+          "pradeep.patel@intra.madassemblage.com",
+          "vinod.sawant@intra.madassemblage.com"
+        ],
+        "Modeling": [
+          "vaishal.shah@intra.madassemblage.com",
+          "santosh.gowda@intra.madassemblage.com",
+          "suneel.seepa@intra.madassemblage.com",
+          "vijay.nathawat@intra.madassemblage.com",
+          "pradeep.patel@intra.madassemblage.com",
+          "vinod.sawant@intra.madassemblage.com"
+        ],
+        "Texturing": [
+          "vaishal.shah@intra.madassemblage.com",
+          "santosh.gowda@intra.madassemblage.com",
+          "suneel.seepa@intra.madassemblage.com",
+          "vijay.nathawat@intra.madassemblage.com",
+          "pradeep.patel@intra.madassemblage.com",
+          "vinod.sawant@intra.madassemblage.com"
+        ]
+      },
+      "IC2": {
+        "Lighting": [
+          "mahendra.upadhyay@intra.madassemblage.com",
+          "vibhor.tyagi@intra.madassemblage.com",
+          "urmila.kanse@intra.madassemblage.com",
+          "shahid.shaikh@intra.madassemblage.com",
+          "vaishal.shah@intra.madassemblage.com",
+          "pradeep.patel@intra.madassemblage.com",
+          "vinod.sawant@intra.madassemblage.com"
+        ],
+        "FX": [
+          "urmila.kanse@intra.madassemblage.com",
+          "shahid.shaikh@intra.madassemblage.com",
+          "vaishal.shah@intra.madassemblage.com",
+          "pradeep.patel@intra.madassemblage.com",
+          "vinod.sawant@intra.madassemblage.com"
+        ],
+        "Layout": [
+          "vaishal.shah@intra.madassemblage.com",
+          "vikram.donode@intra.madassemblage.com",
+          "krutika.shinde@intra.madassemblage.com",
+          "atif.khan@intra.madassemblage.com",
+          "sanket.shembekar@intra.madassemblage.com",
+          "pradeep.patel@intra.madassemblage.com",
+          "vinod.sawant@intra.madassemblage.com"
+        ],
+        "Animation": [
+          "vaishal.shah@intra.madassemblage.com",
+          "vikram.donode@intra.madassemblage.com",
+          "krutika.shinde@intra.madassemblage.com",
+          "atif.khan@intra.madassemblage.com",
+          "sanket.shembekar@intra.madassemblage.com",
+          "pradeep.patel@intra.madassemblage.com",
+          "vinod.sawant@intra.madassemblage.com"
+        ],
+        "Modeling": [
+          "vaishal.shah@intra.madassemblage.com",
+          "shradha.hada@intra.madassemblage.com",
+          "suneel.seepa@intra.madassemblage.com",
+          "vijay.nathawat@intra.madassemblage.com",
+          "pradeep.patel@intra.madassemblage.com",
+          "vinod.sawant@intra.madassemblage.com"
+        ],
+        "Texturing": [
+          "vaishal.shah@intra.madassemblage.com",
+          "santosh.gowda@intra.madassemblage.com",
+          "shradha.hada@intra.madassemblage.com",
+          "suneel.seepa@intra.madassemblage.com",
+          "pradeep.patel@intra.madassemblage.com",
+          "vinod.sawant@intra.madassemblage.com"
+        ]
+      },
+      "WIB": {
+        "Modeling": [
+          "santosh.gowda@intra.madassemblage.com",
+          "vijay.nathawat@intra.madassemblage.com",
+          "swapnil.khotkar@intra.madassemblage.com"
+        ],
+        "Texturing": [
+          "vijay.nathawat@intra.madassemblage.com",
+          "santosh.gowda@intra.madassemblage.com",
+          "swapnil.khotkar@intra.madassemblage.com"
+        ],
+        "Animation": [
+          "swapnil.khotkar@intra.madassemblage.com"
+        ],
+        "Layout": [
+          "swapnil.khotkar@intra.madassemblage.com"
+        ]
+      },
+      "WOE": {
+        "Modeling": [
+          "santosh.gowda@intra.madassemblage.com",
+          "vijay.nathawat@intra.madassemblage.com",
+          "swapnil.khotkar@intra.madassemblage.com"
+        ],
+        "Texturing": [
+          "vijay.nathawat@intra.madassemblage.com",
+          "santosh.gowda@intra.madassemblage.com",
+          "swapnil.khotkar@intra.madassemblage.com"
+        ],
+        "Animation": [
+          "swapnil.khotkar@intra.madassemblage.com"
+        ],
+        "Layout": [
+          "swapnil.khotkar@intra.madassemblage.com"
+        ]
+      },
+      "SAR": {
+        "Modeling": [
+          "vijay.nathawat@intra.madassemblage.com",
+          "santosh.gowda@intra.madassemblage.com",
+          "swapnil.khotkar@intra.madassemblage.com"
+        ],
+        "Texturing": [
+          "vijay.nathawat@intra.madassemblage.com",
+          "santosh.gowda@intra.madassemblage.com",
+          "swapnil.khotkar@intra.madassemblage.com"
+        ],
+        "Animation": [
+          "swapnil.khotkar@intra.madassemblage.com"
+        ],
+        "Layout": [
+          "swapnil.khotkar@intra.madassemblage.com"
+        ]
+      },
+      "SW9": {
+        "Modeling": [
+          "santosh.gowda@intra.madassemblage.com",
+          "hardik.trivedi@intra.madassemblage.com",
+          "shradha.hada@intra.madassemblage.com",
+          "suneel.seepa@intra.madassemblage.com",
+          "vijay.nathawat@intra.madassemblage.com",
+          "arun.poojary@madassemblage.com",
+          "vinod.sawant@intra.madassemblage.com"
+        ],
+        "Texturing": [
+          "santosh.gowda@intra.madassemblage.com",
+          "hardik.trivedi@intra.madassemblage.com",
+          "shradha.hada@intra.madassemblage.com",
+          "suneel.seepa@intra.madassemblage.com",
+          "vijay.nathawat@intra.madassemblage.com",
+          "arun.poojary@madassemblage.com",
+          "vinod.sawant@intra.madassemblage.com"
+        ],
+        "Layout": [
+          "hardik.trivedi@intra.madassemblage.com",
+          "vikram.donode@intra.madassemblage.com",
+          "krutika.shinde@intra.madassemblage.com",
+          "atif.khan@intra.madassemblage.com",
+          "sanket.shembekar@intra.madassemblage.com",
+          "arun.poojary@madassemblage.com",
+          "vinod.sawant@intra.madassemblage.com"
+        ],
+        "Animation": [
+          "hardik.trivedi@intra.madassemblage.com",
+          "vikram.donode@intra.madassemblage.com",
+          "krutika.shinde@intra.madassemblage.com",
+          "atif.khan@intra.madassemblage.com",
+          "sanket.shembekar@intra.madassemblage.com",
+          "arun.poojary@madassemblage.com",
+          "vinod.sawant@intra.madassemblage.com"
+        ]
+      }
+    },
+    "FTP Upload": {
+      "AAJ": {
+        "Lighting": [
+          "priyank.raj@intra.madassemblage.com",
+          "mahendra.upadhyay@intra.madassemblage.com",
+          "vibhor.tyagi@intra.madassemblage.com",
+          "urmila.kanse@intra.madassemblage.com",
+          "shahid.shaikh@intra.madassemblage.com",
+          "swapnil.khotkar@intra.madassemblage.com"
+        ],
+        "FX": [
+          "priyank.raj@intra.madassemblage.com",
+          "mahendra.upadhyay@intra.madassemblage.com",
+          "vibhor.tyagi@intra.madassemblage.com",
+          "urmila.kanse@intra.madassemblage.com",
+          "shahid.shaikh@intra.madassemblage.com",
+          "swapnil.khotkar@intra.madassemblage.com"
+        ]
+      },
+      "ICE": {
+        "Lighting": [
+          "priyank.raj@intra.madassemblage.com",
+          "yogesh.nikam@intra.madassemblage.com",
+          "urmila.kanse@intra.madassemblage.com",
+          "shahid.shaikh@intra.madassemblage.com",
+          "vaishal.shah@intra.madassemblage.com",
+          "pradeep.patel@intra.madassemblage.com",
+          "vinod.sawant@intra.madassemblage.com"
+        ],
+        "FX": [
+          "priyank.raj@intra.madassemblage.com",
+          "yogesh.nikam@intra.madassemblage.com",
+          "urmila.kanse@intra.madassemblage.com",
+          "shahid.shaikh@intra.madassemblage.com",
+          "vaishal.shah@intra.madassemblage.com",
+          "pradeep.patel@intra.madassemblage.com",
+          "vinod.sawant@intra.madassemblage.com"
+        ],
+        "Layout": [
+          "priyank.raj@intra.madassemblage.com",
           "vaishal.shah@intra.madassemblage.com",
           "vikram.donode@intra.madassemblage.com",
           "krutika.shinde@intra.madassemblage.com",
@@ -57,6 +272,7 @@
           "priyank.raj@intra.madassemblage.com",
           "vaishal.shah@intra.madassemblage.com",
           "santosh.gowda@intra.madassemblage.com",
+          "shradha.hada@intra.madassemblage.com",
           "suneel.seepa@intra.madassemblage.com",
           "vijay.nathawat@intra.madassemblage.com",
           "pradeep.patel@intra.madassemblage.com",
@@ -66,6 +282,7 @@
           "priyank.raj@intra.madassemblage.com",
           "vaishal.shah@intra.madassemblage.com",
           "santosh.gowda@intra.madassemblage.com",
+          "shradha.hada@intra.madassemblage.com",
           "suneel.seepa@intra.madassemblage.com",
           "vijay.nathawat@intra.madassemblage.com",
           "pradeep.patel@intra.madassemblage.com",
@@ -133,38 +350,68 @@
         ]
       },
       "WIB": {
-        "Blocking": [
+        "Modeling": [
           "priyank.raj@intra.madassemblage.com",
-          "sanket.shembekar@intra.madassemblage.com",
+          "santosh.gowda@intra.madassemblage.com",
+          "vijay.nathawat@intra.madassemblage.com",
+          "swapnil.khotkar@intra.madassemblage.com"
+        ],
+        "Texturing": [
+          "priyank.raj@intra.madassemblage.com",
+          "vijay.nathawat@intra.madassemblage.com",
+          "santosh.gowda@intra.madassemblage.com",
           "swapnil.khotkar@intra.madassemblage.com"
         ],
         "Animation": [
           "priyank.raj@intra.madassemblage.com",
-          "sanket.shembekar@intra.madassemblage.com",
-          "swapnil.khotkar@intra.madassemblage.com"
-        ]
-      },
-      "SAR": {
-        "Blocking": [
-          "priyank.raj@intra.madassemblage.com",
-          "sanket.shembekar@intra.madassemblage.com",
           "swapnil.khotkar@intra.madassemblage.com"
         ],
-        "Animation": [
+        "Layout": [
           "priyank.raj@intra.madassemblage.com",
-          "sanket.shembekar@intra.madassemblage.com",
           "swapnil.khotkar@intra.madassemblage.com"
         ]
       },
       "WOE": {
-        "Blocking": [
+        "Modeling": [
           "priyank.raj@intra.madassemblage.com",
-          "sanket.shembekar@intra.madassemblage.com",
+          "santosh.gowda@intra.madassemblage.com",
+          "vijay.nathawat@intra.madassemblage.com",
+          "swapnil.khotkar@intra.madassemblage.com"
+        ],
+        "Texturing": [
+          "priyank.raj@intra.madassemblage.com",
+          "vijay.nathawat@intra.madassemblage.com",
+          "santosh.gowda@intra.madassemblage.com",
           "swapnil.khotkar@intra.madassemblage.com"
         ],
         "Animation": [
           "priyank.raj@intra.madassemblage.com",
-          "sanket.shembekar@intra.madassemblage.com",
+          "swapnil.khotkar@intra.madassemblage.com"
+        ],
+        "Layout": [
+          "priyank.raj@intra.madassemblage.com",
+          "swapnil.khotkar@intra.madassemblage.com"
+        ]
+      },
+      "SAR": {
+        "Modeling": [
+          "priyank.raj@intra.madassemblage.com",
+          "vijay.nathawat@intra.madassemblage.com",
+          "santosh.gowda@intra.madassemblage.com",
+          "swapnil.khotkar@intra.madassemblage.com"
+        ],
+        "Texturing": [
+          "priyank.raj@intra.madassemblage.com",
+          "vijay.nathawat@intra.madassemblage.com",
+          "santosh.gowda@intra.madassemblage.com",
+          "swapnil.khotkar@intra.madassemblage.com"
+        ],
+        "Animation": [
+          "priyank.raj@intra.madassemblage.com",
+          "swapnil.khotkar@intra.madassemblage.com"
+        ],
+        "Layout": [
+          "priyank.raj@intra.madassemblage.com",
           "swapnil.khotkar@intra.madassemblage.com"
         ]
       },
@@ -210,201 +457,6 @@
           "vinod.sawant@intra.madassemblage.com"
         ]
       }
-    },
-    "FTP Upload": {
-  "AAJ": {
-   "Lighting": [
-    "priyank.raj@intra.madassemblage.com",
-    "mahendra.upadhyay@intra.madassemblage.com",
-    "vibhor.tyagi@intra.madassemblage.com",
-    "urmila.kanse@intra.madassemblage.com",
-    "shahid.shaikh@intra.madassemblage.com",
-    "swapnil.khotkar@intra.madassemblage.com"
-   ],
-   "FX": [
-    "priyank.raj@intra.madassemblage.com",
-    "mahendra.upadhyay@intra.madassemblage.com",
-    "vibhor.tyagi@intra.madassemblage.com",
-    "urmila.kanse@intra.madassemblage.com",
-    "shahid.shaikh@intra.madassemblage.com",
-    "swapnil.khotkar@intra.madassemblage.com"
-   ]
-  },
-  "ICE": {
-   "Lighting": [
-    "priyank.raj@intra.madassemblage.com",
-    "yogesh.nikam@intra.madassemblage.com",
-    "urmila.kanse@intra.madassemblage.com",
-    "shahid.shaikh@intra.madassemblage.com",
-    "vaishal.shah@intra.madassemblage.com",
-    "pradeep.patel@intra.madassemblage.com",
-    "vinod.sawant@intra.madassemblage.com"
-   ],
-   "FX": [
-    "priyank.raj@intra.madassemblage.com",
-    "yogesh.nikam@intra.madassemblage.com",
-    "urmila.kanse@intra.madassemblage.com",
-    "shahid.shaikh@intra.madassemblage.com",
-    "vaishal.shah@intra.madassemblage.com",
-    "pradeep.patel@intra.madassemblage.com",
-    "vinod.sawant@intra.madassemblage.com"
-   ],
-   "Layout": [
-    "priyank.raj@intra.madassemblage.com",
-    "vaishal.shah@intra.madassemblage.com",
-    "vikram.donode@intra.madassemblage.com",
-    "krutika.shinde@intra.madassemblage.com",
-    "atif.khan@intra.madassemblage.com",
-    "sanket.shembekar@intra.madassemblage.com",
-    "pradeep.patel@intra.madassemblage.com",
-    "vinod.sawant@intra.madassemblage.com"
-   ],
-   "Animation": [
-    "priyank.raj@intra.madassemblage.com",
-    "vaishal.shah@intra.madassemblage.com",
-    "vikram.donode@intra.madassemblage.com",
-    "krutika.shinde@intra.madassemblage.com",
-    "atif.khan@intra.madassemblage.com",
-    "sanket.shembekar@intra.madassemblage.com",
-    "pradeep.patel@intra.madassemblage.com",
-    "vinod.sawant@intra.madassemblage.com"
-   ],
-   "Modeling": [
-    "priyank.raj@intra.madassemblage.com",
-    "vaishal.shah@intra.madassemblage.com",
-    "santosh.gowda@intra.madassemblage.com",
-    "shradha.hada@intra.madassemblage.com",
-    "suneel.seepa@intra.madassemblage.com",
-    "vijay.nathawat@intra.madassemblage.com",
-    "pradeep.patel@intra.madassemblage.com",
-    "vinod.sawant@intra.madassemblage.com"
-   ],
-   "Texturing": [
-    "priyank.raj@intra.madassemblage.com",
-    "vaishal.shah@intra.madassemblage.com",
-    "santosh.gowda@intra.madassemblage.com",
-    "shradha.hada@intra.madassemblage.com",
-    "suneel.seepa@intra.madassemblage.com",
-    "vijay.nathawat@intra.madassemblage.com",
-    "pradeep.patel@intra.madassemblage.com",
-    "vinod.sawant@intra.madassemblage.com"
-   ]
-  },
-  "IC2": {
-   "Lighting": [
-    "priyank.raj@intra.madassemblage.com",
-    "mahendra.upadhyay@intra.madassemblage.com",
-    "vibhor.tyagi@intra.madassemblage.com",
-    "urmila.kanse@intra.madassemblage.com",
-    "shahid.shaikh@intra.madassemblage.com",
-    "vaishal.shah@intra.madassemblage.com",
-    "pradeep.patel@intra.madassemblage.com",
-    "vinod.sawant@intra.madassemblage.com"
-   ],
-   "FX": [
-    "priyank.raj@intra.madassemblage.com",
-    "mahendra.upadhyay@intra.madassemblage.com",
-    "vibhor.tyagi@intra.madassemblage.com",
-    "urmila.kanse@intra.madassemblage.com",
-    "shahid.shaikh@intra.madassemblage.com",
-    "vaishal.shah@intra.madassemblage.com",
-    "pradeep.patel@intra.madassemblage.com",
-    "vinod.sawant@intra.madassemblage.com"
-   ],
-   "Layout": [
-    "priyank.raj@intra.madassemblage.com",
-    "vaishal.shah@intra.madassemblage.com",
-    "vikram.donode@intra.madassemblage.com",
-    "krutika.shinde@intra.madassemblage.com",
-    "atif.khan@intra.madassemblage.com",
-    "sanket.shembekar@intra.madassemblage.com",
-    "pradeep.patel@intra.madassemblage.com",
-    "vinod.sawant@intra.madassemblage.com"
-   ],
-   "Animation": [
-    "priyank.raj@intra.madassemblage.com",
-    "vaishal.shah@intra.madassemblage.com",
-    "vikram.donode@intra.madassemblage.com",
-    "krutika.shinde@intra.madassemblage.com",
-    "atif.khan@intra.madassemblage.com",
-    "sanket.shembekar@intra.madassemblage.com",
-    "pradeep.patel@intra.madassemblage.com",
-    "vinod.sawant@intra.madassemblage.com"
-   ],
-   "Modeling": [
-    "priyank.raj@intra.madassemblage.com",
-    "vaishal.shah@intra.madassemblage.com",
-    "shradha.hada@intra.madassemblage.com",
-    "suneel.seepa@intra.madassemblage.com",
-    "vijay.nathawat@intra.madassemblage.com",
-    "pradeep.patel@intra.madassemblage.com",
-    "vinod.sawant@intra.madassemblage.com"
-   ],
-   "Texturing": [
-    "priyank.raj@intra.madassemblage.com",
-    "vaishal.shah@intra.madassemblage.com",
-    "santosh.gowda@intra.madassemblage.com",
-    "shradha.hada@intra.madassemblage.com",
-    "suneel.seepa@intra.madassemblage.com",
-    "pradeep.patel@intra.madassemblage.com",
-    "vinod.sawant@intra.madassemblage.com"
-   ]
-  },
-  "WIB": {
-   "Blocking": [
-    "priyank.raj@intra.madassemblage.com",
-    "sanket.shembekar@intra.madassemblage.com",
-    "swapnil.khotkar@intra.madassemblage.com"
-   ],
-   "Animation": [
-    "priyank.raj@intra.madassemblage.com",
-    "sanket.shembekar@intra.madassemblage.com",
-    "swapnil.khotkar@intra.madassemblage.com"
-   ]
-  },
-  "SW9": {
-   "Modeling": [
-    "priyank.raj@intra.madassemblage.com",
-    "santosh.gowda@intra.madassemblage.com",
-    "hardik.trivedi@intra.madassemblage.com",
-    "shradha.hada@intra.madassemblage.com",
-    "suneel.seepa@intra.madassemblage.com",
-    "vijay.nathawat@intra.madassemblage.com",
-    "arun.poojary@madassemblage.com",
-    "vinod.sawant@intra.madassemblage.com"
-   ],
-   "Texturing": [
-    "priyank.raj@intra.madassemblage.com",
-    "santosh.gowda@intra.madassemblage.com",
-    "hardik.trivedi@intra.madassemblage.com",
-    "shradha.hada@intra.madassemblage.com",
-    "suneel.seepa@intra.madassemblage.com",
-    "vijay.nathawat@intra.madassemblage.com",
-    "arun.poojary@madassemblage.com",
-    "vinod.sawant@intra.madassemblage.com"
-   ],
-   "Layout": [
-    "priyank.raj@intra.madassemblage.com",
-    "hardik.trivedi@intra.madassemblage.com",
-    "vikram.donode@intra.madassemblage.com",
-    "krutika.shinde@intra.madassemblage.com",
-    "atif.khan@intra.madassemblage.com",
-    "sanket.shembekar@intra.madassemblage.com",
-    "arun.poojary@madassemblage.com",
-    "vinod.sawant@intra.madassemblage.com"
-   ],
-   "Animation": [
-    "priyank.raj@intra.madassemblage.com",
-    "hardik.trivedi@intra.madassemblage.com",
-    "vikram.donode@intra.madassemblage.com",
-    "krutika.shinde@intra.madassemblage.com",
-    "atif.khan@intra.madassemblage.com",
-    "sanket.shembekar@intra.madassemblage.com",
-    "arun.poojary@madassemblage.com",
-    "vinod.sawant@intra.madassemblage.com"
-   ]
-  }
- }
-
+    }
   }
 }

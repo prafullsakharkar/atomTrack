@@ -3876,7 +3876,7 @@ textarea.input-group-sm>.form-control,textarea.input-group-sm>.input-group-addon
 }
 .label {
 	display:inline-block;
-	padding: 7px;
+	padding: 5px;
 	font-size:99%;
 //	font-weight:bold;
 	line-height:1;
@@ -3976,11 +3976,23 @@ a.label:hover,a.label:focus {
         color: black;
 }
 .label-outsource_approved {
-	background-color:#008000;
+	background-color:#47f6ea;
         color: black;
 }
 .label-outsource_reject {
+	background-color:#EA6530;
+        color: black;
+}
+.label-outsource_client_approved {
+	background-color:#00f6ff;
+        color: black;
+}
+.label-outsource_client_reject {
 	background-color:#FF6600;
+        color: black;
+}
+.label-outsource_client_review {
+	background-color:#D4D241;
         color: black;
 }
 .label-di_approved {

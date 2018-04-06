@@ -48,6 +48,20 @@
                 </select>
               </div>
             </div>
+            <div class="col-at-sm-3" style="display:block;">
+              <div class="controls">
+                <label class="control-label">Status : &nbsp;</label>
+                <select id="selectReviewStatus" data-rel="chosen" style="width: 180px;">
+                  {% for status in data.review_status %}
+                  {% if status == 'Pending Client Review' %}
+                  <option value="{{ status }}" selected>{{ status }}</option>
+                  {% else %}
+                  <option value="{{ status }}">{{ status }}</option>
+                  {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
             <div class="col-at-2" style="float: left;">
               <input data-errorqtip="" aria-invalid="false" id="search"
                      data-qtip="Type to filter on task name or description"

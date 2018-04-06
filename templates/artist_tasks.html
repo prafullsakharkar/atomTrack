@@ -103,7 +103,6 @@
           </div>
         </div>
       </div>
-
       <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
            data-backdrop="static" data-keyboard="false" aria-hidden="true">
 
@@ -260,7 +259,7 @@
                                 <div class="controls">
                                   <select id="selectVersionTask" data-rel="chosen"
                                           style="width: 106px;"
-                                          onchange="show_versions(this)">
+                                          onchange="load_asset_type(this)">
                                     <option value="">Select Task</option>
 
                                   </select>&nbsp;&nbsp;
@@ -274,10 +273,10 @@
                                           data-rel="chosen" data-for-artist="to_do"
                                           style="width: 120px;"
                                           onchange="show_versions(this)">
-                                    <option value="">Asset Type</option>
-                                    {% for type in asset_types %}
+                                    <option value="">Select Asset Type</option>
+                                    <!--{% for type in asset_types %}
                                     <option value="{{type}}">{{type}}</option>
-                                    {% endfor %}
+                                    {% endfor %}-->
                                   </select>&nbsp;&nbsp;
                                 </div>
                               </div>
