@@ -3885,7 +3885,7 @@ textarea.input-group-sm>.form-control,textarea.input-group-sm>.input-group-addon
 	white-space:nowrap;
 	vertical-align:baseline;
 	border-radius:.20em;
-        width:150px;
+        width:157px;
 }
 .label2 {
 	display:inline-block;
@@ -3980,7 +3980,7 @@ a.label:hover,a.label:focus {
         color: black;
 }
 .label-outsource_reject {
-	background-color:#EA6530;
+	background-color:#EC3B0C;
         color: black;
 }
 .label-outsource_client_approved {

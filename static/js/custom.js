@@ -51,7 +51,7 @@ $("#selectFtpObject").change(function(){
 
     var proj_id = $('#selectProject').val();
     if (!proj_id){
-        alert("Please select valid project !!")
+        error_message("Please select valid project !!")
         return null
     }
 
@@ -640,11 +640,11 @@ function load_types($select_elem){
 
 function load_obj_name(obj_name,parent_id,no_project_flag) {
     no_project_flag = no_project_flag || 0;
-   
+
     if (!no_project_flag){
 	var project = $('#selectProject').val();
 	if (!project){
-	    alert("Please select valid project !!")
+	    error_message("Please select valid project !!")
 	    return null
 	}
     }
@@ -855,11 +855,7 @@ function add_rows(mycol,parent_id,mycolusers,task_id,task_parent_ids){
             }
 
             var cell = $("<td title='"+th_name+"' data-task-id='"+taskid+"' data-org-val='"+t_status+"' data-parent-id='"+parent_id+"' data-id='show_status' "+show+" "+stat_display+" "+on_click_status+" />");
-/*
-            if(t_status == '---'){
-                cell = $("<td title='"+th_name+"' data-task-id='"+taskid+"' data-org-val='"+t_status+"' data-id='show_status' "+show+" "+stat_display+" />");
-            }
-*/
+
             col_data = '<span class="label '+stat_lbl+'" >'+t_status+'</span>';
 
             var usercell = $("<td title='"+th_name+"' data-task-id='"+taskid+"' data-org-val='"+t_stat_user+"' data-parent-id='"+parent_id+"' data-id='show_assignee' "+show+" "+assi_display+" "+on_click_user+" />");
@@ -963,7 +959,7 @@ function create_table(div_check) {
 
             var value = $(this).attr('value');
             var truth = $('th').find(value).index();
-            var truth = $('th[name^="'+value+'"]').index();//$('th:contains("'+(value)+'"$)').index();
+            var truth = $('th[name^="'+value+'"]').index();
             truth = truth + 1;
             //alert(truth + "\t ---" + value);
             var checked = this.checked;
@@ -1224,12 +1220,7 @@ function progress_bar(status_count_hash){
 		        var val = status_value[th_name];
 
 		        if(val){
-		            /*$('#new_table tbody tr').find('td[status="'+status_key+'"]').find('.jqxProgressBar').jqxProgressBar(
-		            {value: val, showText : true, max: th_name_total});*/
-
-    	            //var ele = (val * th_name_total)/100;
-
-		            $('#new_table tbody tr').find('td[status="'+status_key+'"]').find('.jqxProgressBar').progressbar({value:val, max: th_name_total});//children("span.caption").html(val);
+		            $('#new_table tbody tr').find('td[status="'+status_key+'"]').find('.jqxProgressBar').progressbar({value:val, max: th_name_total});
 		        }
 		    });
     });
@@ -1752,6 +1743,16 @@ $('#div_shot_user_details').on('scroll', function(){
    this.querySelector("thead").style.transform = translate;
 });
 
+$("#div_asset_build_details").on('scroll', function(){
+   var translate = "translate(0,"+this.scrollTop+"px)";
+   this.querySelector("thead").style.transform = translate;
+});
+
+$("#div_shot_build_details").on('scroll', function(){
+   var translate = "translate(0,"+this.scrollTop+"px)";
+   this.querySelector("thead").style.transform = translate;
+});
+
 function update() {
             var doc = new jsPDF();
             var elem = $('#tbl_task');
@@ -1957,19 +1958,18 @@ function load_asset_type(context){
 
 function show_asset_type(context){
 
-    chk = $('#user_reject_asset').is(':checked');
-    console.log("chk: " + chk);
-    if(chk == true){
-        console.log("if:");
-        parent_id = $('#selectVersionAssetBuild').val();
-    }
-    else{
-        console.log("else:");
-        parent_id = $('#data-modal-object-id').attr('data-modal-parent-id');
-    }
-    console.log("inside show_asset_type parent_id : " + parent_id);
-    //call
+    task_for = $(context).attr('data-for-artist');
 
+    chk = $('#user_reject_asset').is(':checked');
+    if(chk == true){
+        parent_id = $('#selectVersionAssetBuild').val();
+    }else if (task_for == 'to_do'){
+        parent_id = $('#data-modal-object-id').attr('data-modal-parent-id');
+    }else{
+	parent_id = $('#data-modal-object-id').val();
+    }
+
+    //call
     $select_elem = $('#selectVersionTaskAssetTypes');
     $.ajax({
         type:"POST",
@@ -1994,7 +1994,6 @@ function show_asset_type(context){
     });
 
 }
-
 function show_linkversions(context){
     attr_id = $(context).attr('id');
     id = attr_id.split('-')[1];
@@ -2073,7 +2072,7 @@ function version_notes(task_id,obj_name,last_row,task) {
             console.log(error);
         }
     });
- }
+}
 
 $('#btn_version_note_create').click(function(){
     version_id = $('#selectTaskVersion').val();
@@ -2971,6 +2970,8 @@ function upload_notes(){
         $('#upload_tips').html('<span style="font-weight:bold; font-size:21px;text-decoration:underline">Status Convention to be followed-</span></br> Task status : Client Approved , Version Status : Client Approved');
     }else if ($('#selectFtpStatus').val() == 'Review'){
         $('#upload_tips').html('<span style="font-weight:bold; font-size:21px;text-decoration:underline">Status Convention to be followed-</span></br>Task status , Version Status : Client Approved');
+    }else if ($('#selectFtpStatus').val() == 'Outsource'){
+        $('#upload_tips').html('<span style="font-weight:bold; font-size:21px;text-decoration:underline">Status Convention to be followed-</span></br>Task status , Version Status : Outsource Approved');
     }else if ($('#selectFtpStatus').val() == 'DI'){
         $('#upload_tips').html('<span style="font-weight:bold; font-size:21px;text-decoration:underline">Status Convention to be followed-</span></br>Task status , Version Status : Review Approved');
     }else {
@@ -3455,7 +3456,7 @@ function load_task_notes(task_id, obj_name, last_row, note_task){
 }
 
 $('#btn_note_create').click(function(){
-    
+
     task_id = $(this).attr('data-task-id');
     if(task_id){
 	create_a_note(task_id);
@@ -3671,9 +3672,9 @@ function add_note_details(idx, obj){
 	';
     }
 
-    style = 'style="width:81%"';
+    style = 'style="width:80%"';
     if (task_name){
-	style = 'style="width:61%"';
+	style = 'style="width:60%"';
     }
 
     var del_var = '';
@@ -4005,7 +4006,7 @@ function approve_task(param){
 
     change_status = '';
     change_status_label = '';
-    note_category = '';
+    note_category = 'Internal';
 
     if (my_status == 'Pending Client Review'){
 	change_status = 'Client Approved';
@@ -4013,9 +4014,15 @@ function approve_task(param){
 	note_category = 'Client feedback';
     }else if (my_status == 'Pending Internal Review'){
 	change_status = 'Ready to Publish';
-    change_status_label = 'ready_to_publish';
-    version_id = '';
-    note_category = 'Internal';
+	change_status_label = 'ready_to_publish';
+	version_id = '';
+    }else if (my_status == 'Outsource'){
+	change_status = 'Outsource Approved';
+	change_status_label = 'outsource_approved';
+    }else if (my_status == 'Outsource Client Review'){
+	change_status = 'Outsource Client Approved';
+	change_status_label = 'outsource_client_approved';
+	note_category = 'Client feedback';
     }
 
     /*if (object_id){
@@ -4105,7 +4112,7 @@ function reject_task(param){
 
     change_status = '';
     change_status_label = '';
-    note_category = '';
+    note_category = 'Internal';
 
     if (my_status == 'Pending Client Review'){
 	change_status = 'Client Reject';
@@ -4114,7 +4121,13 @@ function reject_task(param){
     }else if (my_status == 'Pending Internal Review'){
 	change_status = 'Internal Reject';
 	change_status_label = 'internal_reject';
-	note_category = 'Internal';
+    }else if (my_status == 'Outsource'){
+	change_status = 'Outsource Reject';
+	change_status_label = 'outsource_reject';
+    }else if (my_status == 'Outsource Client Review'){
+	change_status = 'Outsource Client Reject';
+	change_status_label = 'outsource_client_reject';
+	note_category = 'Client feedback';
     }
 
     $('#task_reject_note').val('');
@@ -4204,19 +4217,20 @@ $('#selectMonthProject').change(function(){
 
 });
 
-function create_table_row(duration){
+function create_table_row(duration, msg){
 
     $("#tbl_asset_build").html('');
-  
+
 
     months = []
     for ( i=0 ; i<duration; i++){
 	month = moment().subtract(i, 'month').format('MMM-YYYY');
 	months.push(month)
     }
-   
-    thead = '<thead><tr><th rowspan="2"><h4>TASK</h4></th><th colspan="2">Asset Build</th>';
-
+    if(msg == '')
+        thead = '<thead style="transform: translate(0px, 0px);"><tr><th rowspan="2"><h4>TASK</h4></th><th colspan="2">Asset Build</th>';
+    else
+        thead = '<thead style="transform: translate(0px, 0px);"><tr><th rowspan="2"><h4>TASK</h4></th><th colspan="2">'+msg+'</th>';
     th_row1 = '';
     th_row2 = '<th>Type</th><th>Done</th>';
 
@@ -4231,10 +4245,21 @@ function create_table_row(duration){
     tbody = '<tbody></tbody>';
 
     $("#tbl_asset_build").html(thead + tbody);
-
+    $("#tbl_shot_build").html(thead + tbody);
     return months
-	
+
 }
+
+$('#tab_asset_reports_month_wise').click(function(){
+    $('#download_task_report_month_wise').attr("onclick",
+    "$('#tbl_asset_build').table2excel({filename: 'month_wise_reports',exclude: '.noExl'});");
+});
+
+$('#tab_shot_reports_month_wise').click(function(){
+    $('#download_task_report_month_wise').attr("onclick",
+    "$('#tbl_shot_build').table2excel({filename: 'month_wise_asset_build',exclude: '.noExl'});");
+});
+
 
 function month_wise_reports(){
 
@@ -4243,16 +4268,18 @@ function month_wise_reports(){
 	alert("Please select valid project !!!");
     }
 
-    project = $("#selectMonthProject option[value='"+project_id+"']").text(); 
+    project = $("#selectMonthProject option[value='"+project_id+"']").text();
 
 
     duration = $("#selectMonthDuration").val();
 
-    months = create_table_row(duration);
+    asset_months = create_table_row(duration, "Shot Wise Data");
+
+    shot_months = create_table_row(duration, "Shot Wise Data");
 
     json_months = JSON.stringify(months)
 
-    start = moment().subtract(duration-1, 'months').startOf('month').format('YYYY-MM-DD');  
+    start = moment().subtract(duration-1, 'months').startOf('month').format('YYYY-MM-DD');
     end = moment().endOf('month').format('YYYY-MM-DD');
 
     parent_object_type = 'Asset Build'
@@ -4266,15 +4293,16 @@ function month_wise_reports(){
 	success: function(json){
 	    $.each(json,function(idx,obj){
 
-//		var users_data = obj.user_count;
-//		show_total_users(users_data);
-	
-//		var sequence_data = obj.sequence;
-//		create_sequence_table(sequence_data);
-		
-		var asset_build_data = obj.asset_build;
-		asset_build_monthly_reports(asset_build_data, months);
-	    });	    
+		if(obj.asset_build){
+		    var asset_build_data = obj.asset_build;
+		    asset_build_monthly_reports(asset_build_data, months);
+        }
+        if(obj.shot){
+		    var shot_build_data = obj.shot;
+		    shot_build_monthly_reports(shot_build_data, months);
+		    return false;
+	    }
+	    });
 	},
 	error: function(error){
 	    console.log("Error:"+error);
@@ -4282,6 +4310,160 @@ function month_wise_reports(){
 
     });
 }
+
+
+function shot_build_monthly_reports(data, months){
+
+    $.each(data, function(task,task_data){
+
+	task_name = '<td rowspan="5"><h3>'+task+'</h3></td>';
+	layout_data = '';
+	Animation_data = '';
+	lighting_data = '';
+	shave_hair = '';
+	set_dressing = ''
+	total_data = '';
+
+	if (task_data && task_data['Layout']){
+	    layout_data = '<td>Layout</td><td>'+task_data['Layout']['Percent']+'%</td>';
+	}else{
+	    layout_data = '<td>Layout</td><td>0%</td>';
+	}
+	if (task_data['Animation']){
+	    Animation_data = '<td>Animation</td><td>'+task_data['Animation']['Percent']+'%</td>';
+	}else{
+	    Animation_data = '<td>Animation</td><td>0%</td>';
+	}
+	if (task_data['Lighting']){
+	    lighting_data = '<td>Lighting</td><td>'+task_data['Lighting']['Percent']+'%</td>';
+	}else{
+	    lighting_data = '<td>Lighting</td><td>0%</td>';
+	}
+	if (task_data['Shave Hair']){
+	    shave_hair = '<td>Shave Hair</td><td>'+task_data['Shave Hair']['Percent']+'%</td>';
+	}else{
+	    shave_hair = '<td>Shave Hair</td><td>0%</td>';
+	}
+	if (task_data['Set Dressing']){
+	    set_dressing = '<td>Set Dressing</td><td>'+task_data['Set Dressing']['Percent']+'%</td>';
+	}else{
+	    set_dressing = '<td>Set Dressing</td><td>0%</td>';
+	}
+	if (task_data['Total']){
+	    total_data = '<td><strong style="color: #58fffc;">Total</strong></td><td><strong style="color: #58fffc;">'+task_data['Total']+'</strong></td><td><strong style="color: #58fffc;">'+task_data['Percent']+'%</strong></td>';
+	}
+	$.each($("#tbl_shot_build tr:eq(0) th"), function(idx) {
+	    if (idx <= 1)
+		return;
+
+	    head = $(this).text();
+	    tasks = '';
+	    if (task_data[head] && task_data[head]['Task']){
+		tasks = task_data[head]['Task'];
+	    }
+	    if (task_data[head] && task_data[head]['Count']){
+		total_data = total_data + '<td onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+tasks+'\')"><strong style="color: #58fffc;">'+task_data[head]['Count']+'</strong></td>';
+	    }else{
+		total_data = total_data + '<td><strong style="color: #58fffc;">0</strong></td>';
+	    }
+	    if (task_data[head] && task_data[head]['WIP']){
+		task_count_month_wise = task_data[head]['WIP']['Task'];
+		total_data = total_data + '<td onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_count_month_wise+'\')"><strong style="color: #58fffc;">'+task_data[head]['WIP']['Count']+'</strong></td>';
+	    }else{
+		total_data = total_data + '<td><strong style="color: #58fffc;">0</strong></td>';
+	    }
+	    if (task_data[head] && task_data[head]['Internal']){
+		task_count_month_wise = task_data[head]['Internal']['Task'];
+		total_data = total_data + '<td onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_count_month_wise+'\')"><strong style="color: #58fffc;">'+task_data[head]['Internal']['Count']+'</strong></td>';
+	    }else{
+		total_data = total_data + '<td><strong style="color: #58fffc;">0</strong></td>';
+	    }
+	    if (task_data[head] && task_data[head]['Review']){
+		task_count_month_wise = task_data[head]['Review']['Task'];
+		total_data = total_data + '<td onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_count_month_wise+'\')"><strong style="color: #58fffc;">'+task_data[head]['Review']['Count']+'</strong></td>';
+	    }else{
+		total_data = total_data + '<td><strong style="color: #58fffc;">0</strong></td>';
+	    }
+	    if (task_data[head] && task_data[head]['Approved']){
+        task_count_month_wise = task_data[head]['Approved']['Task'];
+		total_data = total_data + '<td onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_count_month_wise+'\')"><strong style="color: #58fffc;">'+task_data[head]['Approved']['Count']+'</strong></td>';
+	    }else{
+		total_data = total_data + '<td><strong style="color: #58fffc;">0</strong></td>';
+	    }
+
+
+	    if (task_data['Layout'] && task_data['Layout'][head]){
+		layout_data = layout_data + '\
+		<td style="background-color: #333333;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Layout'][head]['Total']['Task']+'\')"><strong style="color: #58fffc;">'+task_data['Layout'][head]['Total']['Count']+'</strong></td>\
+		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Layout'][head]['WIP']['Task']+'\')"><strong>'+task_data['Layout'][head]['WIP']['Count']+'</strong></td>\
+		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Layout'][head]['Internal']['Task']+'\')"><strong>'+task_data['Layout'][head]['Internal']['Count']+'</strong></td>\
+		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Layout'][head]['Review']['Task']+'\')"><strong>'+task_data['Layout'][head]['Review']['Count']+'</strong></td>\
+		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Layout'][head]['Approved']['Task']+'\')"><strong>'+task_data['Layout'][head]['Approved']['Count']+'</strong></td>\
+		';
+	    }else{
+		layout_data = layout_data + '<td style="background-color: #333333;"><strong style="color: #58fffc;">0</strong></td><td>0</td><td>0</td><td>0</td><td>0</td>';
+	    }
+
+	    if (task_data['Animation'] && task_data['Animation'][head]){
+		Animation_data = Animation_data + '\
+		<td style="background-color: #333333;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Animation'][head]['Total']['Task']+'\')"><strong style="color: #58fffc;">'+task_data['Animation'][head]['Total']['Count']+'</strong></td>\
+		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Animation'][head]['WIP']['Task']+'\')"><strong>'+task_data['Animation'][head]['WIP']['Count']+'</strong></td>\
+		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Animation'][head]['Internal']['Task']+'\')"><strong>'+task_data['Animation'][head]['Internal']['Count']+'</strong></td>\
+		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Animation'][head]['Review']['Task']+'\')"><strong>'+task_data['Animation'][head]['Review']['Count']+'</strong></td>\
+		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Animation'][head]['Approved']['Task']+'\')"><strong>'+task_data['Animation'][head]['Approved']['Count']+'</strong></td>\
+		';
+	    }else{
+		Animation_data = Animation_data + '<td style="background-color: #333333;"><strong style="color: #58fffc;">0</strong></td><td>0</td><td>0</td><td>0</td><td>0</td>';
+	    }
+
+	    if (task_data['Lighting'] && task_data['Lighting'][head]){
+		lighting_data = lighting_data + '\
+		<td style="background-color: #333333;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Lighting'][head]['Total']['Task']+'\')"><strong style="color: #58fffc;">'+task_data['Lighting'][head]['Total']['Count']+'</strong></td>\
+		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Lighting'][head]['WIP']['Task']+'\')"><strong>'+task_data['Lighting'][head]['WIP']['Count']+'</strong></td>\
+		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Lighting'][head]['Internal']['Task']+'\')"><strong>'+task_data['Lighting'][head]['Internal']['Count']+'</strong></td>\
+		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Lighting'][head]['Review']['Task']+'\')"><strong>'+task_data['Lighting'][head]['Review']['Count']+'</strong></td>\
+		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Lighting'][head]['Approved']['Task']+'\')"><strong>'+task_data['Lighting'][head]['Approved']['Count']+'</strong></td>\
+		';
+	    }else{
+		lighting_data = lighting_data + '<td style="background-color: #333333;"><strong style="color: #58fffc;">0</strong></td><td>0</td><td>0</td><td>0</td><td>0</td>';
+	    }
+	    if (task_data['Shave Hair'] && task_data['Shave Hair'][head]){
+		shave_hair = shave_hair + '\
+		<td style="background-color: #333333;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Shave Hair'][head]['Total']['Task']+'\')"><strong style="color: #58fffc;">'+task_data['Shave Hair'][head]['Total']['Count']+'</strong></td>\
+		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Shave Hair'][head]['WIP']['Task']+'\')"><strong>'+task_data['Shave Hair'][head]['WIP']['Count']+'</strong></td>\
+		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Shave Hair'][head]['Internal']['Task']+'\')"><strong>'+task_data['Shave Hair'][head]['Internal']['Count']+'</strong></td>\
+		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Shave Hair'][head]['Review']['Task']+'\')"><strong>'+task_data['Shave Hair'][head]['Review']['Count']+'</strong></td>\
+		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Shave Hair'][head]['Approved']['Task']+'\')"><strong>'+task_data['Shave Hair'][head]['Approved']['Count']+'</strong></td>\
+		';
+	    }else{
+		shave_hair = shave_hair + '<td style="background-color: #333333;"><strong style="color: #58fffc;">0</strong></td><td>0</td><td>0</td><td>0</td><td>0</td>';
+	    }
+	    if (task_data['Set Dressing'] && task_data['Set Dressing'][head]){
+		set_dressing = set_dressing + '\
+		<td style="background-color: #333333;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Set Dressing'][head]['Total']['Task']+'\')"><strong style="color: #58fffc;">'+task_data['Set Dressing'][head]['Total']['Count']+'</strong></td>\
+		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Set Dressing'][head]['WIP']['Task']+'\')"><strong>'+task_data['Set Dressing'][head]['WIP']['Count']+'</strong></td>\
+		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Set Dressing'][head]['Internal']['Task']+'\')"><strong>'+task_data['Set Dressing'][head]['Internal']['Count']+'</strong></td>\
+		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Set Dressing'][head]['Review']['Task']+'\')"><strong>'+task_data['Set Dressing'][head]['Review']['Count']+'</strong></td>\
+		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Set Dressing'][head]['Approved']['Task']+'\')"><strong>'+task_data['Set Dressing'][head]['Approved']['Count']+'</strong></td>\
+		';
+	    }
+	    else{
+		set_dressing = set_dressing + '<td style="background-color: #333333;"><strong style="color: #58fffc;">0</strong></td><td>0</td><td>0</td><td>0</td><td>0</td>';
+	    }
+
+	});
+	tr_layout = '<tr>'+task_name+layout_data+'</tr>';
+	tr_animation = '<tr>'+Animation_data+'</tr>';
+	tr_lighting = '<tr>'+lighting_data+'</tr>';
+	tr_shave = '<tr>'+shave_hair+'</tr>';
+	tr_dressing = '<tr>'+set_dressing+'</tr>';
+	tr_total = '<tr style="background-color: #333333;">'+total_data+'</tr>';
+	$("#tbl_shot_build").append(tr_layout+tr_animation+tr_lighting+tr_shave+tr_dressing+tr_total);
+
+    });
+
+}
+
 function asset_build_monthly_reports(data, months){
 
     $.each(data, function(task,task_data){
@@ -4290,7 +4472,7 @@ function asset_build_monthly_reports(data, months){
 	char_data = '';
 	prop_data = '';
 	set_data = '';
-	total_data = '';	
+	total_data = '';
 
 	if (task_data && task_data['Character']){
 	    char_data = '<td>Character</td><td>'+task_data['Character']['Percent']+'%</td>';
@@ -4319,30 +4501,32 @@ function asset_build_monthly_reports(data, months){
 	    if (task_data[head] && task_data[head]['Task']){
 		tasks = task_data[head]['Task'];
 	    }
-
 	    if (task_data[head] && task_data[head]['Count']){
-		console.log(tasks);
 		total_data = total_data + '<td onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+tasks+'\')"><strong style="color: #58fffc;">'+task_data[head]['Count']+'</strong></td>';
 	    }else{
 		total_data = total_data + '<td><strong style="color: #58fffc;">0</strong></td>';
 	    }
 	    if (task_data[head] && task_data[head]['WIP']){
-		total_data = total_data + '<td onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+tasks+'\')"><strong style="color: #58fffc;">'+task_data[head]['WIP']+'</strong></td>';
+		task_count_month_wise = task_data[head]['WIP']['Task'];
+		total_data = total_data + '<td onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_count_month_wise+'\')"><strong style="color: #58fffc;">'+task_data[head]['WIP']['Count']+'</strong></td>';
 	    }else{
 		total_data = total_data + '<td><strong style="color: #58fffc;">0</strong></td>';
 	    }
 	    if (task_data[head] && task_data[head]['Internal']){
-		total_data = total_data + '<td onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+tasks+'\')"><strong style="color: #58fffc;">'+task_data[head]['Internal']+'</strong></td>';
+		task_count_month_wise = task_data[head]['Internal']['Task'];
+		total_data = total_data + '<td onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_count_month_wise+'\')"><strong style="color: #58fffc;">'+task_data[head]['Internal']['Count']+'</strong></td>';
 	    }else{
 		total_data = total_data + '<td><strong style="color: #58fffc;">0</strong></td>';
 	    }
 	    if (task_data[head] && task_data[head]['Review']){
-		total_data = total_data + '<td onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+tasks+'\')"><strong style="color: #58fffc;">'+task_data[head]['Review']+'</strong></td>';
+		task_count_month_wise = task_data[head]['Review']['Task'];
+		total_data = total_data + '<td onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_count_month_wise+'\')"><strong style="color: #58fffc;">'+task_data[head]['Review']['Count']+'</strong></td>';
 	    }else{
 		total_data = total_data + '<td><strong style="color: #58fffc;">0</strong></td>';
 	    }
 	    if (task_data[head] && task_data[head]['Approved']){
-		total_data = total_data + '<td onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+tasks+'\')"><strong style="color: #58fffc;">'+task_data[head]['Approved']+'</strong></td>';
+        task_count_month_wise = task_data[head]['Approved']['Task'];
+		total_data = total_data + '<td onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_count_month_wise+'\')"><strong style="color: #58fffc;">'+task_data[head]['Approved']['Count']+'</strong></td>';
 	    }else{
 		total_data = total_data + '<td><strong style="color: #58fffc;">0</strong></td>';
 	    }
@@ -4355,7 +4539,7 @@ function asset_build_monthly_reports(data, months){
 		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Character'][head]['Internal']['Task']+'\')"><strong>'+task_data['Character'][head]['Internal']['Count']+'</strong></td>\
 		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Character'][head]['Review']['Task']+'\')"><strong>'+task_data['Character'][head]['Review']['Count']+'</strong></td>\
 		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Character'][head]['Approved']['Task']+'\')"><strong>'+task_data['Character'][head]['Approved']['Count']+'</strong></td>\
-		'; 
+		';
 	    }else{
 		char_data = char_data + '<td style="background-color: #333333;"><strong style="color: #58fffc;">0</strong></td><td>0</td><td>0</td><td>0</td><td>0</td>';
 	    }
@@ -4367,11 +4551,11 @@ function asset_build_monthly_reports(data, months){
 		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Prop'][head]['Internal']['Task']+'\')"><strong>'+task_data['Prop'][head]['Internal']['Count']+'</strong></td>\
 		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Prop'][head]['Review']['Task']+'\')"><strong>'+task_data['Prop'][head]['Review']['Count']+'</strong></td>\
 		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Prop'][head]['Approved']['Task']+'\')"><strong>'+task_data['Prop'][head]['Approved']['Count']+'</strong></td>\
-		'; 
+		';
 	    }else{
 		prop_data = prop_data + '<td style="background-color: #333333;"><strong style="color: #58fffc;">0</strong></td><td>0</td><td>0</td><td>0</td><td>0</td>';
 	    }
-	    
+
 	    if (task_data['Set'] && task_data['Set'][head]){
 		set_data = set_data + '\
 		<td style="background-color: #333333;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Set'][head]['Total']['Task']+'\')"><strong style="color: #58fffc;">'+task_data['Set'][head]['Total']['Count']+'</strong></td>\
@@ -4379,7 +4563,7 @@ function asset_build_monthly_reports(data, months){
 		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Set'][head]['Internal']['Task']+'\')"><strong>'+task_data['Set'][head]['Internal']['Count']+'</strong></td>\
 		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Set'][head]['Review']['Task']+'\')"><strong>'+task_data['Set'][head]['Review']['Count']+'</strong></td>\
 		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Set'][head]['Approved']['Task']+'\')"><strong>'+task_data['Set'][head]['Approved']['Count']+'</strong></td>\
-		'; 
+		';
 	    }else{
 		set_data = set_data + '<td style="background-color: #333333;"><strong style="color: #58fffc;">0</strong></td><td>0</td><td>0</td><td>0</td><td>0</td>';
 	    }
@@ -4390,25 +4574,17 @@ function asset_build_monthly_reports(data, months){
 	tr_set = '<tr>'+set_data+'</tr>';
 	tr_total = '<tr style="background-color: #333333;">'+total_data+'</tr>';
 	$("#tbl_asset_build").append(tr_char+tr_prop+tr_set+tr_total);
-    
+
     });
 }
 function show_month_dialog(task,month,tasks){
 
-/*
-    arr_task = [];
-    if (tasks){
-	arr_task = tasks.split(',');
-    }
-    $.each(arr_task, function(idx,task){
-	alert(task);	
-    });
-*/
     all_tasks = tasks.replace(/,/g,'<br>')
     $('#show_monthly_task').html('');
     $('#show_monthly_task').append('<p>Task Name : <strong style="color: #00ff1e;">'+task+'<strong></p>');
     $('#show_monthly_task').append('<p>Month : <strong style="color: #00ff1e;">'+month+'<strong></p>');
-    $('#show_monthly_task').append('<p><strong>Tasks : <strong></p><p>'+all_tasks+'</p>');
+    $('#show_monthly_task').append('<ul class="list-group" style="overflow: auto;height: 300px;"><strong>Tasks : <strong></p>'+
+    '<li class="list-group-item" style="border: 1px solid rgba(255,255,255,255);"><p>'+all_tasks+'</p>');
     $("#myModal").modal('show');
 }
 function mgm_dashboard(){
@@ -6560,7 +6736,6 @@ var digit_pattern = /^[0-9]+$/;
 }*/
 $('#id_asset_name').focusout(function(){
     asset_name = $('#id_asset_name').val().trim();
-    console.log(asset_name);
     if(!pattern.test(asset_name)){
         error_message("Asset Name must contain alphabets");
         $('#id_asset_name').val('');

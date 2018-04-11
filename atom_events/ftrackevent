@@ -16,10 +16,11 @@
 ### END INIT INFO
 
 # Variables
+#set -x
 PGREP=/usr/bin/pgrep
 ZERO=0
-SEARCH="daily_backup_task_event"
-EVENT="/ASE/01prj/NXP/app/ftrack_event/daily_backup_task_event_v00.py"
+SEARCH="atom_events/atom_ftrack_event"
+EVENT="/opt/djangoenv/atomTrack/atom_events/atom_ftrack_event.py"
 PYTHON=/ASE/01prj/NXP/code/python/.pyenv/shims/python
 
 export PYTHONPATH="$PYTHONPATH:/ASE/01prj/NXP/code/python/lib/python2.7/site-packages/:/ASE/01prj/NXP/code/python:/ASE/01prj/NXP/code/python/ftrack/python-api:/ASE/01prj/NXP/code/ase_tools:/ASE/01prj/NXP/code/bin/:/ASE/01prj/NXP/code/extra_pkg/site-packages"
