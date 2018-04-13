@@ -402,8 +402,6 @@ class Activity:
                     review_status = request.POST.get('status')
                     data = self.get_review_tasks(project, review_status)
                 elif object_name == 'display_project_thumbnail_manner':
-                    project_name = ''
-                    project_ftrack_id = ''
                     data = self.display_project_thumbnail_manner()
                 elif object_name == 'display_sequence_details':
                     project_name = request.POST.get('project_name')
@@ -433,7 +431,7 @@ class Activity:
                     start_frame = request.POST.get('sf')
                     end_frame = request.POST.get("ef")
                     prj_name = request.POST.get('prj_name')
-                    seq_name = request.POST.get("seq_name")
+                    # seq_name = request.POST.get("seq_name")
                     data = self.get_fps_seconds(start_frame, end_frame, prj_name)
                 elif object_name == 'Duplicate_name_check':
                     task_name_check = request.POST.get("name")
@@ -721,7 +719,7 @@ class Activity:
 
         # asset = self.session.query(query).all()
 
-        type_list = []
+        # type_list = []
         # flag = dict()
         # for data in asset:
         #     name = data['type']['name']
@@ -818,7 +816,6 @@ class Activity:
         :return:
         """
 
-        print(proj_id, obj_type);
         if not proj_id:
             return False
         if obj_type and obj_type != 'All':
@@ -1511,7 +1508,7 @@ class Activity:
             asset_version_obj = self.session.query("AssetVersion where id is '%s'" % object_id).first()
             parent_id = asset_version_obj['asset']['parent']['id']
             asset_reject_obj = self.session.query(
-                "AssetVersion where asset.parent.id is '%s' order by date desc" % (parent_id))
+                "AssetVersion where asset.parent.id is '%s' order by date desc" % parent_id)
             flag_dict = {}
             for ele in asset_reject_obj:
                 name = ele['link'][-1]['name']
@@ -2318,10 +2315,10 @@ class Activity:
             first = str(first) + ' 00:00:00'
             last = str(last) + ' 23:59:59'
 
-        months = json.loads(months)
+        # months = json.loads(months)
 
-        start_date = datetime.datetime.strptime(str(first), '%Y-%m-%d %H:%M:%S')
-        end_date = datetime.datetime.strptime(str(last), '%Y-%m-%d %H:%M:%S')
+        # start_date = datetime.datetime.strptime(str(first), '%Y-%m-%d %H:%M:%S')
+        # end_date = datetime.datetime.strptime(str(last), '%Y-%m-%d %H:%M:%S')
 
         task_col = self.mongo_database[project + '_tasks']
 
@@ -4262,7 +4259,7 @@ class Activity:
         if 'users' not in details:
             print("No user found to send a reject mail")
 
-        #        subject = 'Task Reject (' + details['task_path'] + ')(' + details['status'] + ')['+details['pub_version']+']'
+        # subject = 'Task Reject (' + details['task_path'] + ')(' + details['status'] + ')['+details['pub_version']+']'
         subject = 'Task Reject (' + details['task_path'] + ') [' + details['status'] + ']'
         from_addr = details['added_by'] + '@intra.madassemblage.com'
 
@@ -4703,15 +4700,15 @@ class Activity:
                     added_users.append(a_user)
 
             for user in added_users:
-                obj_user = ase_ftrack.add_user_in_project(self.session, user, proj_id, True)
+                obj_user = ase_ftrack.add_user_in_project(self.session, user, project_id, True)
 
                 #                obj_user = self.session.query('User where username is "%s"' % (user)).one()
                 self.session.create('Appointment', {
-                    'context': obj_tasks,
+                    'context': task_obj,
                     'resource': obj_user,
                     'type': 'assignment'
                 })
-
+            task_id = task_obj['id']
             deleted_users = list()
             for d_user in org_users_list:
                 if d_user != '---' and d_user not in changed_users_list:
@@ -4724,7 +4721,7 @@ class Activity:
                             task_id, del_user)).first()
                     self.session.delete(obj_app)
 
-    #        self.session.commit()
+        self.session.commit()
 
     '''
         Author:- Kunal Jamdade
@@ -4861,7 +4858,7 @@ class Activity:
             if 'endframe' in ele:
                 shot_dict['endframe'] = ele['endframe']
 
-            #            shot_dict['total_frames'] = int(ele['endframe'].split('.')[0]) - int(ele['startframe'].split('.')[0])
+            # shot_dict['total_frames'] = int(ele['endframe'].split('.')[0]) - int(ele['startframe'].split('.')[0])
             shot_dict['total_frames'] = int(str(ele['endframe']).split('.')[0]) - int(
                 str(ele['startframe']).split('.')[0])
 

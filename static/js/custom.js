@@ -1234,7 +1234,7 @@ function create_new_table_status_count(div_check){
 
     var row = $(thead[0].insertRow(-1));
 
-    var headerCell = $('<th style="width: 400px;" class="head_class" name="Status" title="Double Click to sort"/>');
+    var headerCell = $('<th style="width: 425px;" class="head_class" name="Status" title="Double Click to sort"/>');
     var header = "Status";
 
     headerCell.html('<i class="glyphicon glyphicon-sort-by-alphabet"></i>&nbsp;'+header);
@@ -1319,7 +1319,7 @@ function get_status_hash(){
 
     });
 
-    var statuses = ['Outsource','Outsource Reject','Outsource Approved','Awaiting Data','Received Data','Ready to start','In progress','Ready to Publish','Pending Internal Review','Internal Reject','Internal Approved','Client Reject','Pending Client Review','Client approved','Completed','Total'];
+    var statuses = ['Outsource','Outsource Reject','Outsource Approved','Outsource Client Reject','Outsource Client Review','Outsource Client Approved','Awaiting Data','Received Data','Ready to start','In progress','Ready to Publish','Pending Internal Review','Internal Reject','Internal Approved','Client Reject','Pending Client Review','Client approved','Completed','Total'];
 
     var new_status_hash = {};
     for (i in statuses){
