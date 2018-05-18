@@ -44,12 +44,6 @@
   display: none;
 }
 
-
-
-
-
-
-
 .light_image_box {
   display: none;
   position: absolute;
@@ -65,25 +59,38 @@
   overflow: visible;
 }
 
-/*#boxclose {
-  float: right;
-  cursor: pointer;
-  color: #fff;
-  border: 1px solid #AEAEAE;
-  border-radius: 3px;
-  background: #222222;
-  font-size: 31px;
-  font-weight: bold;
-  display: inline-block;
-  line-height: 0px;
-  padding: 11px 3px;
-  position: absolute;
-  right: 2px;
-  top: 2px;
-  z-index: 1002;
-  opacity: 0.9;
+#sequence_date_wise{
+    padding:6px;
+    width:250px;
+    border-radius:4px
 }
 
-.boxclose:before {
-  content: "×";
-}*/
+#div_project_details{
+overflow:auto;
+overflow-y:auto;
+height:700px;
+width:100%;
+}
+
+#accordion_id{
+overflow:auto;
+overflow-y:auto;
+height:400px;
+width:50%;
+}
+
+.panel-group{
+margin-bottom: 1px;
+}
+
+#modal_data{
+overflow:auto;
+height: 385px;
+}
+
+ul.dashboard-list li{
+padding: 7px 0;
+list-style: none;
+border-bottom: 0px;
+border-top: 0px;
+}

@@ -129,29 +129,6 @@
       "Fur Shape"
     ]
   },
-  "mangesh.panchal": {
-    "role": "Co-ordinator",
-    "columns": [
-      "Modeling",
-      "Blend Shape"
-    ],
-    "group": "Production",
-    "name": "mangesh.panchal",
-    "departments": [
-      "Modeling"
-    ]
-  },
-  "tushar.chavan": {
-    "role": "Co-ordinator",
-    "columns": [
-      "Modeling"
-    ],
-    "group": "Production",
-    "name": "tushar.chavan",
-    "departments": [
-      "Modeling"
-    ]
-  },
   "pradeep.patel": {
     "role": "Co-ordinator",
     "columns": [],
@@ -167,22 +144,6 @@
     "group": "Production",
     "name": "priyank.raj",
     "departments": []
-  },
-  "neha.thakur": {
-    "role": "Co-ordinator",
-    "columns": [
-      "Animation",
-      "Layout",
-      "Blocking",
-      "Animation Stereo",
-      "Final Animation Stereo",
-      "Layout Stereo"
-    ],
-    "group": "Production",
-    "name": "neha.thakur",
-    "departments": [
-      "Surfacing"
-    ]
   },
   "prafull.sakharkar": {
     "role": "Supervisor",
@@ -284,6 +245,7 @@
       "Lighting",
       "Render",
       "Shot Finaling",
+      "Anim Tech Check",
       "Cloth",
       "Shave Hair",
       "CFX",
@@ -303,6 +265,7 @@
       "Lighting",
       "Render",
       "Shot Finaling",
+      "Anim Tech Check",
       "Cloth",
       "Shave Hair",
       "CFX",
@@ -398,6 +361,7 @@
       "Lighting",
       "Modeling",
       "PreLighting",
+      "Previz",
       "Proxy Set",
       "Render",
       "Rigging",
@@ -417,7 +381,7 @@
     ]
   },
   "santosh.gowda": {
-    "role": "Co-ordinator",
+    "role": "Supervisor",
     "columns": [
       "Modeling",
       "Rigging",
@@ -485,7 +449,8 @@
       "Rig Test",
       "Layout",
       "Previz",
-      "Animation"
+      "Animation",
+      "FX"
     ],
     "group": "Production",
     "name": "krutika.shinde",
@@ -542,7 +507,13 @@
       "Layout",
       "Previz",
       "Animation",
-      "Blocking"
+      "Blocking",
+      "FX",
+      "Anim Tech Check",
+      "Shave Hair",
+      "Lighting",
+      "Shot Finaling",
+      "Cloth"
     ],
     "group": "Production",
     "name": "sanket.shembekar",
@@ -550,8 +521,38 @@
       "Animation"
     ]
   },
-  "vikram.donode": {
+  "hardik.trivedi": {
     "role": "Co-ordinator",
+    "columns": [
+      "Rig Test",
+      "Layout",
+      "Previz",
+      "Animation",
+      "Blocking"
+    ],
+    "group": "Production",
+    "name": "hardik.trivedi",
+    "departments": [
+      "Animation"
+    ]
+  },
+  "rohit.dalvi": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Animation",
+      "Layout",
+      "Modeling",
+      "Rigging",
+      "Texturing"
+    ],
+    "group": "Production",
+    "name": "rohit.dalvi",
+    "departments": [
+      "Animation"
+    ]
+  },
+  "vikram.donode": {
+    "role": "Supervisor",
     "columns": [
       "Animation",
       "Layout",
@@ -571,13 +572,16 @@
     ]
   },
   "shishir.singh": {
-    "role": "Co-ordinator",
+    "role": "Supervisor",
     "columns": [
-      "Animation",
-      "Layout",
-      "Blocking",
-      "Previz",
-      "Anim Tech Check"
+      "Lighting",
+      "Render",
+      "Fur Shape",
+      "FX",
+      "Cloth",
+      "Shave Hair",
+      "CFX",
+      "Shot Finaling"
     ],
     "group": "Production",
     "name": "shishir.singh",
@@ -595,7 +599,7 @@
     ]
   },
   "vinod.sawant": {
-    "role": "Co-ordinator",
+    "role": "Supervisor",
     "columns": [],
     "group": "Production",
     "name": "vinod.sawant",

@@ -20,4 +20,5 @@ urlpatterns = [
     url(r'^task_entity/', act.show_task_entities, name='show_task_entities'),
     url(r'^artist_prod/', act.artist_productivity, name='artist_productivity'),
     url(r'^month_wise/', act.month_wise_reports, name='month_wise_reports'),
+    url(r'^sequence_delivery/', act.sequence_delivery, name='sequence_delivery'),
 ]

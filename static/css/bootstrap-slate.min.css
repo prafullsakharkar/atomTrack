@@ -5996,3 +5996,12 @@ a.thumbnail:hover,a.thumbnail:focus,a.thumbnail.active {
             border-width: 5px;
             border-style: double;
         }
+
+.selected_tr{
+    background-color: #2F4F4F;
+}
+
+.selected_td{
+    border: 2px solid red;
+
+}

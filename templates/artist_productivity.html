@@ -63,6 +63,21 @@
                 </select>
               </div>
             </div>
+            
+            <div class="col-at-3">
+                  <div class="controls" id="department" style="display:block">
+                      <label class="control-label">Task Wise : &nbsp;</label>
+                      <select id="dept_names" data-rel="chosen" data-placeholder="Select one...">
+
+                          <option value="all" selected="selected">All</option>
+                          {% for tasks in data.all_tasks %}
+                          <option value="{{tasks}}">{{tasks}}</option>
+                          {% endfor %}
+
+                      </select>
+                  </div>
+              </div>
+            
             <div class="col-at-3">
               <label class="control-label">Date Range : &nbsp;</label>
               <div id="reportrange" class="pull-right"

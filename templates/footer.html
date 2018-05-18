@@ -81,5 +81,44 @@
 
     cb(start, end);
 
+    /*
+        Function to show 6 monthly dates.
+    */
+    var start_date = moment().subtract(182, 'days');
+    var end_date = moment();
+    function c_b(start_date, end_date){
+        $("#report_range span").html(start_date.format('YYYY-MM-DD') + ' : ' + end_date.format('YYYY-MM-DD'));
+    }
+
+    $("#report_range").daterangepicker({
+        startDate: start_date,
+        endDate: end_date
+        <!--ranges: {-->
+           <!--'Last 6 Months': [moment().subtract(182, 'days'), moment()],-->
+        <!--}-->
+    }, c_b);
+    c_b(start_date, end_date);
+
+    var startDate = moment();
+    var end = moment();
+    $("#sequence_date_wise").daterangepicker({
+        startDate: startDate,
+        endDate : end,
+        ranges: {
+           'Current Date': [moment().subtract(1825, 'days'), moment()],
+           'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+           'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+           'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+           'This Month': [moment().startOf('month'), moment().endOf('month')],
+           'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+        }
+    }, assign_date);
+    assign_date(startDate, end);
+    function assign_date(startDate, endDate){
+        if(startDate == "")
+            $("#sequence_date_wise span").html(startDate + " : " + endDate.format("YYYY-MM-DD"));
+        else
+            $("#sequence_date_wise span").html(startDate.format("YYYY-MM-DD") + " : " + endDate.format("YYYY-MM-DD"));
+    }
 </script>
 

@@ -63,12 +63,41 @@
           "vijay.nathawat@intra.madassemblage.com",
           "pradeep.patel@intra.madassemblage.com",
           "vinod.sawant@intra.madassemblage.com"
-        ]
+        ],
+        "Anim Tech Check": [
+          "vaishal.shah@intra.madassemblage.com",
+          "vikram.donode@intra.madassemblage.com",
+          "krutika.shinde@intra.madassemblage.com",
+          "atif.khan@intra.madassemblage.com",
+          "sanket.shembekar@intra.madassemblage.com",
+          "pradeep.patel@intra.madassemblage.com",
+          "vinod.sawant@intra.madassemblage.com"
+        ],
+        "Shot Finaling": [
+          "vaishal.shah@intra.madassemblage.com"
+        ],
+        "Render": [
+          "render@intra.madassemblage.com"
+        ],
+        "Matte Painting": [
+          "vaishal.shah@intra.madassemblage.com",
+          "santosh.gowda@intra.madassemblage.com",
+          "suneel.seepa@intra.madassemblage.com",
+          "vijay.nathawat@intra.madassemblage.com",
+          "pradeep.patel@intra.madassemblage.com",
+          "vinod.sawant@intra.madassemblage.com"
+        ],
+       "Set Dressing": [
+          "vaishal.shah@intra.madassemblage.com",
+          "santosh.gowda@intra.madassemblage.com",
+          "suneel.seepa@intra.madassemblage.com",
+          "vijay.nathawat@intra.madassemblage.com",
+          "pradeep.patel@intra.madassemblage.com",
+          "vinod.sawant@intra.madassemblage.com"
+        ]       
       },
       "IC2": {
-        "Lighting": [
-          "mahendra.upadhyay@intra.madassemblage.com",
-          "vibhor.tyagi@intra.madassemblage.com",
+        "Lighting": [                  
           "urmila.kanse@intra.madassemblage.com",
           "shahid.shaikh@intra.madassemblage.com",
           "vaishal.shah@intra.madassemblage.com",
@@ -165,10 +194,12 @@
           "swapnil.khotkar@intra.madassemblage.com"
         ],
         "Animation": [
-          "swapnil.khotkar@intra.madassemblage.com"
+          "swapnil.khotkar@intra.madassemblage.com",
+          "rohit.dalvi@intra.madassemblage.com"
         ],
         "Layout": [
-          "swapnil.khotkar@intra.madassemblage.com"
+          "swapnil.khotkar@intra.madassemblage.com",
+          "rohit.dalvi@intra.madassemblage.com"
         ]
       },
       "SW9": {
@@ -213,17 +244,13 @@
     "FTP Upload": {
       "AAJ": {
         "Lighting": [
-          "priyank.raj@intra.madassemblage.com",
-          "mahendra.upadhyay@intra.madassemblage.com",
-          "vibhor.tyagi@intra.madassemblage.com",
+          "priyank.raj@intra.madassemblage.com",                 
           "urmila.kanse@intra.madassemblage.com",
           "shahid.shaikh@intra.madassemblage.com",
           "swapnil.khotkar@intra.madassemblage.com"
         ],
         "FX": [
-          "priyank.raj@intra.madassemblage.com",
-          "mahendra.upadhyay@intra.madassemblage.com",
-          "vibhor.tyagi@intra.madassemblage.com",
+          "priyank.raj@intra.madassemblage.com",                   
           "urmila.kanse@intra.madassemblage.com",
           "shahid.shaikh@intra.madassemblage.com",
           "swapnil.khotkar@intra.madassemblage.com"
@@ -291,9 +318,7 @@
       },
       "IC2": {
         "Lighting": [
-          "priyank.raj@intra.madassemblage.com",
-          "mahendra.upadhyay@intra.madassemblage.com",
-          "vibhor.tyagi@intra.madassemblage.com",
+          "priyank.raj@intra.madassemblage.com",                  
           "urmila.kanse@intra.madassemblage.com",
           "shahid.shaikh@intra.madassemblage.com",
           "vaishal.shah@intra.madassemblage.com",
@@ -301,9 +326,7 @@
           "vinod.sawant@intra.madassemblage.com"
         ],
         "FX": [
-          "priyank.raj@intra.madassemblage.com",
-          "mahendra.upadhyay@intra.madassemblage.com",
-          "vibhor.tyagi@intra.madassemblage.com",
+          "priyank.raj@intra.madassemblage.com",                 
           "urmila.kanse@intra.madassemblage.com",
           "shahid.shaikh@intra.madassemblage.com",
           "vaishal.shah@intra.madassemblage.com",

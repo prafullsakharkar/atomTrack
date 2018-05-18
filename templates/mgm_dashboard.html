@@ -4,133 +4,329 @@
 <body>
 {% include "top_bar.html" %}
 <div class="ch-container">
-  <div class="row">
-  </div>
-  <!--/span-->
-  <!-- left menu ends -->
-
-  <noscript>
-    <div class="alert alert-block col-md-12">
-      <h4 class="alert-heading">Warning!</h4>
-
-      <p>You need to have <a href="http://en.wikipedia.org/wiki/JavaScript" target="_blank">JavaScript</a>
-        enabled to use this site.</p>
+    <div class="row">
     </div>
-  </noscript>
-  <div class="row">
-    <!-- leftside menu start -->
-    {% include "left_side_menu.html" %}
-    <!-- leftside menu start -->
+    <!--/span-->
+    <!-- left menu ends -->
 
-    <div class="col-at-12" id="panel_big">
+    <noscript>
+        <div class="alert alert-block col-md-12">
+            <h4 class="alert-heading">Warning!</h4>
 
-      <ul class="breadcrumb">
-        <li>
-          <a href="#">Main</a>
-        </li>
-        <li>
-          <a href="#">Management &nbsp; Dashboard</a>
-        </li>
-      </ul>
-      <div class="sidebar-nav">
-        <div class="box-content row">
-          <div class="box col-at-11">
-
-            <div class="col-at-sm-3" style="display:block;">
-              <div class="controls">
-                <label class="control-label" for="selectMGMDashProject">Projects : &nbsp;</label>
-                <select id="selectMGMDashProject" data-rel="chosen" style="width: 122px;">
-                  {% for proj,id in data.projects.items %}
-                  {% if data.current_project == proj %}
-                  <option value="{{id}}" selected>{{proj}}</option>
-                  {% else %}
-                  <option value="{{id}}">{{proj}}</option>
-                  {% endif %}
-                  {% endfor %}
-                </select>
-              </div>
-            </div>
-
-          </div>
-
-          <div class="box col-at-11">
-
-            <div class="box-header well">
-              <h2><i class="glyphicon glyphicon-user"></i> &nbsp; Users Count</h2>
-            </div>
-            <div style="overflow:auto; overflow-y:auto; height:165px"
-                 id="div_dash_users_count">
-
-            </div>
-
-            <div class="box-header well">
-              <h2><i class="glyphicon glyphicon-info-sign"></i> &nbsp; Report : Sequence</h2>
-              <div class="box-icon">
-                <button class="btn btn-inverse btn-default btn-xs" id="download_user_task"
-                        onclick="$('#tbl_sequence').table2excel({filename: 'sequence_details',exclude: '.noExl'});">
-                  <i class="glyphicon glyphicon-save icon-white"></i></button>
-              </div>
-            </div>
-            <div style="overflow:auto; overflow-y:auto; height:315px"
-                 id="div_dash_sequence_details">
-              <table class="table-hover table-condensed table-bordered" id="tbl_sequence">
-                <thead>
-                <tr>
-                  <th>Sequnce</th>
-                  <th>Shots</th>
-                  <th>Status</th>
-                  {% for obj_name,task_name in task_temp_data.items %}
-                  {% for type,task_list in task_name.items %}
-                  {% if type == 'Static shot' %}
-                  {% for task in task_list %}
-                  <th>{{ task }}</th>
-                  {% endfor %}
-                  {% endif %}
-                  {% endfor %}
-                  {% endfor %}
-
-                </tr>
-                </thead>
-              </table>
-            </div>
-
-            <div class="box-header well">
-              <h2><i class="glyphicon glyphicon-info-sign"></i> &nbsp; Report : Asset Build</h2>
-              <div class="box-icon">
-                <button class="btn btn-inverse btn-default btn-xs" id="download_asset_build"
-                        onclick="$('#tbl_asset_build').table2excel({filename: 'asset_build_details',exclude: '.noExl'});">
-                  <i class="glyphicon glyphicon-save icon-white"></i></button>
-              </div>
-            </div>
-            <div style="overflow:auto; overflow-y:auto; height:285px"
-                 id="div_dash_asset_build_details">
-              <table class="table-hover table-condensed table-bordered" id="tbl_asset_build">
-                <thead>
-                <tr>
-                  <th>Asset Type</th>
-                  <th>Total</th>
-                  <th>Status</th>
-                  {% for obj_name,task_name in task_temp_data.items %}
-                  {% for type,task_list in task_name.items %}
-                  {% if type == 'All Asset Build' %}
-                  {% for task in task_list %}
-                  <th>{{ task }}</th>
-                  {% endfor %}
-                  {% endif %}
-                  {% endfor %}
-                  {% endfor %}
-
-                </tr>
-                </thead>
-              </table>
-            </div>
-
-          </div>
-
+            <p>You need to have <a href="http://en.wikipedia.org/wiki/JavaScript" target="_blank">JavaScript</a>
+                enabled to use this site.</p>
         </div>
-      </div>
+    </noscript>
+    <div class="row">
+        <!-- leftside menu start -->
+        {% include "left_side_menu.html" %}
+        <!-- leftside menu start -->
+
+        <div class="col-at-12" id="panel_big">
+
+            <ul class="breadcrumb">
+                <li>
+                    <a href="#">Main</a>
+                </li>
+                <li>
+                    <a href="#">Management &nbsp; Dashboard</a>
+                </li>
+            </ul>
+            <div class="sidebar-nav">
+                <div class="box-content row">
+                    <div class="box col-at-11">
+                        <div class="col-at-sm-3" style="display:block;">
+                            <div class="controls">
+                                <label class="control-label" for="selectMGMDashProject">Projects : &nbsp;</label>
+                                <select id="selectMGMDashProject" data-rel="chosen" style="width: 122px;">
+                                    {% for proj,id in data.projects.items %}
+                                    {% if data.current_project == proj %}
+                                    <option value="{{id}}" selected>{{proj}}</option>
+                                    {% else %}
+                                    <option value="{{id}}">{{proj}}</option>
+                                    {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="box col-at-11">
+                        <ul class="nav nav-tabs" style="border-bottom:2px;">
+                            <li class="active"><a data-toggle="tab" href="#Internal">Internal</a></li>
+                            <li><a data-toggle="tab" href="#OutSource">OutSource</a></li>
+                        </ul>
+                        <div class="tab-content">
+                            <div id="Internal" class="tab-pane fade in active">
+                                <div class="panel-group" id="accordion">
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading" id="headingOne">
+                                            <h5 class="panel-title">
+                                                <a data-toggle="collapse" href="#sequence" data-parent="#accordion">
+                                                    Sequence Reports
+                                                </a>
+                                                <div class="box-icon">
+                                                    <button class="btn btn-inverse btn-default btn-xs"
+                                                            id="download_user_task"
+                                                            onclick="$('#tbl_sequence').table2excel(
+                                                            {filename: 'sequence_details',exclude: '.noExl'});">
+                                                        <i class="glyphicon glyphicon-save icon-white"></i></button>
+                                                </div>
+                                            </h5>
+                                        </div>
+                                        <div id="sequence" class="panel-collapse collapse in"
+                                             aria-labelledby="headingOne"
+                                             data-parent="#accordion">
+                                            <div class="card-body">
+                                                <div style="overflow:auto; overflow-y:auto;
+                                                height:550px; min-height:150px;transform: translate(0px, 0px);"
+                                                     id="div_dash_sequence_details">
+                                                    <table class="table-hover table-condensed table-bordered"
+                                                           id="tbl_sequence">
+                                                        <thead>
+                                                        <tr>
+                                                            <th>Sequence</th>
+                                                            <th>Shots</th>
+                                                            <th>Status</th>
+                                                            {% for obj_name,task_name in shot_data.items %}
+                                                            <th class="{{ obj_name }}">{{ task_name }}</th>
+                                                            {% endfor %}
+                                                        </tr>
+                                                        </thead>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading" id="headingTwo">
+                                            <h5 class="panel-title">
+                                                <a data-toggle="collapse" href="#asset" data-parent="#accordion">
+                                                    Asset Reports</a>
+
+                                                <div class="box-icon">
+                                                    <button class="btn btn-inverse btn-default btn-xs"
+                                                            id="download_asset_build"
+                                                            onclick="$('#tbl_asset_build').table2excel(
+                                                            {filename: 'asset_build_details',exclude: '.noExl'});">
+                                                        <i class="glyphicon glyphicon-save icon-white"></i></button>
+                                                </div>
+                                            </h5>
+                                        </div>
+                                        <div id="asset" class="panel-collapse collapse" aria-labelledby="Asset_"
+                                             data-parent="#accordion">
+                                            <div class="card-body">
+                                                <div style="overflow:auto; overflow-y:auto;
+                                                height:315px;transform: translate(0px, 0px);"
+                                                     id="div_dash_asset_build_details">
+                                                    <table class="table-hover table-condensed table-bordered"
+                                                           id="tbl_asset_build">
+                                                        <thead>
+                                                        <tr>
+                                                            <th>Asset Type</th>
+                                                            <th>Total</th>
+                                                            <th>Status</th>
+                                                            {% for obj_name,task_name in asset_build.items %}
+                                                            <th class="{{ obj_name }}">{{ task_name }}</th>
+                                                            {% endfor %}
+                                                        </tr>
+                                                        </thead>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="OutSource" class="tab-pane fade">
+                                <div class="panel-group" id="accordionSecond">
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading" id="headingThree">
+                                            <h5 class="panel-title">
+                                                <a data-toggle="collapse" href="#outsourceSequence"
+                                                   data-parent="#accordionSecond">
+                                                    Sequence Reports
+                                                </a>
+                                                <div class="box-icon">
+                                                    <button class="btn btn-inverse btn-default btn-xs"
+                                                            id="download_user_task"
+                                                            onclick="$('#tbl_outsource_sequence').table2excel(
+                                                            {filename: 'outsource_seq_details',exclude: '.noExl'});">
+                                                        <i class="glyphicon glyphicon-save icon-white"></i></button>
+                                                </div>
+                                            </h5>
+                                        </div>
+                                        <div id="outsourceSequence" class="panel-collapse collapse in"
+                                             aria-labelledby="headingThree"
+                                             data-parent="#accordionSecond">
+                                            <div class="card-body">
+                                                <div style="overflow:auto; overflow-y:auto;
+                                                height:550px;transform: translate(0px, 0px);"
+                                                     id="div_dash_outsource_sequence_details">
+                                                    <table class="table-hover table-condensed table-bordered"
+                                                           id="tbl_outsource_sequence">
+                                                        <thead>
+                                                        <tr>
+                                                            <th>Sequence</th>
+                                                            <th>Shots</th>
+                                                            <th>Status</th>
+                                                            {% for obj_name,task_name in shot_data.items %}
+                                                            <th class="{{ obj_name }}">{{ task_name }}</th>
+                                                            {% endfor %}
+                                                        </tr>
+                                                        </thead>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading" id="headingFour">
+                                            <h5 class="panel-title">
+                                                <a data-toggle="collapse" href="#outSourceAsset"
+                                                   data-parent="#accordionSecond">
+                                                    Asset Reports</a>
+                                                <div class="box-icon">
+                                                    <button class="btn btn-inverse btn-default btn-xs"
+                                                            id="download_asset_build"
+                                                            onclick="$('#tbl_outsource_asset_build').table2excel
+                                                                ({filename: 'outsource_asset_build_details',
+                                                                exclude: '.noExl'});">
+                                                        <i class="glyphicon glyphicon-save icon-white"></i></button>
+                                                </div>
+                                            </h5>
+                                        </div>
+                                        <div id="outSourceAsset" class="panel-collapse collapse"
+                                             aria-labelledby="headingFour" data-parent="#accordionSecond">
+                                            <div class="card-body">
+                                                <div style="overflow:auto; overflow-y:auto;
+                                                height:315px;transform: translate(0px, 0px);"
+                                                     id="div_dash_outsource_asset_build_details">
+                                                    <table class="table-hover table-condensed table-bordered"
+                                                           id="tbl_outsource_asset_build">
+                                                        <thead>
+                                                        <tr>
+                                                            <th>Asset Type</th>
+                                                            <th>Total</th>
+                                                            <th>Status</th>
+                                                            {% for obj_name,task_name in asset_build.items %}
+                                                            <th class="{{ obj_name }}">{{ task_name }}</th>
+                                                            {% endfor %}
+                                                        </tr>
+                                                        </thead>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-1" id="shot_asset_task" style="display:none;">
+            <div >
+                <div class="box-content row">
+                    <div class="panel-group" id="toggle_accordion">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h4 class="panel-title">
+                                    <input type="checkbox" id='select_all' value="All" checked="checked">
+                                    <a data-toggle="collapse" data-parent="#toggle_accordion" href="#shot_toggle_tasks">
+                                        Shot Tasks
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="shot_toggle_tasks" class="panel-collapse collapse in">
+                                <div class="panel-body" id="shot_panel_body">
+                                    <!--<div class="container">
+                                        <p>
+                                            <input type="checkbox" id='select_all' value="All" checked="checked"> Check
+                                            All
+                                        </p>
+                                        <p>
+                                            <input type="checkbox" id='deselect_all' value="UnCheck All">Check All
+                                        </p>
+                                    </div>-->
+                                    <div id="shot_type_checkboxes">
+                                        {% for key, ele in shot_data.items %}
+                                        {% with c=forloop.counter|add:forloop.counter %}
+                                        <p>
+                                            <input type="checkbox" id='shot_task_id_{{ c }}'
+                                                   name="{{ key }}" checked="checked" data-id="{{c}}">
+                                            {{ ele }}
+                                        </p>
+                                        {% endwith %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h4 class="panel-title">
+                                    <input type="checkbox" id='asset_select_all' value="UnCheck All" checked="checked">
+                                    <a data-toggle="collapse" data-parent="#toggle_accordion"
+                                       href="#asset_toggle_tasks">
+                                        Asset Tasks
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="asset_toggle_tasks" class="panel-collapse collapse">
+                                <div class="panel-body" id="asset_panel_body">
+                                    <!--<div class="container">
+                                    <p>
+                                        <input type="checkbox" id='asset_select_all' value="All" checked="checked">
+                                        Check All
+                                    </p>
+                                    <p>
+                                        <input type="checkbox" id='asset_deselect_all' value="UnCheck All">Check All
+                                    </p>
+                                </div>-->
+                                <div id="asset_type_checkboxes">
+                                    {% for key, ele in asset_build.items %}
+                                    {% with c=forloop.counter|add:forloop.counter %}
+                                    <p>
+                                        <input type="checkbox" id='asset_task_id_{{ c }}'
+                                               name="{{ key }}" checked="checked">{{ ele }}
+                                    </p>
+                                    {% endwith %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
+</div>
+    <div id="mymodal" class="modal fade" role="dialog">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body" style="min-height: 250px;height:350px; overflow:auto;">
+                    <div class="box-icon">
+                        <button class="btn btn-inverse btn-default btn-xs"
+                                id="download_tasks"
+                                onclick="$('#status_table').table2excel
+                                ({filename: 'status_wise_data',exclude: '.noExl'});">
+                            <i class="glyphicon glyphicon-save icon-white"></i></button>
+                    </div>
+                <div id="asset_sequence_reports">
+
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 </body>
 {% include "footer.html" %}
