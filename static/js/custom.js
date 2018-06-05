@@ -2033,7 +2033,7 @@ function show_version_notes(context){
 }
 
 function version_notes(task_id,obj_name,last_row,task) {
-    
+
     note_category = $('#selectVersionNoteCategory').val();
     $("#task_version_notes_loader").show();
     $.ajax({
@@ -3189,41 +3189,40 @@ function show_link_model(param){
     $('#myInput').val('');
     var prj_name = $("#selectProject option:selected").text();
     var proj_id = $("#selectProject option:selected").val();
-    asset_list = get_asset_list(proj_id, prj_name)
-    $('#linkModel').modal('show');
-
+    var asset_ids = ($('#link_details').attr('asset_ids')).split(",");
+    asset_list = get_asset_list(proj_id, prj_name, asset_ids)
 };
 
 //--------- get asset list ------------------//
-function get_asset_list(proj_id, prj_name){
-    var asset_ids = ($('#link_details').attr('asset_ids')).split(",");
+function get_asset_list(proj_id, prj_name, asset_ids){
     var asset_array = asset_ids.join();
-
     $('#myList').html('');
-
     checked_list = [];
     unchecked_list = [];
-
+    //call
     $.ajax({
 	type: "POST",
 	url:"/callajax/",
 	data: { 'object_name': 'Asset Build' , 'prj_name': prj_name, 'proj_id': proj_id},
 	success: function(json){
-	$.each(json, function (idx, obj) {
-	    obj_dict = {};
-	    if(jQuery.inArray(obj.id, asset_ids) !== -1){
-	    checked_list.push('<li class="list-group-item"><input type="checkbox" name="asset" value="'+obj.id+'" checked/>&nbsp;'+obj.name+'</li>')
-	    }
-	    else{
-	      unchecked_list.push('<li class="list-group-item"><input type="checkbox" name="asset" value="'+obj.id+'"/>&nbsp;'+obj.name+'</li>')
-	    }
-	});
-	checked_list.push(unchecked_list);
-	for (i = 0; i < checked_list.length; i++) {
-     $('#myList').append(checked_list[i]);
-    }
-
-	$("#linktask_details_loader").hide();
+        var ids = []
+        $.each(json, function (idx, obj){
+            if(jQuery.inArray(obj.id, asset_ids) !== -1){
+            checked_list.push('<li class="list-group-item"><input type="checkbox" name="asset" value="'+obj.id+'" checked/>&nbsp;'+obj.name+'</li>')
+            ids.push(obj.id)
+            }
+            else{
+              unchecked_list.push('<li class="list-group-item"><input type="checkbox" name="asset" value="'+obj.id+'"/>&nbsp;'+obj.name+'</li>')
+            }
+        });
+        $('#myList').attr('data-checked', ids);
+        checked_list.push(unchecked_list);
+        for (i = 0; i < checked_list.length; i++) {
+         $('#myList').append(checked_list[i]);
+        }
+        $("#linktask_details_loader").hide();
+        $('#linkModel').modal('show');
+        $('#entity_loader').hide();
 	},
 	error: function(error){
 	    console.log("Error:");
@@ -3233,12 +3232,8 @@ function get_asset_list(proj_id, prj_name){
 }
 
 //-------- add asset ------------------- //
-function add_asset(param){
+function add_asset(task_id, obj_name, asset_name, old_asset_ids, page=''){
     $("#linktask_details_loader").show();
-
-    var task_id = $('#data-modal-object-id').val()
-    var obj_name = $('#selectObject').val();
-
     if (obj_name){
 	if (obj_name == 'Shot Asset Build'){
 	    obj_name = 'Asset Build';
@@ -3246,23 +3241,36 @@ function add_asset(param){
     }else{
 	obj_name = 'Task';
     }
-    var asset_name = $('#selectObject option:selected').val();
-    var old_asset_ids = ($('#link_details').attr('asset_ids')).split(",");
+    if(old_asset_ids){
+        old_asset_ids = old_asset_ids.join();
+    }
     var selected_asset = [];
-
     $.each($("input[name='asset']:checked"), function(){
         selected_asset.push($(this).val());
     });
-
     //call
     $.ajax({
 	type: "POST",
 	url:"/callajax/",
-	data: { 'object_name': 'Link Asset' , 'task_id': task_id, 'selected_asset': selected_asset.join(), 'asset_name': asset_name, 'old_asset_ids': old_asset_ids.join()},
+	data: { 'object_name': 'Link Asset' , 'task_id': task_id, 'selected_asset': selected_asset.join(), 'asset_name': asset_name, 'old_asset_ids': old_asset_ids},
 	success: function(json){
 	    $("#linktask_details_loader").hide();
 	    // Reload task links
-        load_task_links(task_id,obj_name,15);
+        if(page == 'entity_task'){
+         load_task_links(task_id,obj_name,15);
+        }else{
+          $('#incoming').attr('asset-ids', selected_asset);
+          $('#save_asset').attr('old-ids', selected_asset)
+          var prj_name = $("#selectEntityProject option:selected").text();
+          var proj_id = $("#selectEntityProject").val();
+          get_asset_list(proj_id, prj_name, selected_asset)
+        }
+        noty({
+                text: 'Asset Link added successfully',
+                layout: 'topCenter',
+                closeWith: ['click', 'hover'],
+                type: 'success'
+            });
 	},
 	error: function(error){
 	    console.log("Error:");
@@ -3270,7 +3278,6 @@ function add_asset(param){
 	}
 
     });
-    $('#linkModel').modal('hide');
 }
 
 
@@ -3374,7 +3381,7 @@ function add_task_details(idx, obj){
 }
 
 function load_task_notes(task_id, obj_name, last_row, note_task){
-    
+
     note_category = $('#selectNoteCategory').val();
 
     $("#task_notes_loader").show();
@@ -3482,7 +3489,7 @@ function add_note_div(note_id,task_id, obj_name, note_text, note_category){
     my_note = '\
     <div class="box row" id="category-'+note_category+'"> \
         <span class="label label-info">'+note_author+'</span>\
-        <span class="label label-'+note_category+'" style="width\:62%">'+note_category+'</span> \
+        <span class="label label-'+note_category+'" style="width\:60%">'+note_category+'</span> \
         <span class="label label-info" style="float\:right;">'+note_date+'</span>\
         <p>'+note_head+'</p>\
         <div class="box row"><strong>'+note_info+'</strong><button class="btn btn-xs btn-primary" style="float\:right;">'+ note_author +'</button>'+del_var+'</div>\
@@ -3935,6 +3942,13 @@ function approve_task(param){
     $td_version = $tr.find('td[data-td=version]');
     var version = $td_version.text();
 
+    if (my_status != 'Pending Internal Review' && version == 'None'){
+	alert("You are tring to approve invalid version !!!");
+	return null;
+    }
+
+    var task_name = $td_status.attr('title');
+
     object_id = $tr.attr('data-task-id');
     version_id = $tr.attr('data-version-id');
     object_type = $tr.attr('data-object-type');
@@ -3943,10 +3957,16 @@ function approve_task(param){
     change_status_label = '';
     note_category = 'Internal';
 
+    task_array = ['Animation','Blocking'];
+
     if (my_status == 'Pending Client Review'){
 	change_status = 'Client Approved';
 	change_status_label = 'client_approved';
 	note_category = 'Client feedback';
+	if (task_array.indexOf(task_name) > -1){
+	    change_status = 'Final Publish';
+	    change_status_label = 'final_publish';
+	}
     }else if (my_status == 'Pending Internal Review'){
 	change_status = 'Ready to Publish';
 	change_status_label = 'ready_to_publish';
@@ -3980,7 +4000,7 @@ function approve_task(param){
 
     $('#task_reject_note').val('');
     $('#gallery tbody').html('');
-    $('#task_details_loader').html('<h3>Approve Note</h3>')
+    $('#task_details_loader').html('<h3>Approve Note</h3><table><tr><td nowrap>Task : '+task_path+'</td><td>Version : '+version+'</td></tr></table>')
     var $newModal = $("#myModal").clone();
     $newModal.modal('show');
 
@@ -4041,6 +4061,11 @@ function reject_task(param){
     $td_version = $tr.find('td[data-td=version]');
     var version = $td_version.text();
 
+    if (my_status != 'Pending Internal Review' && version == 'None'){
+	alert("You are tring to reject invalid version !!!");
+	return null;
+    }
+
     object_id = $tr.attr('data-task-id');
     version_id = $tr.attr('data-version-id');
     object_type = $tr.attr('data-object-type');
@@ -4067,7 +4092,7 @@ function reject_task(param){
 
     $('#task_reject_note').val('');
     $('#gallery tbody').html('');
-    $('#task_details_loader').html('<h3>Reject Note</h3>')
+    $('#task_details_loader').html('<h3>Reject Note</h3><table><tr><td nowrap>Task : '+task_path+'</td><td>Version : '+version+'</td></tr></table>')
     var $newModal = $("#myModal").clone();
     $newModal.modal('show');
 
@@ -4127,11 +4152,11 @@ function internal_reject_task(version_id, note_text, note_category, note_for, no
     var note_category = 'Internal';
     var note_text = note_text; //$(this).parent().find('textarea[id=task_reject_note]').val().trim();
 
-    /*object_status_change(change_status, my_status , object_id, 'Task');
-	if (version_id){
-	    object_status_change(change_status, my_status , version_id, 'AssetVersion');
-	}
-    */
+    object_status_change(change_status, my_status , object_id, 'Task');
+    if (version_id){
+	object_status_change(change_status, my_status , version_id, 'AssetVersion');
+    }
+
     insert_db_note(note_text, note_category, object_id, change_status, users, task_path, version);
 }
 
@@ -4528,7 +4553,7 @@ function mgm_dashboard(){
 	error_message("Please select valid project !!!");
     }
 
-    project = $("#selectMGMDashProject option[value='"+project_id+"']").text(); 
+    project = $("#selectMGMDashProject option[value='"+project_id+"']").text();
     work_status = $("#selectWorkDone option:selected").text().trim();
 
     $.ajax({
@@ -4548,10 +4573,10 @@ function mgm_dashboard(){
 
 		/*var users_data = obj.user_count;
 		show_total_users(users_data);*/
-	
+
 		var sequence_data = obj.sequence;
 		create_sequence_table(sequence_data, '#tbl_sequence');
-		
+
 		var asset_build_data = obj.asset_build;
 		create_asset_build_table(asset_build_data, '#tbl_asset_build');
 
@@ -4560,7 +4585,7 @@ function mgm_dashboard(){
 
 		var outsource_asset_data = obj.outsource_asset;
 		create_asset_build_table(outsource_asset_data, '#tbl_outsource_asset_build');
-	    });	    
+	    });
 	},
 	error: function(error){
 	    console.log("Error:"+error);
@@ -4612,14 +4637,22 @@ function to_clear_checkboxes(){
         });
         $('#div_dash_users_count').append(total+task);
 }*/
-
+/*
+ * Generating html table's tr and td in string
+ * format then returing it.
+ *
+ * params:- tasks:- accept a dict with key as task_name
+ *                  and value as the assigned user/users
+*/
 function create_table_internal_outsource_users(tasks){
 
     var table_val = '';
-    $.each(tasks, function(idx, val){
-        tr = '<tr><td>' + val.task + '</td>';
-        tr += '<td>' + val.user + '</td></tr>'
-        table_val += tr;
+    $.each(tasks, function(idx, task_users_dict){
+        $.each(task_users_dict, function(task_name, users){
+            tr = '<tr><td>' + task_name + '</td>';
+            tr += '<td>' + users + '</td></tr>'
+            table_val += tr;
+        });
     });
     return table_val;
 }
@@ -4640,8 +4673,7 @@ function create_sequence_table(data, tabl_nm){
 		wip_data = wip_data + '<td class="'+head_value+'">'+
 		task_status.WIP[head].Count+'</td>';
 	    }else{
-		table_schema = create_table_internal_outsource_users(task_status
-		.WIP[head].User);
+		table_schema = create_table_internal_outsource_users(task_status.WIP[head].Task);
 		wip_data = wip_data + '<td class="'+head_value+'"'+
 		'onclick="show_inter_outsou_tasks(\''+tabl_nm+'\',\''+table_schema+'\')">'+
 		'<strong style="color: #00ff1e;">'+
@@ -4651,8 +4683,7 @@ function create_sequence_table(data, tabl_nm){
 		done_data = done_data + '<td class="'+head_value+'">'+
 		task_status.DONE[head].Count+'</td>';
 	    }else{
-		table_schema = create_table_internal_outsource_users(task_status
-		.DONE[head].User);
+		table_schema = create_table_internal_outsource_users(task_status.DONE[head].Task);
 		done_data = done_data + '<td class="'+head_value+'"'+
 		'onclick="show_inter_outsou_tasks(\''+tabl_nm+'\','+
 		'\''+table_schema+'\')">'+
@@ -4663,8 +4694,7 @@ function create_sequence_table(data, tabl_nm){
 		approved_data = approved_data + '<td class="'+head_value+'">'+
 		task_status.APPROVED[head].Count+'</td>';
 	    }else{
-		table_schema = create_table_internal_outsource_users(task_status
-		.APPROVED[head].User);
+		table_schema = create_table_internal_outsource_users(task_status.APPROVED[head].Task);
 		approved_data = approved_data + '<td class="'+head_value+'"'+
 		'onclick="show_inter_outsou_tasks(\''+tabl_nm+'\','+
 		'\''+table_schema+'\')">'+
@@ -4676,7 +4706,7 @@ function create_sequence_table(data, tabl_nm){
 	tr_done = '<tr>'+done_data+'</tr>';
 	tr_approved = '<tr>'+approved_data+'</tr>';
 	$(tabl_nm).append(tr_wip+tr_done+tr_approved);
-    
+
     });
 }
 function create_asset_build_table(data, tabl_nm){
@@ -4698,8 +4728,7 @@ function create_asset_build_table(data, tabl_nm){
 		task_status.WIP[head].Count+'</td>';
 	    }else{
 
-		table_schema = create_table_internal_outsource_users(task_status
-		.WIP[head].User);
+		table_schema = create_table_internal_outsource_users(task_status.WIP[head].Task);
 		wip_data = wip_data + '<td class="'+head_value+'"'+
 		'onclick="show_inter_outsou_tasks(\''+tabl_nm+'\',\''+
 		table_schema+'\')">'+
@@ -4711,8 +4740,7 @@ function create_asset_build_table(data, tabl_nm){
 		done_data = done_data + '<td class="'+head_value+'">'+
 		task_status.DONE[head].Count+'</td>';
 	    }else{
-		table_schema = create_table_internal_outsource_users(task_status
-		.DONE[head].User);
+		table_schema = create_table_internal_outsource_users(task_status.DONE[head].Task);
 		done_data = done_data + '<td class="'+head_value+'"'+
 		'onclick="show_inter_outsou_tasks(\''+tabl_nm+'\',\''+
 		table_schema+'\')">'+
@@ -4723,8 +4751,7 @@ function create_asset_build_table(data, tabl_nm){
 		approved_data = approved_data + '<td class="'+head_value+'">'+
 		task_status.APPROVED[head].Count+'</td>';
 	    }else{
-		table_schema = create_table_internal_outsource_users(task_status
-		.APPROVED[head].User);
+		table_schema = create_table_internal_outsource_users(task_status.APPROVED[head].Task);
 		approved_data = approved_data + '<td class="'+head_value+'"'+
 		'onclick="show_inter_outsou_tasks(\''+tabl_nm+'\',\''+
 		table_schema+'\')">'+
@@ -4853,12 +4880,12 @@ function artist_productivity(){
 	error_message("Please select valid project !!!");
     }
 
-    project = $("#selectDashProject option[value='"+project_id+"']").text(); 
+    project = $("#selectDashProject option[value='"+project_id+"']").text();
     duration = $('#reportrange span').html();
     if(!duration){
 	error_message("Please select valid duration !!!");
     }
-    
+
     task_name = $("#dept_names option:selected").val();
     artist = $('#selectUsers').val();
 
@@ -4890,7 +4917,7 @@ function artist_productivity(){
 		    $("#tbl_asset_build_task tbody").append(row);
 		});
 		}
-	    });	    
+	    });
             $('#panel_big').plainOverlay('hide');
 	},
 	error: function(error){
@@ -4959,14 +4986,14 @@ function artist_prod_table(data, parent_object_type){
     }
 
     color_code = 'style="color:#a7ff0c"';
-    
+
     if (/^-/.test(data.variance)){
 	color_code = 'style="color:#ff2a0c"';
     }
-    
+
     /*
     * function to just return the table html
-    * data and append it to table on click of td                 
+    * data and append it to table on click of td
     */
     s = artist_prod_task_count_table(data.tasks);
 
@@ -4980,7 +5007,7 @@ function artist_prod_table(data, parent_object_type){
 	'+avg_per_day+'\
     ';
     color_code = 'style="color:#a7ff0c"';
-    
+
     if (/^-/.test(data.Urgent.variance)){
 	color_code = 'style="color:#ff2a0c"';
     }
@@ -4994,7 +5021,7 @@ function artist_prod_table(data, parent_object_type){
 	'+A_avg_per_day+'\
 	';
     color_code = 'style="color:#a7ff0c"';
-    
+
     if (/^-/.test(data.High.variance)){
 	color_code = 'style="color:#ff2a0c"';
     }
@@ -5008,7 +5035,7 @@ function artist_prod_table(data, parent_object_type){
 	'+B_avg_per_day+'\
 	';
     color_code = 'style="color:#a7ff0c"';
-    
+
     if (/^-/.test(data.Medium.variance)){
 	color_code = 'style="color:#ff2a0c"';
     }
@@ -5022,7 +5049,7 @@ function artist_prod_table(data, parent_object_type){
 	'+C_avg_per_day+'\
 	';
     color_code = 'style="color:#a7ff0c"';
-    
+
     if (/^-/.test(data.Low.variance)){
 	color_code = 'style="color:#ff2a0c"';
     }
@@ -5051,7 +5078,7 @@ function user_dashboard(){
 	error_message("Please select valid project !!!");
     }
 
-    project = $("#selectDashProject option[value='"+project_id+"']").text(); 
+    project = $("#selectDashProject option[value='"+project_id+"']").text();
     duration = $('#reportrange span').html();
     if(!duration){
 	error_message("Please select valid duration !!!");
@@ -5080,10 +5107,10 @@ function user_dashboard(){
 
 		var task_data = obj.task_list;
 		user_task_table(task_data);
-		
+
 		var top_data = obj.top_task_users;
 		top_artist(top_data);
-	
+
 		var task_count_data = obj.task_count_data;
 		task_count(task_count_data);
 
@@ -5099,7 +5126,7 @@ function user_dashboard(){
 		var status_title_text = 'Status';
 		plot_chart(status_data,status_div_id,status_title_text,status_chart_type);
 		status_count(status_data);
-	    });	    
+	    });
             $('#panel_big').plainOverlay('hide');
 	},
 	error: function(error){
@@ -5129,7 +5156,7 @@ function user_task_table(data){
 function top_artist(data){
 
     $.each(data, function(idx,obj){
-	
+
 	row = '<ul class="dashboard-list">\
 	    <li onclick="highlight_this(this,\''+obj.user_id+'\',\'search\',\'tbl_task\',\'table_row_count\')">\
                 <a href="#"><img class="dashboard-avatar" alt="" src="http://192.168.1.18/Employees/'+obj.empcode+'.jpg" onclick="search_value(\''+obj.user_id+'\',\'search\',\'tbl_task\',\'table_row_count\')"></a>\
@@ -5212,7 +5239,7 @@ function search_value(value, search_box, table, table_row_count){
         $search.css({"border-color": "#5897fb"})
     }
     $.each($("#"+table+" tbody tr"), function(idx) {
-	
+
         if($(this).text().toLowerCase().indexOf($search.val().toLowerCase()) === -1)
             $(this).hide();
         else
@@ -5378,7 +5405,7 @@ function show_task_count_details(context){
 
             if (flag[asset_name])
                 return true;
-	    
+
 	    flag[asset_name] = 1;
 
             // task name in proper format
@@ -5759,9 +5786,18 @@ function show_upload_csv(file_path,entity,parent_id,project){
 }
 
 function get_asset_row_csv(idx,data,div){
+    // for check duplicate name
+    var exist = "false"
+    $("#selectAssetName option").each(function()
+    {
+      if($(this).text() == data.asset_name){
+         exist = "true"
+      }
+    });
+    //
     tr = '';
     invalid_data = 'data-invalid="0"';
-    if (data.invalid == 1){
+    if (data.invalid == 1 || exist == "true"){
         invalid_data = 'style="background-color:#ed4343;color:black" data-invalid="1"';
     }
 
@@ -5784,8 +5820,8 @@ function get_asset_row_csv(idx,data,div){
 	';
 	$('#'+div+' tbody').append(tr);
     }
-
 }
+
 function get_shot_row_csv(idx,data,div){
     tr = '';
     invalid_data = 'data-invalid="0"';
@@ -6130,6 +6166,9 @@ function clear_asset_modal_fields(){
     asset_type_drop_down();
     $("#id_asset_name").val('');
     $("#id_asset_description").val('');
+    $("#csv_asset_builds tbody").empty();
+    $("#attached_csv_file").empty();
+
 /*    $('#attached_csv_file').html('');
     remove_rows('#csv_asset_builds');*/
 }
@@ -6204,7 +6243,7 @@ $('#submit_details').click(function(){
         error_message("project name field must not be empty");
         return false;
     }
-    
+
     var pattern_name = /^[0-9a-zA-Z]+$/;
     if(!pattern_name.test(project_name)){
         error_message("Project name must be alphanumeric");
@@ -6352,7 +6391,7 @@ function update_form_data(entity_name,data_list, object){
                     $select_elem03 = $('#selectShotType');
                     $select_elem03.empty();
                     $select_elem03.trigger("chosen:updated");
-                    $('#shot_type').css({'visibility': 'hidden'})
+                    $('#shot_type').hide()
 
                 }
                 if(object == 'Sequence'){
@@ -6383,7 +6422,11 @@ function update_form_data(entity_name,data_list, object){
                     $select_elem03.trigger("chosen:updated");
                     $('#shot_type').hide()
                     $("#selectEntityObject").trigger("change");
-
+                }
+                if(object == 'AssetBuild'){
+                 $('#all_assetsName').attr('checked',false);
+                    var selected_assets = $('#selectAssetName').val();
+                    load_asset_task_name(selected_assets)
                 }
                 $('#entity_loader').hide();
         },
@@ -6544,7 +6587,7 @@ $('#submit_sequence_details').click(function(){
     data_array['parent_id'] = get_parent_id();
     data_array['parent_object'] = get_parent_object();
     data_array['seq_name'] = sequence_name;
-    
+
     data_array['description'] = description;
 
     var data_list = [];
@@ -6575,8 +6618,8 @@ $('#id_frame_end').change(function(){
  *  fps calculation and append
  *  frame duration.
  */
-function calculate_fps(sf, ef, prj_name, seq_name){   
-     
+function calculate_fps(sf, ef, prj_name, seq_name){
+
     $("#id_total_frames").val(parseInt(ef) - (parseInt(sf) - 1));
 
     $.ajax({
@@ -6785,8 +6828,6 @@ function get_asset_details(){
                     row.append("<td>" + data.description + "</td>");
                     row.append("<td>" + data.type + "</td>");
                     row.append("<td>"
-                    +"<button class='btn btn-xs btn-primary' type='button' onclick='create_tasks(this)'>Create Task</button>&nbsp;&nbsp;"
-                    +"<button class='btn btn-xs btn-success' type='button' onclick='update_assets(this)'>Update</button>&nbsp;&nbsp;"
                     +"<button class='btn btn-xs btn-info' type='button' onclick='view_tasks(this)'>View Task</button>"
                     +"</td>");
                     table.append(row);
@@ -6847,7 +6888,7 @@ $("#update_asset_details").click(function(){
     data_array['parent_object'] = get_parent_object();
     data_array['asset_build_id'] = get_entity_id();
     data_array['asset_build_object'] = get_entity_name();
-    
+
     data_array['description'] = asset_desc;
 
     var data_list = [];
@@ -6985,7 +7026,6 @@ function assign_end_date_bid_days_start_date(bid_days, sval){
     $("#id_task_due_date").val(n.getFullYear() + "-"+ nm + "-"+ nd).prop("disabled", true);
 //    val(nm + "/" + nd + "/" + n.getFullYear()).prop("disabled", true);
     end_date = n.getFullYear() + "-"+ nm + "-"+ nd
-    console.log("end_date: " + end_date)
     return end_date;
 }
 /*
@@ -7174,7 +7214,7 @@ $("#submit_task_details").click(function(){
         error_message("Date field must not be empty!!!!");
         return false;
     }
-    
+
     bid_days = 60*60*10*bid_days
 
     var data_array = {};
@@ -7265,9 +7305,9 @@ function get_task_details(project_name, name, type){
                     row.append("<td>" + data.current_assignees + "</td>");
                     row.append("<td>" + data.bid + "</td>");
                     row.append("<td>" + data.priority + "</td>");
-                    row.append("<td>"+
-                    "<button class='btn btn-xs btn-success' type='button' onclick='update_tasks(this)'>Update</button>"
-                    +"</td>");
+//                    row.append("<td>"+
+//                    "<button class='btn btn-xs btn-success' type='button' onclick='update_tasks(this)'>Update</button>"
+//                    +"</td>");
                     table.append(row);
                     $("#table_view").append(table);
                 });
@@ -7403,9 +7443,9 @@ $("#update_task_details").click(function(){
         error_message("Bid Days must not be empty!!!");
         return false;
     }
-    
+
     bid_days = 60*60*10*bid_days
-    
+
     var data_array = {};
     data_array['task_id'] = get_entity_id();
     data_array['task_object'] = get_entity_name();
@@ -7480,7 +7520,6 @@ function get_project_details(){
                 <li class="list-group-item">\
                   <label>Project Name: &nbsp;</label><a id="'+data.ftrack_id+'" data-object="Project">'+data.name+'</a>\
                   <div style="text-align: center;">\
-                    <button class="btn btn-xs btn-primary" type="button" onclick="display_create_modal(this)">Create</button>&nbsp;&nbsp;\
                     <button class="btn btn-xs btn-info" type="button" onclick="display_view_modal(this)">View</button>\
                   </div>\
                 </li>\
@@ -7536,7 +7575,7 @@ function display_create_modal(name){
     s = $(name).closest("li").find('a').text();
     set_project_name(s);
     $('#createModal').modal('toggle');
-   
+
     id = $(name).closest("li").find('a').attr('id');
     my_object = $(name).closest("li").find('a').attr('data-object');
 
@@ -7686,9 +7725,7 @@ function get_sequence_details(){
                     row.append("<td>" + data.name + "</td>");
                     row.append("<td>" + data.description + "</td>");
                     row.append("<td>" + data.type + "</td>");
-                    row.append("<td>"+
-                    "<button class='btn btn-xs btn-primary' type='button' onclick='create_options(this)'>Create</button>&nbsp;&nbsp;"+
-                    "<button class='btn btn-xs btn-success' type='button' onclick='update_sequences(this)'>Update</button>&nbsp;&nbsp;"
+                    row.append("<td>"
                     +"<button class='btn btn-xs btn-info' type='button' onclick='display_shots(this)'>View</button></td>");
                     table.append(row);
             });// end of each loop
@@ -7731,7 +7768,7 @@ function create_options(name){
     $("#task_name_id").css('display', 'block');
     $("#createModal").modal('show');
 
-    
+
     id = $(name).closest("tr").attr('id');
     my_object = $(name).closest("tr").attr('data-object');
 
@@ -8006,8 +8043,6 @@ function get_shot_details(){
                     row.append("<td>" + data.total_frames + "</td>");
                     row.append("<td>" + data.fps + "</td>");
                     row.append("<td>"+
-                    "<button class='btn btn-xs btn-primary' type='button' onclick='create_tasks(this)'>Create Task</button>&nbsp;&nbsp;"+
-                    "<button class='btn btn-xs btn-success' type='button' onclick='update_shots(this)'>Update</button>&nbsp;&nbsp;"+
                     "<button class='btn btn-xs btn-info' type='button' onclick='view_tasks(this)'>View Task</button>"+
                     "</td>");
                     table.append(row);
@@ -8555,7 +8590,7 @@ $("#selectEntityProject").change(function(){
     $("#selectAssetName").empty();
     $('#selectAssetName').trigger('chosen:updated');
     $('#all_assetsName').attr('checked',false);
-    $('#assetType').css({'visibility': 'hidden'})
+    $('#assetType').hide()
     $('#div_asset_name').hide();
 
     $('#selectEntitySequence').empty();
@@ -8752,7 +8787,7 @@ function load_asset_task_name(selectedValue, asst_name){
             });
             $select_elem.trigger("chosen:updated");
             $select_elem.trigger("liszt:updated");
-            $select_elem.data("chosen").destroy().chosen();
+            $select_elem.data("chosen").destroy().chosen({search_contains:true});
             $('#entity_loader').hide();
         },
         error: function(error){
@@ -8861,14 +8896,15 @@ function add_entity_rows(json, selected_object){
             html = html + '<td ondblclick="editEntityCell(this)" option-id="status_options" data-org-val=""><span class="label label-'+obj.status_label+'">'+obj.status+'</span></td>'
             html = html + '<td ondblclick="editEntityCell(this)" option-id="bids_options" data-org-val=""><span class="label label-default">'+obj.bid+'</span></td>'
             html = html + '<td ondblclick="editEntityCell(this)" option-id="complexity_options" data-org-val=""><span class="label label-default">'+obj.complexity+'</span></td>'
-            html = html + '<td ondblclick="addDate(this)" data-org-val=""><input type="text"  onchange="select_change(this);" onchange="select_change(this);" style="display: none;" id="inp_'+idx+'" class="x-form-field x-form-text x-form-empty-field"><span id="spn_'+idx+'" class="label label-default">'+obj.startdate+'</span></td>'
+            html = html + '<td ondblclick="addDate(this)" data-org-val=""><input type="text"  onchange="select_change(this);" style="display: none;" id="inp_'+idx+'" data-id="'+idx+'" class="x-form-field x-form-text x-form-empty-field"><span id="spn_'+idx+'" class="label label-default">'+obj.startdate+'</span></td>'
             html = html + '<td ondblclick="editEntityCell(this)" option-id="description_option" data-org-val=""><span class="label label-default">'+obj.description+'</span></td>'
 
             if(selected_object == "Shot"){
                    html = html + '<td ondblclick="editEntityCell(this)" option-id="stframe_options" data-org-val=""><span class="label label-default">'+obj.startframe+'</span></td>'
                    html = html + '<td ondblclick="editEntityCell(this)" option-id="edframe_options" data-org-val=""><span class="label label-default">'+obj.endframe+'</span></td>'
             }
-            //html = html + '<td><button class="btn btn-default dropdown-toggle" data-toggle="dropdown" id="incoming" onclick="show_link_model(this)">Create Asset Link</button></td>'
+            html = html + '<td><button class="btn btn-inverse btn-default btn-sm" data-toggle="dropdown" id="incoming" onclick="show_entity_link_model(this)" >Create Asset Link</button></td>'
+
             html = html + '<td><button class="btn btn-inverse btn-default btn-sm" onclick="single_reset('+idx+')" style="display: none;" id="td_'+idx+'"><i class="glyphicon glyphicon-hand-left icon-white"></i>&nbsp;&nbsp;Undo</button></td>'
             html = html + '</tr>'
             });
@@ -8909,6 +8945,11 @@ $("#selectEntityTask").change(function(){
     var selectedValues = []
     var $selected_element = ''
     var $check_all = ''
+
+    // hides create div
+    $('#create_sq_sc').hide();
+    $('#create').attr('checked',false)
+
     //Checking for selected object
     if(selected_object == 'Asset Build'){
         $selected_element = $("#selectAssetName");
@@ -8970,7 +9011,6 @@ function editEntityCell(context, option){
 
         $select.trigger('chosen:open');
         $select_elm = $select
-        console.log("$select.val(): " + $select.val())
         $select.on('chosen:hiding_dropdown', function () {
             if($select.val() == td_content || $select.val() == null){
                 var html = ''
@@ -9020,24 +9060,26 @@ function editEntityCell(context, option){
 
 // For add date
 function addDate(param){
-    var $tr_element = $(param).closest('tr');
+    var $tr_element = $(param).parent();
     var trid = $tr_element.attr('id');
     var tr_clone = $('#'+trid).html();
+
+    // for date picker
     var today = new Date();
     // for date picker
     $(param).datepicker({
       format: 'yyyy-mm-dd',
       autoclose: true,
       startDate: today
+    }).on('change', function(){
+        $('.datepicker').hide();
     });
     $(param).children('span').hide();
     $(param).children('input').show();
     $(param).children('input').focus();
     //
     $select_elm = $(param).children('input')
-    OriginalContent = $(param).children('span').val()
-    console.log("OriginalContent : " + OriginalContent)
-    $select_elm.on('blur', function () {
+    $select_elm.on('blur', function (){
         $(param).children('span').show();
         $(param).children('input').hide();
     });
@@ -9060,8 +9102,12 @@ function addDate(param){
 // For edit columns of table rows
 function select_change(param){
     var $tr_element = $(param).closest('tr');
-    var trid = $tr_element.attr('id');
-    var td_index = $(param).parent().index();
+   // var trid = $tr_element.attr('id');
+    var trid = $(param).closest('tr').attr('id');
+    //var td_index = $(param).parent().index();
+    var td_index = $(param).closest('td').index();
+    //var td_index = $(param).closest('td').index();
+
     var html = ""
     $(param).closest('td').removeClass('selected_td');
     var trs = ''
@@ -9077,9 +9123,23 @@ function select_change(param){
         status_label = status.toLowerCase().replace(/\s/g, "_");
         html = '<span class="label label-'+status_label+'">'+status+'</span>'
         $('#'+trid).find("td:eq("+td_index+")").html(html);
+        $(param).closest('span').show();
+        $(param).hide();
+    }
+    else if(td_index == 5 || td_index == -1){
+        tid = $(param).attr('data-id');
+        html = '<input type="text"  onchange="select_change(this);" style="display: none;" id="inp_'+tid+'" data-id="'+tid+'" class="x-form-field x-form-text x-form-empty-field">'
+        html = html + '<span id="spn_'+tid+'" class="label label-default">'+$(param).val()+'</span>'
+        $('#'+tid).find("td:eq("+5+")").html(html);
+        $(param).hide();
+        $(param).closest('span').show()
     }
     else{
-        html = '<span class="label label-default">'+$(param).val()+'</span>'
+        param_val = $(param).val()
+        if(param_val == null){
+            param_val = '---'
+        }
+        html = '<span class="label label-default">'+param_val+'</span>'
         $('#'+trid).find("td:eq("+td_index+")").html(html);
     }
     //
@@ -9104,7 +9164,7 @@ function select_change(param){
         flag = "0"
     }
     // for multiple select rows
-    if(trs && ind != -1){
+    if(trs && ind != -1 || trs && td_index == -1){
              //trs_array = trs.split(",");
              for(i=0; i<trs_array.length; i++ ){
                 var tr_clone = $('#'+trs_array[i]).html();
@@ -9239,7 +9299,6 @@ $("#save").on('click', function(context) {
     }
     else{
         ids_list = tr_ids.split(",");
-        console.log("ids_list will save: " + ids_list)
         for(i=0; i< ids_list.length; i++)
         {
             if(ids_list[i] == null || ids_list[i] == '')
@@ -9343,7 +9402,6 @@ function create_data_list(ids_list){
         data_dict['start_date'] = col6
         b = $('#'+ids_list[i]).find("td:eq(3)").text()
         ed = assign_end_date_bid_days_start_date(b, col6)
-        console.log("ed: " + ed)
         data_dict['end_date'] = ed
         data_dict['description'] = col7
         if(object_type == 'Shot'){
@@ -9434,13 +9492,14 @@ function save_data(data_list, ids_list){
                         html = html + '<td ondblclick="editEntityCell(this)" option-id="status_options" data-org-val=""><span class="label label-'+status_label+'">'+data_list[i]['task_status']+'</span></td>'
                         html = html + '<td ondblclick="editEntityCell(this)" option-id="bids_options" data-org-val=""><span class="label label-default">'+data_list[i]['bid']/(10*60*60)+'</span></td>'
                         html = html + '<td ondblclick="editEntityCell(this)" option-id="complexity_options" data-org-val=""><span class="label label-default">'+priority_dict[data_list[i]['priority']]+'</span></td>'
-                        html = html + '<td ondblclick="addDate(this)" data-org-val=""><input type="text"  onchange="select_change(this);" style="display: none;" id="inp_'+id+'" class="x-form-field x-form-text x-form-empty-field"><span id="spn_'+id+'" class="label label-default">'+data_list[i]['start_date']+'</span></td>'
+                        html = html + '<td ondblclick="addDate(this)"; data-org-val=""><input type="text"  onchange="select_change(this);" style="display: none;" id="inp_'+id+'" data-id="'+id+'"  class="x-form-field x-form-text x-form-empty-field"><span id="spn_'+id+'" class="label label-default">'+data_list[i]['start_date']+'</span></td>'
                         html = html + '<td ondblclick="editEntityCell(this)" option-id="description_option" data-org-val=""><span class="label label-default">'+data_list[i]['description']+'</span></td>'
                         if(selected_object == "Shot"){
                                html = html + '<td ondblclick="editEntityCell(this)" option-id="stframe_options" data-org-val=""><span class="label label-default">'+data_list[i]['startframe']+'</span></td>'
                                html = html + '<td ondblclick="editEntityCell(this)" option-id="edframe_options" data-org-val=""><span class="label label-default">'+data_list[i]['endframe']+'</span></td>'
                         }
-                        //html = html + '<td><button class="btn btn-default dropdown-toggle" data-toggle="dropdown" id="incoming" onclick="show_link_model(this)">Create Asset Link</button></td>'
+                        html = html + '<td><button class="btn btn-inverse btn-default btn-sm" data-toggle="dropdown" id="incoming" onclick="show_entity_link_model(this)">Create Asset Link</button></td>'
+
                         html = html + '<td><button class="btn btn-inverse btn-default btn-sm" onclick="single_reset('+id+')" style="display: none;" id="td_'+id+'"><i class="glyphicon glyphicon-hand-left icon-white"></i>&nbsp;&nbsp;Undo</button></td>'
                         $('#'+id).html(html);
                         $('#'+id).attr('current_users', data_list[i]['assignee'])
@@ -9665,18 +9724,18 @@ $('#selectEntityShot').on('change', function(evt, params) {
 function display_tasks(evt, params){
     var project_name = $('#selectEntityProject option:selected').text();
     var selected_task = $('#selectEntityTask').val();
+    var object = $('#selectEntityObject').val();
     var elem_id = $(params).id
     if (!project_name){
         alert("Please select valid project !!");
         return null;
     }
     if (!selected_task){
-        alert("Please select task !!");
+        //alert("Please select task !!");
         return null;
     }
     var deselectedValue = params.deselected;
     var selectedValue = params.selected;
-    var object = $('#selectEntityObject').val();
 
     if (selectedValue){
         var selectedValues = [selectedValue]
@@ -9696,6 +9755,13 @@ $("#create").click(function(){
         $('#create').attr('checked',false);
         return null;
     }
+    var selected_task = $('#selectEntityTask').val();
+    if(selected_object == 'Shot' && selected_task != 'Layout'){
+        alert(selected_object + " will be create in Layout only...!");
+        $('#create').attr('checked',false);
+        return null;
+    }
+    
     if (this.checked){
         $('#create_sq_sc').css({'visibility': ''});
         $('#create_sq_sc').show();
@@ -9715,13 +9781,19 @@ $("#create").click(function(){
             $('#createSequence').hide();
             $('#demo').hide();
             $('#sequence').css({'visibility': ''});
+
+            //$('#select_x_range').trigger("chosen:updated");
+            //$('#select_x_range').trigger("liszt:updated");
+            $('#div_x_range').show();
+            $('#select_x_range').data("chosen").destroy().chosen();
         }
         if(selected_object == 'Sequence')
         {
             task_name = 'sq'
+            var x_range = '1'
             $select_elem = $('#selectShotRange');
             //get range
-            get_ranges(project_name, task_name, $select_elem)
+            get_ranges(project_name, task_name, $select_elem, sequence_range='', x_range)
             $('#shot').css({'visibility': ''});
             $('#selectSequenceRange_chosen').hide();
             $('#lable_id').text("")
@@ -9729,6 +9801,10 @@ $("#create").click(function(){
             $('#createSequence').show();
             $('#demo').hide();
             $('#sequence').css({'visibility': ''});
+
+            $('#select_x_range').trigger("liszt:updated");
+            $('#select_x_range').trigger("chosen:updated");
+            $('#div_x_range').hide();
         }
         if(selected_object == 'Asset Build')
         {
@@ -9745,6 +9821,7 @@ $("#create").click(function(){
             $('#asst_name').val("");
             $('#asset_description').val("");
             $('#addAsset').css({'disabled': 'disabled'});
+            $('#div_x_range').hide();
 
         }
 	}
@@ -9774,6 +9851,7 @@ $("#create").click(function(){
             $('#create_sq_sc').hide();
             $('#selectSequenceRange_chosen').show();
             $('#lable_id').text("Shot : ")
+            $('#div_x_range').hide();
         }
 });
 
@@ -9784,9 +9862,10 @@ $("#selectSequenceRange").change(function(){
         if(sequence_range)
         {
             task_name = 'sc'
+            var x_range = $('#select_x_range').val();
             $select_elem = $('#selectShotRange');
             //call
-            get_ranges(project_name, task_name, $select_elem, sequence_range)
+            get_ranges(project_name, task_name, $select_elem, sequence_range, x_range)
             $('#shot').css({'visibility': ''});
         }
 		else{
@@ -9799,13 +9878,13 @@ $("#selectSequenceRange").change(function(){
         }
 });
 // get range
-function get_ranges(project_name, task_name, $select_elem, sequence_range=''){
+function get_ranges(project_name, task_name, $select_elem, sequence_range='', x_range='1'){
     var obj_name = 'Shot'
     var object_range = []
     $.ajax({
                 type:"POST",
                 url:"/callajax/",
-                data: {'project_name': project_name, 'object_name': 'Get Range', 'task_name' : task_name },
+                data: {'project_name': project_name, 'object_name': 'Get Range', 'task_name' : task_name, 'x_range':x_range },
                 beforeSend: function(){
                     /*$select_elem.empty();
                     $select_elem.append('<option value="">Select</option>');*/
@@ -10028,6 +10107,7 @@ $("#selectEndShotRange").change(function(){
 
 // create short
 $("#createShot").click(function(){
+    var project_id = $('#selectEntityProject').val();
     var entity_name = 'Shot'
     var parent_object = 'Sequence'
     var shot_start_range = $('#selectShotRange option:selected').val();
@@ -10068,6 +10148,9 @@ $("#createShot").click(function(){
                 alert("Shot " + s +" already created!")
                 return null
             }
+            else{
+                creat_array.push(s)
+            }
     }
     else{
         for(i=st_index; i<= ed_index; i++){
@@ -10104,7 +10187,7 @@ $("#createShot").click(function(){
     for(i=0; i< creat_array.length; i++){
         data_dict = {}
         if(shot_type){
-        shot_name = creat_array[i] + shot_type;
+        shot_name = creat_array[i]
         }
         else{
             shot_name = creat_array[i];
@@ -10113,6 +10196,7 @@ $("#createShot").click(function(){
         data_dict['parent_id'] = parent_id
         data_dict['parent_object'] = parent_object
         data_dict['description'] = description
+        data_dict['project_id'] = project_id
 
         data_list.push(data_dict)
     }
@@ -10122,6 +10206,7 @@ $("#createShot").click(function(){
 
 //create   Sequence
 $("#createSequence").click(function(){
+    var project_id = $('#selectEntityProject').val();
     var entity_name = 'Sequence'
     var parent_object = 'Project'
     var shot_start_range = $('#selectShotRange option:selected').val();
@@ -10163,6 +10248,8 @@ $("#createSequence").click(function(){
                 alert("Sequence " + s +" already created!")
                 return null
 
+            }else{
+                creat_array.push(s)
             }
     }
     else{
@@ -10197,7 +10284,7 @@ $("#createSequence").click(function(){
     for(i=0; i < creat_array.length; i++){
         data_dict = {}
         if(shot_type){
-            shot_name = creat_array[i] + shot_type;
+            shot_name = creat_array[i]
         }
         else{
             shot_name = creat_array[i];
@@ -10206,6 +10293,7 @@ $("#createSequence").click(function(){
         data_dict['parent_id'] = parent_id
         data_dict['parent_object'] = parent_object
         data_dict['description'] = description
+        data_dict['project_id'] = project_id
 
         data_list.push(data_dict)
     }
@@ -10213,7 +10301,7 @@ $("#createSequence").click(function(){
 });
 
 
-// for multiple rows edid
+// For multiple rows edid
 function RowClick(currenttr, lock, event) {
     if (event.ctrlKey) {
         var cur_id = $(currenttr).attr('id');
@@ -10253,9 +10341,157 @@ function clearAll() {
     }
     $('#reset').hide();
 }
+// For create asset from CSV show
+$("#add_asset_csv").click(function(){
+    if (this.checked){
+        $("#addAsset").attr("disabled", true);
+        $("#addAssetFromCSV").show();
+        var parent_id = $('#selectEntityProject').val();
+        set_parent_id(parent_id)
+        set_parent_object('Project')
+    }
+    else{
+        $("#addAsset").attr("disabled", false);
+        $("#addAssetFromCSV").hide();
+    }
+});
+
+//For show asset create from csv modal in show_task_entity page
+$("#addAssetFromCSV").click(function(){
+    clear_asset_modal_fields();
+    $("#assetModal").modal('toggle');
+    $("#attached_csv_file").empty();
+    $("#csv_asset_builds tbody").empty();
+});
+
+// For  add asset csv file from show_task_entity page
+$('#add_asset_build_csv').click(function(){
+    var asset_build_type = $('#selectEntityAssetType').val();
+	var desc = 'New Asset Created'
+	var parent_id = $('#selectEntityProject').val();
+
+    var data_list = [];
+    $("#csv_asset_builds tr[data-invalid='0']").each(function(index){
+	td_array = {};
+	var asset_build_name = $(this).find('td:eq(0)').text().trim();
+	td_array['parent_id'] = parent_id;
+	td_array['parent_object'] = "Project"
+	td_array['asset_build_name'] = asset_build_name;
+	td_array['asset_build_type'] = asset_build_type;
+	td_array['description'] = desc;
+
+    data_list.push(td_array);
+    });
+    if (data_list.length > 0)
+	var entity_name = 'AssetBuild';
+	update_form_data(entity_name,data_list, "AssetBuild"); // save assets
+	$('#table_view').empty();
+
+	$('#assetModal').modal('hide');
+	clear_asset_modal_fields();
+});
+
+// For show asset link modal
+function show_entity_link_model(param){
+    //
+    var asset_ids = [];
+    var parent_id = $(param).closest('tr').attr('parent_id');
+    var selected_object = $('#selectEntityObject').val();
+    $('#entity_loader').show();
+    //call
+    $.ajax({
+	type: "POST",
+	url:"/callajax/",
+	data: { 'task_id': parent_id , 'type_name': selected_object, 'object_name': 'Show Link Details' , 'last_row' : 15},
+	beforeSend: function(){
+
+	    },
+	success: function(json){
+        $.each(json, function (idx, obj) {
+            asset_ids.push(obj.id)
+        });
+        //
+        $('#myInput').val('');
+        var prj_name = $("#selectEntityProject option:selected").text();
+        var proj_id = $("#selectEntityProject").val();
+        get_asset_list(proj_id, prj_name, asset_ids)
+        var old_asset_ids = ""
+        $('#save_asset').attr('old-ids', "")
+        $('#save_asset').attr('old-ids', asset_ids)
+        $('#save_asset').attr('task-id', parent_id)
+    },
+    error: function(error){
+        console.log("Error:\n" + error);
+    }
+    });
+};
+
+// For add asset asset link from show_task_entity page
+function add_entity_asset_link(param){
+    var task_id = $('#save_asset').attr('task-id');
+    var obj_name = $('#selectEntityObject').val();
+    var asset_name = $('#selectEntityObject').val();
+    var old_asset_ids = ""
+    if($('#save_asset').attr('old-ids')){
+        old_asset_ids = ($('#save_asset').attr('old-ids')).split(",");
+    }
+    add_asset(task_id, obj_name, asset_name, old_asset_ids)
+};
+
+// For add asset asset link from tast_status page
+function add_asset_link(param){
+    var task_id = $('#data-modal-object-id').val()
+    var obj_name = $('#selectObject').val();
+    var asset_name = $('#selectObject option:selected').val();
+    var old_asset_ids = ($('#link_details').attr('asset_ids')).split(",");
+    add_asset(task_id, obj_name, asset_name, old_asset_ids, "entity_task")
+};
+
+// For check all asset link model list
+$("#all_link").click(function(){
+    if (this.checked){
+        $('input[name=asset]').prop('checked', true);
+    }else{
+        $('input[name=asset]').prop('checked', false);
+    }
+});
+// For reset asset link model list
+$("#reset_link_asset").click(function(){
+    var cur_assets = $('#myList').attr('data-checked');
+    var cur_assets_array = ''
+    if(cur_assets){
+        cur_assets_array = cur_assets.split(',');
+        $.each($('input[name=asset]'), function(){
+            ind = cur_assets_array.indexOf($(this).val());
+            if(ind == -1){
+                $(this).prop('checked', false);
+            }else{
+                $(this).prop('checked', true);
+            }
+         });
+    $('#all_link').prop('checked', false);
+    }
+    else{
+        $('input[name=asset]').prop('checked', false);
+        $('#all_link').prop('checked', false);
+    }
+});
+
+$("#select_x_range").change(function(){
+    var project_name = $('#selectEntityProject option:selected').text();
+    var task_name = 'sc'
+    var $select_elem = $('#selectShotRange');
+    var x_range = $(this).val();
+    console.log("x_range: " + x_range)
+    //get range
+    get_ranges(project_name, task_name, $select_elem, sequence_range='', x_range)
+});
+
+//--------------------------------------------------------------------------------//
+
 
 $("#show_sequence_delivery").click(function(){
-      sequence_delivery_details(); 
+      sequence_delivery_details();
   });
 
 function sequence_delivery_details(){
@@ -10439,6 +10675,7 @@ function sequence_shot_details(tr_data){
 
     $("#myModal").modal("show");
 }
+
 
 // Reload page here
 window.onload = function() {

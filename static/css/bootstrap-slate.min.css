@@ -4033,7 +4033,7 @@ a.label:hover,a.label:focus {
 	background-color:#52be80;
         color: black;
 }
-.label-ready_to_review {
+.label-final_publish {
 	background-color:#ccf746;
         color: black;
 }
@@ -6005,3 +6005,53 @@ a.thumbnail:hover,a.thumbnail:focus,a.thumbnail.active {
     border: 2px solid red;
 
 }
+
+input[name="asset"]:checked {
+  box-shadow: 0 0 0 3px green;    
+}
+
+/*
+  Custom CSS for Sequence Delivery Page
+ */
+#sequence_date_wise{
+    width:250px;
+    border-radius:4px;
+    position: relative;
+    cursor: pointer;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+}
+
+#div_project_details{
+overflow:auto;
+overflow-y:auto;
+height:700px;
+width:100%;
+}
+
+#accordion_id{
+overflow:auto;
+overflow-y:auto;
+height:400px;
+width:50%;
+}
+
+.panel-group{
+margin-bottom: 1px;
+}
+
+#modal_data{
+overflow:auto;
+height: 385px;
+}
+
+ul.dashboard-list li{
+padding: 7px 0;
+list-style: none;
+border-bottom: 0px;
+border-top: 0px;
+}
+
+/*
+ * End of Css for sequence delivery.
+ */

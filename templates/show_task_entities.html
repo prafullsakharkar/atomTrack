@@ -216,6 +216,9 @@
                      <input type="text" class="x-form-field x-form-text x-form-empty-field" id="asst_name" placeholder="Asset Name" >
                      <input type="text" class="x-form-field x-form-text x-form-empty-field" id="asset_description" placeholder="Description">
                      <button type="button" class="btn btn-inverse btn-default btn-sm" id="addAsset">Create Asset</button>
+                     &nbsp;&nbsp;<input type="checkbox" id="add_asset_csv">&nbsp;&nbsp; Create from CSV &nbsp;&nbsp;
+
+                     <button type="button" class="btn btn-inverse btn-default btn-sm" id="addAssetFromCSV" style="display: none;">Add CSV</button>
                  </div>
               </div>
                <!----squence---->
@@ -230,7 +233,21 @@
                   </div>
             </div>
               </div>
-
+              <!-----xrange----->
+              <div id="div_x_range" style="display:none;">
+              <div class="col-at-2">
+                  <div class="controls">
+                    <label class="control-label" for="select_x_range" >Range :
+                    </label>
+                    <select id="select_x_range" data-rel="chosen" style="width: 65px;">
+                          <option value="1" selected>1x</option>
+                          <option value="5">5x</option>
+                          <option value="10">10x</option>
+                          <option value="20">20x</option>
+                    </select>
+                  </div>
+            </div>
+              </div>
               <!----shot---->
           <div id="shot" style="visibility: hidden;">
           <div class="col-at-2">
@@ -288,7 +305,7 @@
                                 <th>Description</th>
                                 <th>Start Frame</th>
                                 <th>End Frame</th>
-                                <!--<th>Links</th>-->
+                                <th>Links</th>
                                 <th>Action</th>
                             </tr>
                        </thead>
@@ -304,6 +321,90 @@
   </div>
 </div>
 </div>
+<!-- start csv div-->
+<div class="controls" id="asset_id">
+        <div class="modal fade" id="assetModal" tabindex="-1" role="dialog"
+             aria-labelledby="myLargeModalLabel" aria-hidden="true" data-backdrop="static">
+          <div class="modal-dialog modal-dialog-centered rounded_border">
+            <div class="modal-header">
+              <label id="create_asset_csv_label">
+                Upload CSV &nbsp;&nbsp;
+                <a href="/media/sample/sample_create_asset.csv">[ Sample CSV ]</a>
+              </label>
+              <button type="button" class="close" data-dismiss="modal" style="color: #fff;">×</button>
+              <br>
+
+              <div class="box" id="div_create_asset_csv" style="display:block">
+                <button type="button" title="Attach file here ..." class="btn btn-inverse btn-default btn-xs"
+                        style="float: left;margin-right: 5px;" id="asset_csv" onclick="csv_upload_files(this)"><span
+                  class="glyphicon glyphicon-plus"></span></button>
+                <label id="attached_csv_file"></label>
+                <div class="progress" style="display:none">
+                  <div class="progress-bar" role="progressbar" style="width: 0%;">0%</div>
+                </div>
+                <input id="csv_fileupload" type="file" name="file" accept=".csv"
+                       style="display: none;"
+                       data-form-data='{"csrfmiddlewaretoken": "{{ csrf_token }}"}'>
+                <button class="btn btn-inverse btn-default btn-xs" id="add_asset_build_csv"
+                        title="Create Asset Builds" style="width: 150px;float: right;">Create Asset Builds
+                </button>
+                <br>
+                <div class="box-inner" style="overflow:auto; overflow-y:auto; height:410px;width: 100%;">
+                  <table id="csv_asset_builds" class="table table-condensed table-bordered">
+                    <thead>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <!-- end of asset form div -->
+<!----------start create link modal---------------->
+<div style="display: none;" id="link_details" asset_ids=""></div>
+
+<div class="modal fade" id="linkModel" tabindex="-1" role="dialog" aria-labelledby=""
+           data-backdrop="static" data-keyboard="false" aria-hidden="true">
+
+        <div class="modal-dialog modal-md">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" id="linkReset">×</button>
+              <div id="linkmodal_header">
+                <div id="linktask_details_loader" style="text-align: left;"><img
+                  src="/static/img/loading.gif"></div>
+              </div>
+            </div>
+            <div class="modal-body">
+              <div>
+              <input class="form-control" id="myInput" type="text" style="background-color:  #212f3d;" placeholder="Search..">
+                <br>
+               <!--&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+                  <div style="float: center;">
+                   <input id="all_link" value="" type="checkbox"> All
+                   &nbsp;&nbsp;<button type="button" class="btn btn-inverse btn-default btn-xs" cur-asset="" id="reset_link_asset">Reset</button>
+               </div>
+                <div style="overflow-y: auto; height: 650px">
+                <ul class="list-group" id="myList" data-checked="">
+                  <li class="list-group-item"><input type="checkbox" id="1"/>&nbsp;</li>
+
+              </ul>
+                </div>
+              </div>
+              <div class="modal-footer" text-align="center">
+              <a href="#" class="btn btn-default" data-dismiss="modal">Close</a>
+              <a href="#" id="save_asset" class="btn btn-primary" onclick="add_entity_asset_link(this)">Save</a>
+          </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+<!----------end create link modal---------------->
 </body>
 {% include "footer.html" %}
 </html>

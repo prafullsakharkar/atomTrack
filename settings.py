@@ -112,8 +112,12 @@ WSGI_APPLICATION = 'wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+#        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'atom',
+	'OPTIONS': {
+	    'init_command': 'SET default_storage_engine=INNODB',
+	}
     #'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }

@@ -66,22 +66,30 @@
       "Lighting"
     ]
   },
+  "sameep.choudhari": {
+    "role": "Co-ordinator",
+    "columns": [
+      "FX"
+    ],
+    "group": "Production",
+    "name": "sameep.choudhari",
+    "departments": [
+      "FX"
+    ]
+  },
   "shahid.shaikh": {
     "role": "Co-ordinator",
     "columns": [
-      "Lighting",
-      "Render",
-      "Shot Finaling",
-      "Cloth",
-      "Shave Hair",
-      "CFX",
-      "Fur Shape",
-      "FX"
+      "Previz",
+      "Layout",
+      "Blocking",
+      "Animation",
+      "Anim Tech Check"      
     ],
     "group": "Production",
     "name": "shahid.shaikh",
     "departments": [
-      "Lighting"
+      "Animation"
     ]
   },
   "ajay.trivedi": {
