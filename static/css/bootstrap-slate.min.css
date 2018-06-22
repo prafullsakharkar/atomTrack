@@ -6005,7 +6005,12 @@ a.thumbnail:hover,a.thumbnail:focus,a.thumbnail.active {
     border: 2px solid red;
 
 }
-
+.reject{
+    background-color: #573030;
+}
+.published{
+    background-color: #415730;
+}
 input[name="asset"]:checked {
   box-shadow: 0 0 0 3px green;    
 }

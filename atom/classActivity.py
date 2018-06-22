@@ -29,8 +29,9 @@ from pprint import pprint
 from socket import socket, AF_INET, SOCK_DGRAM
 from subprocess import check_output
 
+from mongoengine.queryset.visitor import Q
 from .forms import CreateProject, CreateSequence, CreateShot, CreateAsset, CreateTask, AttachmentForm
-from .models import Attachment
+from .models import Attachment, getModel
 
 
 # from django.shortcuts import render_to_response
@@ -241,16 +242,20 @@ class Activity:
                     data = self.get_asset_builds(proj_id, obj_type)
                 elif object_name == 'Task':
                     parent_ids = request.POST.get('parent_ids')
+                    project_name = request.POST.get("project_name")
                     self.object_name = request.POST.get('parent_object_name')
-                    data = self.get_task_detail(parent_ids)
+                    #data = self.get_task_detail(project_name, parent_ids)
+                    data = self.get_task_detail_mongo(project_name, parent_ids)
+#                elif object_name == 'Tasks':
+#                    pparent_ids = request.POST.get('parent_ids')
+#                    self.object_name = request.POST.get('parent_object_name')
+#                    self.object_type = request.POST.get('parent_object_type')
+#                    project_name = request.POST.get("project_name")
+                    #data = self.get_task_details(project_name, pparent_ids)
+#                    data = self.get_task_detail_mongo(project_name, pparent_ids)
                 elif object_name == 'Select Task':
                     parent_id = request.POST.get('parent_id')
                     data = self.get_tasks(parent_id)
-                elif object_name == 'Tasks':
-                    pparent_ids = request.POST.get('pparent_ids')
-                    self.object_name = request.POST.get('parent_object_name')
-                    self.object_type = request.POST.get('parent_object_type')
-                    data = self.get_task_details(pparent_ids)
                 elif object_name == 'Save Changes':
                     data_list = request.POST.get('data_list')
                     self.save_changes(data_list, proj_id)
@@ -512,6 +517,11 @@ class Activity:
                     first = request.POST.get('first')
                     last = request.POST.get('last')
                     data = self.sequence_task_total_time_duration(first, last, project)
+                elif object_name == 'Note History':
+                    from_name = request.POST.get('from')
+                    last_row = request.POST.get('last_row')
+                    project = (from_name.split(":")[0]).lower()
+                    data = self.get_note_history(from_name, project, last_row)
 
             if request.FILES:
                 data = self.attach_upload_files(request)
@@ -881,7 +891,7 @@ class Activity:
         a_list = sorted(asset_list, key=lambda x: x['name'])
         return a_list
 
-    def get_task_details(self, pparent_ids=''):
+    def get_task_details(self, project_name, pparent_ids=''):
 
         if not pparent_ids:
             return False
@@ -889,9 +899,10 @@ class Activity:
         parent_dict = {}
         self.__result = []
         self.pparent_ids = json.loads(pparent_ids)
-
         # Add all the process in list
+
         for p_id in self.pparent_ids:
+
             self.stereo_object = 0
             self.fork_tasks(p_id)
 
@@ -972,6 +983,78 @@ class Activity:
             parent_dict[parent_id] = task_list
 
         queue.put(task_list)
+
+        return parent_dict
+
+    def get_task_detail_mongo(self, project_name, parent_ids):
+        '''
+
+        :param project_name: Name of selected project
+        :param parent_ids: To get tasks present inside particular
+        parent_id
+        :return: dict containing tasks inside Shot/Asset
+        '''
+        if not parent_ids:
+            return False
+
+        self.reload_session()
+        parent_ids = json.loads(parent_ids)
+        parent_dict = {}
+        coll = self.mongo_database[project_name + "_tasks"]
+
+        inner_dict = {}
+
+        for parent_id in parent_ids:
+
+            if self.object_name == 'Shot Asset Build':
+                parent_dict = self.task_for_shot_asset_build(parent_id, parent_dict)
+            else:
+                # task_list = []
+                task_results = coll.find(
+                    {"parent_id": parent_id},
+                    {"id": 0}
+                )
+
+		# Getting bid & shot seconds
+		seconds = 0
+		if self.object_name == 'Shot':
+		    proj_find = coll.find_one({'name':project_name})
+		    fps = 0
+		    if proj_find:
+			fps = int(proj_find['fps'])
+
+		    f_start = f_end = 0
+		    shot_find = coll.find_one({'ftrack_id': parent_id})
+		    if 'startframe' in shot_find:
+			f_start = int(shot_find['startframe'])
+		    if 'endframe' in shot_find:
+			f_end = int(shot_find['endframe'])
+
+		    seconds = (int(f_end) - (int(f_start) - 1)) / fps
+
+                for ele in task_results:
+		    bid = 0
+		    if 'bid' in ele:
+			bid = float(ele['bid'] / 36000)
+                    try:
+                        inner_dict = {'id': ele['ftrack_id'], 'name': ele['name'], 'parent_d': ele['parent_id'],
+                                      'parent_type': ele["parent_type"], 'status': ele['ftrack_status'], 'bid': bid, 'seconds': seconds}
+
+                        user_name = map(lambda user: user['user_name'], ele['current_assignees'])
+
+                        if user_name:
+                            inner_dict['users'] = user_name
+                        else:
+                            inner_dict['users'] = ['---']
+                    except KeyError as ke:
+                        inner_dict[str(ke)] = ['---']
+
+                    inner_dict['parent_name'] = "_".join(ele['path'].split(":")[1:-1])
+
+                    if parent_id not in parent_dict:
+                        parent_dict[parent_id] = []
+
+                    parent_dict[parent_id].append(inner_dict)
 
         return parent_dict
 
@@ -1627,6 +1710,11 @@ class Activity:
             latest_version = collection.find(search_key).sort('added_on', -1).limit(1)
             version = int(latest_version[0]['version']) + 1
 
+        #
+#        from_name = from_name.replace(from_name.split(':')[0], from_name.split(':')[0].lower())
+#        to_name = to_name.replace(to_name.split(':')[0], to_name.split(':')[0].lower())
+        task_path = task_path.replace(task_path.split(':')[0], task_path.split(':')[0].lower())
+        #
         task_data = dict()
 
         task = task_path.split(':')[-1]
@@ -1648,7 +1736,7 @@ class Activity:
         collection.insert_one(task_data)
 
         # Send reject email or approve mail
-        approved_status = ['Client Approved', 'Ready to Publish', 'Outsource Approved', 'Outsource Client Approved']
+        approved_status = ['Client Approved', 'Ready to Publish', 'Outsource Approved', 'Outsource Client Approved', 'Final Publish']
 
         if change_status in approved_status:
             print("************ Client Approved ****************")
@@ -3606,6 +3694,7 @@ class Activity:
                 task_details['project_id'] = 'None'
                 task_details['total_secs'] = 0
                 task_details['parent_id'] = each['parent_id']
+                task_details['task_pub_status'] = ''
 
                 if 'path' in each:
                     task_details['task'] = each['path']
@@ -3622,6 +3711,31 @@ class Activity:
                     obj_task = self.session.query('Task where project.name is "%s"' % project).first()
                     if obj_task:
                         task_details['project_id'] = obj_task['project_id']
+
+                    # ------------
+                    from_name = str(each['path'])
+                    status = str(each['ftrack_status'])
+                    if status == 'In progress':
+                        # print("from_name: ", from_name)
+                        # print("status: ", status)
+
+                        model_note_class = getModel(str(project) + '_notes')
+                        note_obj = model_note_class.objects.order_by('-added_on').filter(from_name__iexact=from_name, status='Internal Reject')
+                        if note_obj:
+                            note_obj = note_obj[0]
+                            to_name = note_obj.to_name
+                            pub_version = note_obj.pub_version
+                            prev_ver_no = '%003d' % (int(pub_version.split()[-1][-3:]) + 1)
+                            prev_ver = pub_version.split()[0] + ' v' + prev_ver_no
+                            model_version_class = getModel(str(project) + '_versions')
+                            version_path = from_name.replace(from_name.split(':')[-1], prev_ver)
+                            task_name = to_name.split(':')[-1]
+                            version_obj = model_version_class.objects.order_by('-published_on').filter(task_name=task_name, path__iexact=version_path)
+                            if version_obj:
+                                task_details['task_pub_status'] = 'published'
+                            else:
+                                task_details['task_pub_status'] = 'reject'
+                    # ------------
 
                 if 'parent_object_type' in each:
                     task_details['parent_object_type'] = each['parent_object_type']
@@ -4665,10 +4779,18 @@ class Activity:
 
         cc_addr = 'prafull.sakharkar@intra.madassemblage.com,ajay.maurya@intra.madassemblage.com'
 
+        from_task_name = ''
+        if 'from_name' in details:
+            from_task_name = details['from_name'].split(':')[-1]
+
         if 'Review Task' in self.email_address['Email']:
             if project in self.email_address['Email']['Review Task']:
                 if task_name in self.email_address['Email']['Review Task'][project]:
                     cc_addr = cc_addr + ',' + ','.join(self.email_address['Email']['Review Task'][project][task_name])
+                if from_task_name in self.email_address['Email']['Review Task'][project]:
+                    if task_name != from_task_name:
+                        cc_addr = cc_addr + ',' + ','.join(self.email_address['Email']['Review Task'][project][from_task_name])
+                
 
         htmlhead = """
         Hello Artist(s),</br>Your task has been rejected with below details ... </br></br>
@@ -5017,6 +5139,7 @@ class Activity:
         global parent_obj
         self.reload_session()
 
+	project_name = ''
         for each in data_list:
             if 'task_id' in each and each['task_id']:
                 task_obj = self.session.query("Task where id is '%s'" % each['task_id']).first()
@@ -5029,7 +5152,6 @@ class Activity:
                     each['task_id'] = task['id']
                     task_obj = self.session.query("Task where id is '%s'" % each['task_id']).first()
                     task_id = each['task_id']
-                    print(task_id)
                 else:
                     if 'task_name' not in each:
                         print("Task name not found ...")
@@ -5064,6 +5186,10 @@ class Activity:
                     })
 
                     task_id = task_obj['id']
+
+	    project_name = 'ice' or task_obj['project']['name'].lower()
+            link = task_obj['link']
+            path = (':'.join([each_link['name'] for each_link in link]))
 
             if 'description' in each:
                 task_obj['description'] = each['description']
@@ -5137,11 +5263,15 @@ class Activity:
                 obj_user = ase_ftrack.add_user_in_project(self.session, user, project_id, True)
 
                 # obj_user = self.session.query('User where username is "%s"' % user).one()
-                self.session.create('Appointment', {
+                obj_app = self.session.create('Appointment', {
                     'context': task_obj,
                     'resource': obj_user,
                     'type': 'assignment'
                 })
+
+		# Log assigned users
+#		self.add_activity_log(project=project_name,value=user, ftrack_id=obj_app['id'], action='add', object_type='user', details_for='User', sub_type='user', parent_id=task_id, path=path)
+
 
             deleted_users = list()
             for d_user in org_users_list:
@@ -5156,6 +5286,8 @@ class Activity:
                     if obj_app:
                         self.session.delete(obj_app)
 			self.session.commit()
+			# Log assigned users
+#			self.add_activity_log(project=project_name,value=del_user, ftrack_id=obj_app['id'], action='remove', object_type='user', details_for='User', sub_type='user', parent_id=task_id, path=path)
 
         self.session.commit()
         time.sleep(3)
@@ -6241,3 +6373,59 @@ class Activity:
         template_name = 'publi_ver_detail_view.html'
 
         return render(request, template_name, {})
+
+    def get_note_history(self, from_name, project, last_row):
+        print("------------- get_note_history-----------------")
+        start_row = int(last_row) - 15
+        last_row = int(last_row) - 1
+        from_name = from_name.replace(from_name.split(':')[0], from_name.split(':')[0].lower())
+        model_class = getModel(str(project) + '_notes')
+        notes_obj = model_class.objects.order_by('-added_on').filter(Q(from_name=from_name) | Q(to_name=from_name))[start_row:last_row]
+        print("notes_obj: ", len(notes_obj))
+        data_list = list()
+        for obj in notes_obj:
+            data_dict = dict()
+            data_dict['department'] = obj.task
+            data_dict['status'] = obj.status
+            data_dict['added_by'] = obj.added_by
+            data_dict['added_on'] = str(obj.added_on).split('.')[0]
+            # version
+            path = obj.task_path
+            task_path = path.replace(path.split(':')[-1], obj.pub_version)
+            data_dict['task_path'] = task_path
+            data_dict['note_text'] = obj.note_text
+
+            data_list.append(data_dict)
+
+        return data_list
+
+    def add_activity_log(self,project='ice',value='', ftrack_id='', action='add', object_type='', details_for='', sub_type='', parent_id='', path=''):
+
+	print("In activity log")
+	db_name = str(project) + '_activity_log' 
+	db_obj = getModel(db_name)
+	model_obj = db_obj.objects.create(activity_by=self.username)
+	model_obj.acitivity_date = datetime.datetime.now()
+	model_obj.value = value
+	model_obj.ftrack_id = ftrack_id
+	model_obj.action = action
+	model_obj.object_type = object_type
+	model_obj.details_for = details_for
+	model_obj.sub_type = sub_type
+	model_obj.parent_id = parent_id
+	model_obj.path = path
+	model_obj.save()
+
+
+
+
+
+
+
+
+
+
+
+
+
+

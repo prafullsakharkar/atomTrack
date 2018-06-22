@@ -22,6 +22,12 @@
                 {% if form.errors %}
                     <h1>Please enter a correct username and password</h1>
                 {% endif %}
+                <span>
+                    <label style='color:red; font-size: small;'>
+                    {% for message in messages %}
+                        {{ message }}
+                    {% endfor %}
+                </span>
                 <input type="text" name="username" placeholder="Username" required="">
 		<input type="password" placeholder="Password" value=""  name="password" required="">
                 <input type="submit" value="Sign in">

@@ -294,7 +294,7 @@ class CreateShot(forms.Form):
                 'class': 'form-control',
                 'placeholder': 'Shot Name',
                 'pattern': '[a-zA-Z0-9]',
-                'maxlength': '4'
+                'maxlength': '6'
             }
         )
     )
@@ -381,7 +381,7 @@ class CreateShot(forms.Form):
                 'class': 'form-control'
             }
         ),
-        required=False
+        required=False,
     )
     frame_end = forms.CharField(
         widget=forms.TextInput(

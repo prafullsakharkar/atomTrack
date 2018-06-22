@@ -64,13 +64,13 @@
               <div class="controls" id="status_options" style="display:none">
 
                 <select id="selectStatus" data-rel="chosen" data-placeholder="Select one...">
-	    
+
                   {% for status in statuses %}
-		    {% if status.name in disabled_status %}
-			<option value="{{status.name}}" disabled>{{status.name}}</option>
-		    {% else %}
-			<option value="{{status.name}}">{{status.name}}</option>
-		    {% endif %}
+                  {% if status.name in disabled_status %}
+                  <option value="{{status.name}}" disabled>{{status.name}}</option>
+                  {% else %}
+                  <option value="{{status.name}}">{{status.name}}</option>
+                  {% endif %}
                   {% endfor %}
 
                 </select>
@@ -92,7 +92,8 @@
                 <select id="selectObject" data-rel="chosen">
                   <option value="">Select Object</option>
                   {% for obj_name in task_temp_data %}
-                  {% if obj_name == 'Sequence' or obj_name == 'Asset Build' or obj_name == 'Shot' or obj_name == 'Shot Asset Build' %}
+                  {% if obj_name == 'Sequence' or obj_name == 'Asset Build' or obj_name == 'Shot' or obj_name == 'Shot
+                  Asset Build' %}
                   <option value="{{obj_name}}">{{obj_name}}</option>
                   {% endif %}
                   {% endfor %}
@@ -163,6 +164,33 @@
               <!--                            <button title="Download" class="btn btn-inverse btn-default btn-sm" id="dwn_task_status" onClick ="$('#tbl_task').tableExport({filename: 'super-secret-data',type:'excel',escape:'false'});"> -->
               <button title="Download" class="btn btn-inverse btn-default btn-sm" id="dwn_task_status">
                 <i class="glyphicon glyphicon-save icon-white"></i></button>
+            </div>
+          </div>
+          <div class="col-at-12">
+            <div class="box-inner">
+              <div class="box-header well">
+                <h2><i class="glyphicon glyphicon-info-sign"></i> Introduction</h2>
+                <div class="box-icon">
+                  <a href="#" class="btn btn-minimize btn-round btn-default"><i
+                    class="glyphicon glyphicon-chevron-up"></i></a>
+                </div>
+              </div>
+              <div class="box-content row">
+                <div id="div_summary">
+                  <div class="box col-md-3 top-block">
+                    <span style="color: chartreuse;font-size: 20px;">Layout</span>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div id="demo" data-text="85%" data-percent="85" data-total="100"></div>
+                      </div>
+                      <div class="col-md-6" style="text-align: left;"><br>Bids : 30 <br> Shots : 45 <br>Users : 345 <br>
+                        Hours : 00:40:00
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
           <div class="col-at-12">
@@ -299,36 +327,36 @@
 
                               <span>&nbsp;Tasks</span>
                               <div class="controls">
-                              <select id="selectNoteTask" data-rel="chosen"
-                                      style="width: 140px;">
+                                <select id="selectNoteTask" data-rel="chosen"
+                                        style="width: 140px;">
 
-                                <!--<option value="">None</option>
-                                {% for task in data.all_tasks %}
-                                <option value="{{ task }}">{{ task }}</option>
-                                {% endfor %}-->
+                                  <!--<option value="">None</option>
+                                  {% for task in data.all_tasks %}
+                                  <option value="{{ task }}">{{ task }}</option>
+                                  {% endfor %}-->
 
-                              </select>
-                              &nbsp;&nbsp;
-                              <span>Category : </span>
-                              <select id="selectNoteCategory" data-rel="chosen"
-                                      data-placeholder="Select one..."
-                                      style="width:130px !important;"
-                                      onchange="toggle_parent_note(this)">
-                                <option value="">All</option>
-                                <option value="None">None</option>
-                                <option value="Internal">Internal</option>
-                                <option value="Client feedback">Client
-                                  feedback
-                                </option>
-                                <option value="Client">Client</option>
-                              </select>
+                                </select>
+                                &nbsp;&nbsp;
+                                <span>Category : </span>
+                                <select id="selectNoteCategory" data-rel="chosen"
+                                        data-placeholder="Select one..."
+                                        style="width:130px !important;"
+                                        onchange="toggle_parent_note(this)">
+                                  <option value="">All</option>
+                                  <option value="None">None</option>
+                                  <option value="Internal">Internal</option>
+                                  <option value="Client feedback">Client
+                                    feedback
+                                  </option>
+                                  <option value="Client">Client</option>
+                                </select>
                               </div>
                               {% if data.user_role == 'Co-ordinator' or data.user_role == 'Supervisor' %}
                               <div class="box">
                                 <textarea id="text_artist_note" rows="5" cols="20"
-                            placeholder="Write a note..."
-                            class="x-form-field x-form-text x-form-textarea"
-                            autocomplete="off" style="width: 100%; height: 48px;"></textarea>
+                                          placeholder="Write a note..."
+                                          class="x-form-field x-form-text x-form-textarea"
+                                          autocomplete="off" style="width: 100%; height: 48px;"></textarea>
                                 <button type="button" title="Attach file here ..."
                                         class="btn btn-inverse btn-default btn-xs" data-gallery="gallery_notes"
                                         style="float: left;margin-right: 5px;" onclick="attach_media_files(this)"><span
@@ -360,11 +388,12 @@
                             <div id="task_link_loader" style="text-align: center;"><img
                               src="/static/img/loading.gif"></div>
                             <br>
-                          &nbsp;&nbsp;<div class="btn-group left theme-container animated tada">
-                            <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" id="incoming" onclick="show_link_model(this)">
+                            &nbsp;&nbsp;<div class="btn-group left theme-container animated tada">
+                            <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" id="incoming"
+                                    onclick="show_link_model(this)">
                               <span class="hidden-sm hidden-xs">
                                 Create Asset Link</span>
-                              </button>
+                            </button>
                             <!--<ul class="dropdown-menu">
                               <li><a href="#" id="incoming" onclick="show_link_model(this)"> Incoming </a></li>
                               <li><a href="#" id="outgoing" onclick="show_link_model(this)"> Outgoing </a></li>
@@ -476,12 +505,13 @@
                                 {% if data.user_role == 'Co-ordinator' or data.user_role == 'Supervisor' %}
                                 <div class="box">
                                   <textarea id="text_version_note" rows="5" cols="20"
-                            placeholder="Write a note..."
-                            class="x-form-field x-form-text x-form-textarea"
-                            autocomplete="off" style="width: 100%; height: 48px;"></textarea>
+                                            placeholder="Write a note..."
+                                            class="x-form-field x-form-text x-form-textarea"
+                                            autocomplete="off" style="width: 100%; height: 48px;"></textarea>
                                   <button type="button" title="Attach file here ..."
                                           class="btn btn-inverse btn-default btn-xs" data-gallery="gallery_versions"
-                                          style="float: left;margin-right: 5px;" onclick="attach_media_files(this)"><span
+                                          style="float: left;margin-right: 5px;"
+                                          onclick="attach_media_files(this)"><span
                                     class="glyphicon glyphicon-plus"></span></button>
                                   <div class="progress" style="display:none">
                                     <div class="progress-bar" role="progressbar" style="width: 0%;">0%</div>
@@ -525,38 +555,39 @@
             -->
           </div>
         </div>
-      <div class="modal fade" id="linkModel" tabindex="-1" role="dialog" aria-labelledby=""
-           data-backdrop="static" data-keyboard="false" aria-hidden="true">
+        <div class="modal fade" id="linkModel" tabindex="-1" role="dialog" aria-labelledby=""
+             data-backdrop="static" data-keyboard="false" aria-hidden="true">
 
-        <div class="modal-dialog modal-md">
-          <div class="modal-content">
-            <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal" id="linkReset">×</button>
-              <div id="linkmodal_header">
-                <div id="linktask_details_loader" style="text-align: left;"><img
-                  src="/static/img/loading.gif"></div>
-              </div>
-            </div>
-            <div class="modal-body">
-              <div>
-              <input class="form-control" id="myInput" type="text" style="background-color:  #212f3d;" placeholder="Search..">
-                <br>
-                <div style="overflow-y: auto; height: 650px">
-                <ul class="list-group" id="myList">
-                  <li class="list-group-item"><input type="checkbox" id="1"/>&nbsp;</li>
-
-              </ul>
+          <div class="modal-dialog modal-md">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" id="linkReset">×</button>
+                <div id="linkmodal_header">
+                  <div id="linktask_details_loader" style="text-align: left;"><img
+                    src="/static/img/loading.gif"></div>
                 </div>
               </div>
-              <div class="modal-footer" text-align="center">
-                              <a href="#" class="btn btn-default" data-dismiss="modal">Close</a>
-                              <a href="#" class="btn btn-primary" onclick="add_asset_link(this)">Save</a>
-                          </div>
-            </div>
-          </div>
+              <div class="modal-body">
+                <div>
+                  <input class="form-control" id="myInput" type="text" style="background-color:  #212f3d;"
+                         placeholder="Search..">
+                  <br>
+                  <div style="overflow-y: auto; height: 650px">
+                    <ul class="list-group" id="myList">
+                      <li class="list-group-item"><input type="checkbox" id="1"/>&nbsp;</li>
 
+                    </ul>
+                  </div>
+                </div>
+                <div class="modal-footer" text-align="center">
+                  <a href="#" class="btn btn-default" data-dismiss="modal">Close</a>
+                  <a href="#" class="btn btn-primary" onclick="add_asset_link(this)">Save</a>
+                </div>
+              </div>
+            </div>
+
+          </div>
         </div>
-      </div>
       </div>
 
       <!-- task count Model-->

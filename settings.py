@@ -14,10 +14,13 @@ import os
 import ldap
 import logging
 from django_auth_ldap.config import LDAPSearch, PosixGroupType
+import mongoengine
+from socket import socket, AF_INET, SOCK_DGRAM
+from subprocess import check_output
 
 AUTHENTICATION_BACKENDS = (
-     'django_auth_ldap.backend.LDAPBackend',
-     'django.contrib.auth.backends.ModelBackend',
+    'django_auth_ldap.backend.LDAPBackend',
+    'django.contrib.auth.backends.ModelBackend',
 )
 
 # Database
@@ -42,9 +45,9 @@ PROJ_BASE_DIR = BASE_DIR + '/atomTrack'
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "atomTrack/static"),
 )
-LOG_FILE      = os.path.join(BASE_DIR, 'logs/atom.log')
-#STATIC_ROOT = os.path.join(BASE_DIR, "atomTrack/static/")
-#MEDIA_ROOT = os.path.join(BASE_DIR, "atomTrack/media/")
+LOG_FILE = os.path.join(BASE_DIR, 'logs/atom.log')
+# STATIC_ROOT = os.path.join(BASE_DIR, "atomTrack/static/")
+# MEDIA_ROOT = os.path.join(BASE_DIR, "atomTrack/media/")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
@@ -54,13 +57,34 @@ SECRET_KEY = '7tp!_4)k6ev_1&=%pyc@%()0kp5h&-ynvas-!y49oq-(9!n4t)'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+DEVMODE = False
 
-ALLOWED_HOSTS = ['192.168.1.20','127.0.0.1','192.168.1.109', '192.168.1.19','atom.intra.madassemblage.com','atom']
+ALLOWED_HOSTS = ['192.168.1.20', '127.0.0.1', '192.168.1.109', '192.168.1.19', 'atom.intra.madassemblage.com',
+                 'atom', '10.11.7.240']
 
+try:
+    ips = check_output(['hostname', '--all-ip-addresses'])
+    ip_address = ips.strip()
+    # self.ipaddress = gethostbyname(self.machinename)
+except ValueError:
+    ip_address = '127.0.0.1'
+
+if ip_address not in ['192.168.1.20', '192.168.1.19']:
+    DEVMODE = True
+
+MONGO_SERVER = '192.168.1.19'
+MONGO_DB = 'userDailyBackupTask'
+FTRACK_URL = 'http://192.168.1.98' 
+
+if DEVMODE:
+    MONGO_SERVER = '192.168.1.128'
+    FTRACK_URL = 'http://192.168.1.99' 
+
+mongoengine.connect(db=MONGO_DB,host=MONGO_SERVER,connect=False)
 # Application definition
 
 INSTALLED_APPS = [
-#    'fileupload.apps.FileuploadConfig',
+    #    'fileupload.apps.FileuploadConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -74,8 +98,8 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-#    'django.middleware.csrf.CsrfViewMiddleware',
-#    'response_timeout.middleware.SetCacheTimeoutMiddleware',
+    #    'django.middleware.csrf.CsrfViewMiddleware',
+    #    'response_timeout.middleware.SetCacheTimeoutMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -97,9 +121,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
-            'libraries': { # Adding this section should work around the issue.
-#                'app_tags' : 'myapp.templatetags.app_tags',#to add new tags module,
-#                'upload_tags' : 'myapp.templatetags.upload_tags',#to add new tags module,
+            'libraries': {  # Adding this section should work around the issue.
+                #                'app_tags' : 'myapp.templatetags.app_tags',#to add new tags module,
+                #                'upload_tags' : 'myapp.templatetags.upload_tags',#to add new tags module,
             },
         },
     },
@@ -112,16 +136,11 @@ WSGI_APPLICATION = 'wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-#        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'atom',
-	'OPTIONS': {
-	    'init_command': 'SET default_storage_engine=INNODB',
-	}
-    #'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'db.sqlite3',
+        # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators

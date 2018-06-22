@@ -34,6 +34,7 @@ $("#selectObject").change(function(){
 	div_check = '#div_shot_task_checkbox';
         create_table(div_check);
         load_obj_name('Sequence','');
+	create_summary_div(div_check);
     }else if (obj_name == 'Shot Asset Build'){
         $("#div_shot_task_checkbox").css({'display':'none'});
         $("#div_Sequence_checkbox").css({'display':'none'});
@@ -131,6 +132,7 @@ $("#selectClientObject").change(function(){
     $(prev_div).css({'display':'none'});
     $(div_check).css({'display':'block'});
     create_table(div_check);
+    create_summary_div(div_check);
 
     if (select_type){
         load_obj_name(obj_name,'');
@@ -172,6 +174,7 @@ $("#selectAsset").on('change', function(evt, params) {
     }
     var deselectedValue = params.deselected;
     var selectedValue = params.selected;
+    var project_name = $('#selectProject option:selected').text().trim();
 
     object = $('#selectObject').val();
 
@@ -180,7 +183,7 @@ $("#selectAsset").on('change', function(evt, params) {
         array[0] = selectedValue
 	id = selectedValue
         p_name = $("#selectAsset option[value='"+id+"']").text();
-        load_tasks(array,'',p_name,0,object);
+        load_tasks(array, '', p_name, 0, object, '', project_name);
     }else if (deselectedValue){
         var asset_name = $("#selectAsset option[value='"+deselectedValue+"']").text();
         $("#tbl_task tr:contains("+ asset_name +")").remove();
@@ -304,6 +307,7 @@ $('#selectSequence').on('change', function(evt, params) {
     }
     var deselectedValue = params.deselected;
     var selectedValue = params.selected;
+    var project_name = $('#selectProject option:selected').text().trim();
 
     if (selectedValue && obj_name == 'Shot'){
         var obj_name = 'Shot';
@@ -316,7 +320,7 @@ $('#selectSequence').on('change', function(evt, params) {
         array[0] = selectedValue
 	id = selectedValue
         p_name = $("#selectSequence option[value='"+id+"']").text();
-        load_tasks(array,'',p_name,0,obj_name);
+        load_tasks(array, '', p_name, 0, obj_name, '', project_name);
     }else if (deselectedValue){
         de_seq = $("#selectSequence option[value='"+deselectedValue+"']").text();
         $("#selectShot option:contains('"+de_seq+"')").remove();
@@ -382,6 +386,8 @@ $('#selectShot').on('change', function(evt, params) {
         error_message("Please select valid project !!");
         return null;
     }
+    var project_name = $("#selectProject option:selected").text().trim();
+
     var deselectedValue = params.deselected;
     var selectedValue = params.selected;
 
@@ -392,7 +398,8 @@ $('#selectShot').on('change', function(evt, params) {
         array[0] = selectedValue
 	id = selectedValue
         p_name = $("#selectShot option[value='"+id+"']").text();
-        load_tasks(array,'',p_name,0,object);
+
+        load_tasks(array, '', p_name, 0, object, '', project_name);
     }else if (deselectedValue){
         var shot_name = $("#selectShot option[value='"+deselectedValue+"']").text();
         $("#tbl_task tr:contains("+ shot_name +")").remove();
@@ -758,134 +765,49 @@ function load_choosen_data($div_name,$select_elem,obj_name,parent_id) {
         }
     });
 }
-/*
-function load_task(proj_id,parent_id,parent_name) {
-    var mycol = [];
-    var mycolusers = [];
-    var task_id = [];
-    var task_parent_ids = [];
-    $.ajax({
-        type:"POST",
-        url:"/callajax/",
-        data: { 'proj_id': proj_id ,'object_name': 'Task', 'parent_id': parent_id },
-        beforeSend: function(){
-        },
-        success: function(json){
-            $("#div_task_details").css({'display':'block'});
-            $.each(json, function (idx, obj) {
-                $('#tbl_task th').each(function(index) {
-                    var task_name = this.innerHTML;
-                    if (obj.name == task_name){
-                        task_id[index] = obj.id;
-                        mycol[index] = obj.status;
-                        mycolusers[index] = obj.users;
-                        task_parent_ids[index] = obj.parent_id;
-                    }
-                });
-            });
-            mycol[0] = parent_name;
-            add_rows(mycol,parent_id,mycolusers,task_id,task_parent_ids);
-        },
-        error: function(error){
-            console.log("Error:");
-            console.log(error);
-        }
-    });
-}
-*/
-function add_rows(mycol,parent_id,mycolusers,task_id,task_parent_ids){
 
-    var obj_name = $("#selectObject").val();
-    var table = $('#tbl_task tbody');
-    row = $(table[0].insertRow(-1));
-    $('#tbl_task th').each(function(index) {
-        var th_name = $(this).text();
-        var t_status = '---';
-        var stat_lbl = 'label-default';
-        var t_stat_user = '---';
-        var stat_usr_lbl = 'label-default';
-        var taskid = ''
-	if (task_parent_ids[index]){
-	    parent_id = task_parent_ids[index];
-	}
-        if(mycol[index]){
-            t_status = mycol[index];
-            label = mycol[index].replace(/ /g,"_").toLowerCase();
-            stat_lbl = 'label-'+label;
-        }
 
-        if(mycolusers[index]){
-            t_stat_user = mycolusers[index];
-            stat_usr_lbl = 'label-default';
-        }
+function create_summary_div(div_check){
 
-        if(task_id[index]){
-            taskid = task_id[index];
-        }
+    $sum_div = $('#div_summary');
 
-        on_click_status = "";
-        on_click_user = "";
-        if (index > 0){
-            if($(this).css('display') == 'none'){
-                show = "style='display:none'";
-            }else{
+    col_val = $('#user_columns').val();
+    col_arr = col_val.split(',');
+
+    var task_data = '';
+    $(div_check+' input[type="checkbox"]').each(function() {
+        if($.contains(document, this)){
+            var header = this.value;
+            if (col_arr.indexOf(header) > -1){
                 show = "";
-                var header = this.innerHTML;
-                col_arr = $('#user_columns').val().split(',');
-                if (col_arr.indexOf(header) > -1){
-                    on_click_status = "ondblclick='editCell(this)'";
-                    on_click_user = "ondblclick='editUserCell(this)'";
-                }
+            }else{
+                show = "style='display:none'";
             }
 
-            var stat_display = ''
-            var assi_display = ''
-            if(show == ''){
-                if($('#show_assignee').is(":not(:checked)")){
-                    assi_display = 'style="display:none"';
-                }
-                if($('#show_status').is(":not(:checked)")){
-                    stat_display = 'style="display:none"';
-                }
-            }
+            var class_id = 'summary_' + $(this).attr('id');
+	    task_data = task_data + '\
+	    <div class="col-md-3 col-sm-3 col-xs-6 top-block '+class_id+' " '+show+'>\
+<span style="color: chartreuse;font-size: 20px;">'+header+'</span>\
+<div class="row">\
+<div class="col-md-6" ><div id="circle_'+class_id+'"  data-text="0%" data-percent="0" data-total="100" ></div></div>\
+<div class="col-md-6" style="text-align: left;" ><div id="data_'+class_id+'"><br>Bids : 0 <br> Shots : 0 <br>Users : 0 <br> Hours : 00:00:00</div></div>\
+</div></div>';
 
-            var cell = $("<td title='"+th_name+"' data-task-id='"+taskid+"' data-org-val='"+t_status+"' data-parent-id='"+parent_id+"' data-id='show_status' "+show+" "+stat_display+" "+on_click_status+" />");
-
-            col_data = '<span class="label '+stat_lbl+'" >'+t_status+'</span>';
-
-            var usercell = $("<td title='"+th_name+"' data-task-id='"+taskid+"' data-org-val='"+t_stat_user+"' data-parent-id='"+parent_id+"' data-id='show_assignee' "+show+" "+assi_display+" "+on_click_user+" />");
-            usercol_data = '<span class="label '+stat_usr_lbl+'" >'+t_stat_user+'</span>';
-        }else{
-
-	    if (mycol[0] != t_status){
-		t_status = t_status+'_'+mycol[0];
-	    }
-            var cell = $("<td id='"+parent_id+"' data-task-id='"+parent_id+"' data-task-parent-id='"+parent_id+"'/>");
-            col_data = '<a href="#" id="parent_object" onclick="show_model(this)">'+t_status+'</a>';
-
-            var usercell = '';
-            usercol_data = '';
-        }
-
-
-        cell.html(col_data);
-	if (usercell != ''){
-	    usercell.html(usercol_data);
-	}
-
-        th_id = $(this).attr("class");
-        if ($('#' + th_id).is(":not(:checked)")){
-            cell.css({'display':'none'});
-        }
-        row.append(cell,usercell);
-    });
-
-    $(row).click(function(event){
-        if(event.ctrlKey === true) {
-            $(this).toggleClass("selected")
         }
     });
+
+    $sum_div.html(task_data);
+//    $("#demo").circliful();
+
+    $(div_check+' input[type="checkbox"]').click(function() {
+//        var index = $(this).attr('id').match(/\d+/)[0];
+	check_id = $(this).attr('id');
+	div_sum_id = 'summary_' + check_id;
+	$('div.'+div_sum_id).toggle();
+    });
+
 }
+
 function create_table(div_check) {
 
     var table = $('<table class="table-hover table-condensed table-bordered" id="tbl_task" />');
@@ -1020,6 +942,8 @@ function reload_tasks(reload){
     var parent_ids = ''
     var p_name = ''
     var parent_object_type = '';
+    var project_name = $('#selectProject option:selected').text().trim();
+
     if (asset_ids){
         pparent_ids = [proj_id]
 	parent_ids = asset_ids
@@ -1040,7 +964,7 @@ function reload_tasks(reload){
 		p_name = $("#selectShot option[value='"+id+"']").text();
 		var array = [];
 		array[0] = id;
-		load_tasks(array,'',p_name,0,object);
+		load_tasks(array, '', p_name, 0, object, '', project_name);
 	    }
 	    return null;
 	}
@@ -1054,29 +978,38 @@ function reload_tasks(reload){
     if (parent_ids.length == 1) {
 	parent_name = p_name
     }
-    load_tasks(parent_ids,pparent_ids,parent_name,reload,parent_object_name,parent_object_type);
+    load_tasks(parent_ids, pparent_ids,parent_name,reload,parent_object_name,parent_object_type, project_name);
 
 }
 
-function load_tasks(parent_ids,pparent_ids,parent_name,reload,parent_object_name,parent_object_type) {
+function load_tasks(parent_ids, pparent_ids,parent_name,reload,
+                    parent_object_name,parent_object_type, project_name
+                    ) {
+
     var task;
     parent_name = parent_name || '';
     reload = reload || 0;
     parent_object_name = parent_object_name || '';
     parent_object_type = parent_object_type || '';
 
+    task = 'Task';
+/*
     if (parent_ids.length == 1 || reload == 1){
         task = 'Task';
     }else{
         task = 'Tasks';
     }
+*/
 
     data_ids = JSON.stringify(parent_ids);
     pparent_ids = JSON.stringify(pparent_ids);
     $.ajax({
         type:"POST",
         url:"/callajax/",
-        data: { 'parent_ids': data_ids ,'object_name': task, 'pparent_ids' : pparent_ids , 'parent_object_name': parent_object_name, 'parent_object_type': parent_object_type},
+        data: { 'parent_ids': data_ids ,'object_name': task, 'pparent_ids' : pparent_ids ,
+        'parent_object_name': parent_object_name, 'parent_object_type': parent_object_type,
+        'project_name': project_name
+        },
         beforeSend: function(){
             $('#panel_big').plainOverlay('show');
         },
@@ -1087,6 +1020,7 @@ function load_tasks(parent_ids,pparent_ids,parent_name,reload,parent_object_name
                 var mycolusers = [];
                 var task_id = [];
                 var task_parent_ids = [];
+		var details = {};
 		var parent_type = ''
                 $.each(json[parent_id], function (idx, obj) {
 		    if (!mycol[0]){
@@ -1100,13 +1034,18 @@ function load_tasks(parent_ids,pparent_ids,parent_name,reload,parent_object_name
                             mycol[index] = obj.status;
                             mycolusers[index] = obj.users;
                             task_parent_ids[index] = obj.parent_id;
+			    if (!details[index]){
+				details[index] = {};
+			    }
+			    details[index]['bid'] = obj.bid;
+			    details[index]['seconds'] = obj.seconds;
                         }
                     });
                 });
 	    if (parent_name && parent_name != mycol[0]){
 		mycol[0] = parent_name + ' <br>' + mycol[0] + ' <br><small style="color:aqua">(' + parent_type + ')<small>';
 	    }
-            add_rows(mycol,parent_id,mycolusers,task_id,task_parent_ids);
+            add_rows(mycol,parent_id,mycolusers,task_id,task_parent_ids,details);
             }
 
 	    show_graphs();
@@ -1119,6 +1058,111 @@ function load_tasks(parent_ids,pparent_ids,parent_name,reload,parent_object_name
         error: function(error){
             console.log("Error:");
             console.log(error);
+        }
+    });
+}
+
+function add_rows(mycol,parent_id,mycolusers,task_id,task_parent_ids,details){
+
+    var details = details || {};
+    var obj_name = $("#selectObject").val();
+    var table = $('#tbl_task tbody');
+    row = $(table[0].insertRow(-1));
+//    console_log(details);
+
+    $('#tbl_task th').each(function(index) {
+        var th_name = $(this).text();
+        var t_status = '---';
+        var stat_lbl = 'label-default';
+        var t_stat_user = '---';
+        var stat_usr_lbl = 'label-default';
+        var taskid = ''
+
+	var bid = 0;
+	var seconds = 0;
+	if (details[index]){
+	    bid = details[index]['bid'];
+	    seconds = details[index]['seconds'];
+	}
+
+	if (task_parent_ids[index]){
+	    parent_id = task_parent_ids[index];
+	}
+        if(mycol[index]){
+            t_status = mycol[index];
+            label = mycol[index].replace(/ /g,"_").toLowerCase();
+            stat_lbl = 'label-'+label;
+        }
+
+        if(mycolusers[index]){
+            t_stat_user = mycolusers[index];
+            stat_usr_lbl = 'label-default';
+        }
+
+        if(task_id[index]){
+            taskid = task_id[index];
+        }
+
+        on_click_status = "";
+        on_click_user = "";
+        if (index > 0){
+            if($(this).css('display') == 'none'){
+                show = "style='display:none'";
+            }else{
+                show = "";
+                var header = this.innerHTML;
+                col_arr = $('#user_columns').val().split(',');
+                if (col_arr.indexOf(header) > -1){
+                    on_click_status = "ondblclick='editCell(this)'";
+                    on_click_user = "ondblclick='editUserCell(this)'";
+                }
+            }
+
+            var stat_display = ''
+            var assi_display = ''
+            if(show == ''){
+                if($('#show_assignee').is(":not(:checked)")){
+                    assi_display = 'style="display:none"';
+                }
+                if($('#show_status').is(":not(:checked)")){
+                    stat_display = 'style="display:none"';
+                }
+            }
+
+            var cell = $("<td title='"+th_name+"' data-bid = '"+bid+"' data-shot-sec='"+seconds+"' data-task-id='"+taskid+"' data-org-val='"+t_status+"' data-parent-id='"+parent_id+"' data-id='show_status' "+show+" "+stat_display+" "+on_click_status+" />");
+
+            col_data = '<span class="label '+stat_lbl+'" >'+t_status+'</span>';
+
+            var usercell = $("<td title='"+th_name+"' data-task-id='"+taskid+"' data-org-val='"+t_stat_user+"' data-parent-id='"+parent_id+"' data-id='show_assignee' "+show+" "+assi_display+" "+on_click_user+" />");
+            usercol_data = '<span class="label '+stat_usr_lbl+'" >'+t_stat_user+'</span>';
+        }else{
+
+	    if (mycol[0] != t_status){
+		t_status = t_status+'_'+mycol[0];
+	    }
+            var cell = $("<td id='"+parent_id+"' data-task-id='"+parent_id+"' data-task-parent-id='"+parent_id+"'/>");
+            col_data = '<a href="#" id="parent_object" onclick="show_model(this)">'+t_status+'</a>';
+
+            var usercell = '';
+            usercol_data = '';
+        }
+
+
+        cell.html(col_data);
+	if (usercell != ''){
+	    usercell.html(usercol_data);
+	}
+
+        th_id = $(this).attr("class");
+        if ($('#' + th_id).is(":not(:checked)")){
+            cell.css({'display':'none'});
+        }
+        row.append(cell,usercell);
+    });
+
+    $(row).click(function(event){
+        if(event.ctrlKey === true) {
+            $(this).toggleClass("selected")
         }
     });
 }
@@ -1321,8 +1365,102 @@ function get_status_hash(){
     return new_status_hash
 }
 
+function show_task_summary(){
+
+    var task_hash = {};
+    $('#tbl_task td').each(function(index) {
+	var td_type = $(this).attr('data-id');
+	var td_name = $(this).text();
+	var th_name = $(this).attr('title');
+
+	if (td_name == '---'){
+	    return;
+	}
+	if (td_type == 'show_status'){
+	    var bid = $(this).attr('data-bid');
+	    bid = parseInt(bid); 
+	    var shot_sec = $(this).attr('data-shot-sec');
+	    shot_sec = parseInt(shot_sec); 
+
+	    if(!task_hash[th_name])
+		task_hash[th_name] = {};
+
+	    if(!task_hash[th_name]['approved'])
+		task_hash[th_name]['approved'] = 0;
+
+	    if (td_name == 'Client approved')
+		task_hash[th_name]['approved']++;
+
+	    if(!task_hash[th_name]['bid']){
+		task_hash[th_name]['bid'] = bid;
+	    }else{
+		task_hash[th_name]['bid'] = task_hash[th_name]['bid'] + bid
+	    }
+	    if(!task_hash[th_name]['sec']){
+		task_hash[th_name]['sec'] = shot_sec;
+	    }else{
+		task_hash[th_name]['sec'] = task_hash[th_name]['sec'] + shot_sec
+	    }
+	    if(!task_hash[th_name]['shots']){
+                task_hash[th_name]['shots'] = 1;
+            }else{
+                task_hash[th_name]['shots']++;
+            }
+
+	}
+	if (td_type == 'show_assignee'){
+	    if(!task_hash[th_name]['users']){
+		task_hash[th_name]['users'] = td_name;
+	    }else{
+		task_hash[th_name]['users'] = task_hash[th_name]['users'] + ',' + td_name
+	    }
+	}
+    });
+
+    
+    $('#tbl_task th').each(function(index) {
+	if(index==0){
+	    return;
+	}
+	var head = $(this).text();
+	var class_id = $(this).attr('class');
+	var circle_class_id = '#circle_summary_' + class_id;
+	var data_class_id = '#data_summary_' + class_id;
+
+	var hours = '00:00:00';
+	var shots = 0;
+	var bid = 0;
+	var percent = 0;
+	var c_users = 0;
+	
+	if(task_hash[head]){
+	    if (!task_hash[head]['users']){
+		users = [];
+	    }else{
+		users = task_hash[head]['users'].split(',');
+		users = $.unique(users);
+	    }
+	    c_users = users.length;
+
+	    hours = secondsTimeSpanToHMS(task_hash[head]['sec']);
+	    shots = task_hash[head]['shots'];
+	    bid = task_hash[head]['bid'];
+	    approved = task_hash[head]['approved'];
+	    percent = (approved / shots)  * 100;
+	}
+//	$(circle_class_id).attr('data-text',percent+'%');
+//	$(circle_class_id).attr('data-percent',percent);
+	$(data_class_id).html('<br>Bids : '+bid+' <br> Shots : '+shots+' <br>Users : '+c_users+' <br> Hours : '+hours);
+
+	$(circle_class_id).empty().attr('data-percent', percent).circliful();
+
+	console_log(task_hash[head]);
+    });
+
+}
 function show_graphs(){
 
+    show_task_summary();
     var task_hash = {};
     $('#tbl_task td').each(function(index) {
 	var td_type = $(this).attr('data-id');
@@ -3098,6 +3236,20 @@ $('#version_note_details').on('scroll', function() {
     }
 });
 
+$('#version_note_details_history').on('scroll', function() {
+    if($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight) {
+       last_row += 15;
+        var from = $('#from-id').text();
+        var task_path = $('#data-modal-object-id').attr('task_parent_path');
+        if (!from){
+            from = task_path;
+        }else{
+            from = from.replace(/\s/g, "").replace(/\//g, ':');
+        }
+        get_version_note_details_history(from, last_row)
+    }
+});
+
 
 //------------- tabs change calls --------------------------//
 //
@@ -3146,7 +3298,45 @@ $('#my_vsn_not').on('click', function() {
     version_notes(task_id,obj_name,last_row,ver_note_task);
 });
 
+ // tab-5
+$('#my_vsn_not_htry').on('click', function() {
+    var from = $('#from-id').text();
+    var task_path = $('#data-modal-object-id').attr('task_parent_path');
+    last_row = 15;
+    $('#note_attach').val('');
+    if (!from){
+	from = task_path;
+    }else{
+	from = from.replace(/\s/g, "").replace(/\//g, ':');
+    }
+    $('#version_note_details_history').html('');
+    get_version_note_details_history(from, last_row)
+});
 
+function get_version_note_details_history(from, last_row){
+    console.log("hirtory last_row: " + last_row)
+    $("#task_version_notes_history_loader").show();
+    $.ajax({
+	type: "POST",
+	url: "/callajax/",
+	data: {"object_name": "Note History", "from": from, 'last_row': last_row},
+	beforeSend: function(){
+
+	},
+	success: function(json){
+	    console.log("---------- success ------------")
+	     //$('#version_note_details_history').html('');
+	     $.each(json, function (idx, obj){
+                modal_body = add_note_details_history(idx, obj);
+                $('#version_note_details_history').append(modal_body);
+        	});
+	$("#task_version_notes_history_loader").hide();
+	},
+	error: function(error){
+	    console.log("Error:"+error);
+	}
+    });
+}
 //----------- category change------------//
 //category for tab-4
 
@@ -3684,7 +3874,33 @@ function delete_note(param){
     }
 }
 
+// ----------------- note history -------------//
 
+function add_note_details_history(idx, obj){
+    note_status = obj.status;
+    note_added_on = obj.added_on;
+    note_department = obj.department;
+    note_added_by = obj.added_by;
+    note_task_path = obj.task_path;
+    note_text = obj.note_text;
+    style = 'style="width:60%"';
+    label_status = note_status.replace(/ /g,"_").toLowerCase();
+    console.log(label_status)
+     modal_body = '\
+	<div class="box row" id="" >\
+	    <span class="label label-info" >'+note_department+'</span>\
+	    <span class="label label-'+label_status+'" '+style+'>'+note_status+'</span> \
+	    <span class="label label-info" style="float\:right;">'+note_added_on+'</span>\
+	    <p>'+note_text+'</p>\
+	    <div class="box row"><strong>'+note_task_path+'</strong><button class="btn btn-xs btn-primary" style="float\:right;">'+ note_added_by +'</button></div>\
+	</div>\
+    ';
+
+    return modal_body;
+}
+
+
+//----------
 function load_task_links(task_id,obj_name,last_row){
     $("#task_link_loader").show();
     body_row_array = []
@@ -5529,6 +5745,7 @@ function show_artist_tasks(){
 	data : {'object_name': 'Artist Tasks', 'project': project, 'status': selected_status},
 	beforeSend: function(){
 	    remove_rows('#tbl_task');
+            $('#panel_big').plainOverlay('show');
         },
 	success: function(json){
 	    $.each(json,function(idx,obj){
@@ -5551,7 +5768,7 @@ function show_artist_tasks(){
 		    action_play = '';
 		}
 	        table_row = '\
-            <tr data-project="'+obj.project+'" data-task-id="'+obj.task_id+'" data-task-parent-id="'+obj.parent_id+'" data-parent-object-type="'+obj.parent_object_type+'" data-project-id="'+obj.project_id+'">\
+            <tr class="'+obj.task_pub_status+'" data-project="'+obj.project+'" data-task-id="'+obj.task_id+'" data-task-parent-id="'+obj.parent_id+'" data-parent-object-type="'+obj.parent_object_type+'" data-project-id="'+obj.project_id+'">\
                   <td>\
                     <strong>'+obj.project+'</strong>\
                   </td>\
@@ -5609,6 +5826,7 @@ function show_artist_tasks(){
                 </tr>';
             $('#tbl_task tbody').append(table_row);
 	    });
+            $('#panel_big').plainOverlay('hide');
 	},
 	error: function(error){
 	    console.log("Error:"+error);
@@ -8977,6 +9195,11 @@ $("#selectEntityTask").change(function(){
 
 // For edit table rows
 function editEntityCell(context, option){
+    context_data = String($(context).html().search('<select'))
+    if(context_data == 0)
+    {
+        return null;
+    }
     var col_index = $(context).index()
     var $select_elm = ''
     var option = $(context).attr('option-id');
@@ -10676,6 +10899,10 @@ function sequence_shot_details(tr_data){
     $("#myModal").modal("show");
 }
 
+function console_log(obj){
+    str_data = JSON.stringify(obj);
+    console.log(str_data);
+}
 
 // Reload page here
 window.onload = function() {

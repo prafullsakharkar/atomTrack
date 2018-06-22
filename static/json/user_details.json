@@ -119,7 +119,7 @@
     ]
   },
   "vijay.nathawat": {
-    "role": "Co-ordinator",
+    "role": "Supervisor",
     "columns": [
       "Modeling",
       "Rigging",
@@ -517,6 +517,7 @@
       "Animation",
       "Blocking",
       "FX",
+      "Fur Shape",
       "Anim Tech Check",
       "Shave Hair",
       "Lighting",

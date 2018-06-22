@@ -144,6 +144,12 @@
                             Version Notes
                           </a>
                         </li>
+                        <li role="presentation">
+                          <a href="#my_version_notes_history" aria-controls="my_version_notes_history" role="tab"
+                             data-toggle="tab" id="my_vsn_not_htry">
+                            History
+                          </a>
+                        </li>
                       </ul>
 
                       <!-- Tab panes -->
@@ -341,7 +347,32 @@
                                style="overflow:auto; overflow-y:auto; height:500px;"
                                id="version_note_details" data-user-id="{{user_id}}"></div>
                         </div>
+                      <!------------------ History ------------------------------->
+                        <div role="tabpanel" class="tab-pane" id="my_version_notes_history">
 
+                          <div id="task_version_notes_history_loader"
+                               style="text-align: center; display: none;"><img
+                            src="/static/img/loading.gif"></div>
+                          <!--<div class="box">
+                            <span>Category :&nbsp;</span>
+                            <select id="selectVersionNoteCategoryHistory" data-rel="chosen"
+                                    data-placeholder="Select one..."
+                                    style="width:130px !important;"
+                                    onchange="toggle_parent_note(this)" data-for-artist="to_do">
+                              <option value="">All</option>
+                              <option value="None">None</option>
+                              <option value="Internal">Internal</option>
+                              <option value="Client feedback">Client
+                                feedback
+                              </option>
+                              <option value="Client">Client</option>
+                            </select>
+                            </div>-->
+                          <div class="box"
+                               style="overflow:auto; overflow-y:auto; height:500px;"
+                               id="version_note_details_history" data-user-id="{{user_id}}"></div>
+                        </div>
+                        <!--------------------- end ---------------------------->
 
                       </div>
                     </div>
