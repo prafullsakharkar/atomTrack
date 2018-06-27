@@ -1,0 +1,100 @@
+{
+  "Modeling": [
+    "Geometry"
+  ],
+  "Blend Shape": [
+    "Geometry"
+  ],
+  "Fur Shape": [
+    "Geometry"
+  ],
+  "Sim Modeling": [
+    "Geometry"
+  ],
+  "Texturing": [
+    "Textures"
+  ],
+  "Anim Texture": [
+    "Textures"
+  ],
+  "Rigging": [
+    "Anim Rig"
+  ],
+  "CFX": [
+    "fur"
+  ],
+  "Set Dressing": [
+    "Setdressing"
+  ],
+  "Proxy Set": [
+    "proxy"
+  ],
+  "Layout": [
+    "Camera",
+    "Setdressing",
+    "Cache"
+  ],
+  "Blocking": [
+    "Cache"
+  ],
+  "Animation": [
+    "Cache",
+    "Review"
+  ],
+  "Anim Tech Check": [
+    "Cache"
+  ],
+  "Shot Finaling": [
+    "Cache"
+  ],
+  "Shave Hair": [
+    "fur",
+    "Textures"
+  ],
+  "Cloth": [
+    "Cache"
+  ],
+  "Animation Stereo": [
+    "Camera"
+  ],
+  "Final Animation Stereo": [
+    "Camera"
+  ],
+  "Layout Stereo": [
+    "Camera"
+  ],
+  "Lighting": [
+    "Comp Out"
+  ],
+  "Render": [
+    "layers"
+  ],
+  "Set Dressing-set": [
+    "Setdressing"
+  ],
+  "Set Dressing-shaders": [
+    "Setdressing"
+  ],
+  "Matte Painting": [
+    "MattePainting"
+  ],
+  "FX": [
+    "Fx Cache"
+  ],
+  "Crowd-Asset": [
+    "Crowd Asset",
+    "Crowd Fur Data",
+    "Crowd Motion",
+    "Crowd Behavior"
+  ],
+  "Crowd-Shot": [
+    "Crowd Behavior",
+    "Crowd Sim"
+  ],
+  "PreLighting": [
+    "Comp Out"
+  ],
+  "Foliage": [
+    "folg"
+  ]
+}

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+{% include "header.html" %}
+<body>
+{% include "top_bar.html" %}
+<div class="ch-container">
+    <div class="row">
+    </div>
+    <!--/span-->
+    <!-- left menu ends -->
+
+    <noscript>
+        <div class="alert alert-block col-md-12">
+            <h4 class="alert-heading">Warning!</h4>
+
+            <p>You need to have <a href="http://en.wikipedia.org/wiki/JavaScript" target="_blank">JavaScript</a>
+                enabled to use this site.</p>
+        </div>
+    </noscript>
+    <div class="row">
+        <!-- leftside menu start -->
+        {% include "left_side_menu.html" %}
+        <!-- leftside menu start -->
+
+        <div class="col-at-12" id="panel_big">
+
+            <ul class="breadcrumb">
+                <li>
+                    <a href="#">Main</a>
+                </li>
+                <li>
+                    <a href="#">Management &nbsp; Dashboard</a>
+                </li>
+            </ul>
+            <div class="sidebar-nav">
+                <div class="box-content row">
+                    <div class="box col-at-11">
+
+                        <div class="col-at-sm-3" style="display:block;">
+                            <div class="controls">
+                                <label class="control-label">Projects : &nbsp;</label>
+                                <select id="selectMonthProject" data-rel="chosen" style="width: 122px;">
+                                    {% for proj,id in data.projects.items %}
+                                    {% if data.current_project == proj %}
+                                    <option value="{{id}}" selected>{{proj}}</option>
+                                    {% else %}
+                                    <option value="{{id}}">{{proj}}</option>
+                                    {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-at-sm-3" style="display:block;">
+                            <div class="controls">
+                                <label class="control-label">Duration : &nbsp;</label>
+                                <select id="selectMonthDuration" data-rel="chosen" style="width: 122px;">
+                                    <option value="3" selected>Quarterly</option>
+                                    <option value="6">Half Yearly</option>
+                                    <option value="12">Yearly</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="box col-at-11">
+
+                        <div class="box-header well">
+                            <h2>Report : Monthly Productivity</h2>
+                            <div class="box-icon">
+                                <button class="btn btn-inverse btn-default btn-xs" id="download_task_report_month_wise"
+                                        onclick="$('#tbl_asset_build').table2excel({filename: 'asset_build_details',exclude: '.noExl'});">
+                                    <i class="glyphicon glyphicon-save icon-white"></i></button>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <ul class="nav nav-tabs" role="tablist">
+                                <li role="presentation" class="active">
+                                    <a href="#asset_reports" aria-controls="asset_reports" role="tab"
+                                       data-toggle="tab" id="tab_asset_reports_month_wise">
+                                        Asset Build
+                                    </a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#shot_build_reports" aria-controls="shot_build_reports" role="tab"
+                                       data-toggle="tab"
+                                       id="tab_shot_reports_month_wise">
+                                        Shot
+                                    </a>
+                                </li>
+                            </ul>
+                            <div class="tab-content">
+                                <div role="tabpanel" class="tab-pane active" id="asset_reports">
+                                    <div class="controls">
+                                        <div style="overflow:auto; overflow-y:auto; height:620px"
+                                             id="div_asset_build_details">
+                                            <table class="table-hover table-condensed table-bordered"
+                                                   id="tbl_asset_build">
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="shot_build_reports">
+                                    <div class="controls">
+                                        <div style="overflow:auto; overflow-y:auto; height:620px"
+                                             id="div_shot_build_details">
+                                            <table class="table-hover table-condensed table-bordered"
+                                                   id="tbl_shot_build">
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="myModal" role="dialog">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <div style="overflow:auto; overflow-y:auto; height:385px" id="show_monthly_task">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+{% include "footer.html" %}
+</html>

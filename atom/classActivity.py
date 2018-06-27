@@ -71,6 +71,7 @@ class Activity:
             os.environ['FTRACK_SERVER'] = "http://192.168.1.99"
             self.debug = True
 
+#        mongo_server = '192.168.1.19'
         self.reload_session()
 
         #        mongo_server = '192.168.1.19'
@@ -369,14 +370,20 @@ class Activity:
                     type_name = request.POST.get('type_name')
                     last_row = request.POST.get('last_row')
                     task = request.POST.get('task')
-                    data = self.show_asset_versions(task_id, type_name, last_row, task)
+                    project = request.POST.get('project')
+                    path = request.POST.get('path')
+                    task_name = request.POST.get('task_name')
+                    data = self.show_asset_versions(task_id, type_name, last_row, task, project, path, task_name)
                 elif object_name == 'Version Note':
                     task_id = request.POST.get('task_id')
                     type_name = request.POST.get('type_name')
                     last_row = request.POST.get('last_row')
                     task = request.POST.get('task')
                     note_category = request.POST.get('note_category')
-                    data = self.get_version_notes(task_id, type_name, last_row, task, note_category)
+                    project = request.POST.get('project')
+                    path = request.POST.get('path')
+                    task_name = request.POST.get('task_name')
+                    data = self.get_version_notes(task_id, type_name, last_row, task, note_category, project, path, task_name)
                 elif object_name == 'Change Status':
                     new_status = request.POST.get('new_status')
                     old_status = request.POST.get('old_status')
@@ -1001,6 +1008,7 @@ class Activity:
         parent_ids = json.loads(parent_ids)
         parent_dict = {}
         coll = self.mongo_database[project_name + "_tasks"]
+        ver_coll = self.mongo_database[project_name + "_versions"]
 
         inner_dict = {}
 
@@ -1026,19 +1034,34 @@ class Activity:
 		    f_start = f_end = 0
 		    shot_find = coll.find_one({'ftrack_id': parent_id})
 		    if 'startframe' in shot_find:
-			f_start = int(shot_find['startframe'])
+			f_start = float(shot_find['startframe'])
 		    if 'endframe' in shot_find:
-			f_end = int(shot_find['endframe'])
+			f_end = float(shot_find['endframe'])
 
-		    seconds = (int(f_end) - (int(f_start) - 1)) / fps
+		    seconds = round(float(f_end - (f_start - 1)) / fps, 2)
 
                 for ele in task_results:
 		    bid = 0
 		    if 'bid' in ele:
-			bid = float(ele['bid'] / 36000)
+			bid = round(float(ele['bid']) / 36000, 2)
+
+		    # Client Status find
+		    client_status = '---'
+		   
+		    try: 
+			path_arr = ele['path'].split(':')[:-1]
+			parent_path = ':'.join(path_arr)
+			
+			task_name = ele['name']
+			ver_cur = ver_coll.find({"path" : {"$regex": parent_path+".*"}, "task_name":task_name, "ftrack_status":{"$regex":".*Client.*"}}).sort('updated_on',-1)
+			if ver_cur.count():
+			    client_status = ver_cur[0]['ftrack_status']
+		    except:
+			client_status = '---'
+
                     try:
                         inner_dict = {'id': ele['ftrack_id'], 'name': ele['name'], 'parent_d': ele['parent_id'],
-                                      'parent_type': ele["parent_type"], 'status': ele['ftrack_status'], 'bid': bid, 'seconds': seconds}
+                                      'parent_type': ele["parent_type"], 'status': ele['ftrack_status'], 'bid': bid, 'seconds': seconds, 'client_status': client_status}
 
                         user_name = map(lambda user: user['user_name'], ele['current_assignees'])
 
@@ -1367,8 +1390,8 @@ class Activity:
 
         return sorted(asset_types)
 
-    def get_version_object(self, my_id, my_type, task):
-
+    def get_version_object(self, my_id, my_type, task, project='', path='', task_name='', first_row=0, last_row=15, flag=''):
+        query = ''
         # parent_id = ''
         if my_type == 'Sequence':
             parent_id = 'asset.parent.parent.id'
@@ -1383,12 +1406,25 @@ class Activity:
 
         my_query = "AssetVersion where %s is '%s' %s order by date desc" % (parent_id, my_id, task_key)
         print(my_query)
-        query = self.session.query(my_query)
+        # query = self.session.query(my_query)
+        path = str(path).replace(' ', '')
+        task_name = str(task_name).replace(' ', '')
+        if flag:
+            db_table = str(project).strip() + '_versions'
+            model_class = getModel(db_table)
+            if task_name:
+                q = Q(path__startswith=path, task_name=task_name)
+            else:
+                q = Q(path__startswith=path)
+            version_obj = model_class.objects.order_by('-updated_on').filter(q)[first_row:last_row]
+        else:
+            version_obj = self.session.query(my_query)
 
+        query = version_obj
         return query
 
-    def show_asset_versions(self, my_id, my_type, last_row, task):
-
+    def show_asset_versions(self, my_id, my_type, last_row, task, project='', path='', task_name=''):
+        print("Asset versions : ", my_id, my_type, task, project, path, task_name)
         self.reload_session()
 
         self.get_user_columns(self.username)
@@ -1401,28 +1437,45 @@ class Activity:
         first_row = last_row - 15
         last_row = last_row
 
+        query = self.get_version_object(my_id, my_type, task, project, path, task_name, first_row, last_row, flag='version')
+
+        # len_query = len(query)
+
         list_versions = list()
         if query:
-            for j in range(first_row, last_row):
-                if j >= len_query:
-                    break
+            # for j in range(first_row, last_row):
+            for i in query:
+                # if j >= len_query:
+                #     break
 
-                i = query[j]
+                # i = query[j]
                 version_hash = dict()
                 try:
-                    version_hash['version_id'] = i['id']
-                    version_hash['version_name'] = i['link'][-1]['name']
-                    version_hash['asset_type'] = i['asset']['type']['name']
-                    version_hash['status_name'] = i['status']['name']
-                    version_hash['published_on'] = i['date'].format('DD-MM-YYYY HH:mm:ss')
+                    version_hash['version_id'] = i['ftrack_id']
+                    version_hash['version_name'] = i['name']
+                    version_hash['asset_type'] = ''
+                    if 'asset_type' in i:
+                        version_hash['asset_type'] = i['asset_type']
+
+                    version_hash['status_name'] = ''
+                    if 'ftrack_status' in i:
+                        version_hash['status_name'] = i['ftrack_status']
+
+                    version_hash['published_on'] = ''
+                    if 'published_on' in i:
+                        version_hash['published_on'] = str(i['published_on']).split('.')[0]
+
                     version_hash['user_role'] = self.user_role
-                    version_hash['comment'] = i['comment']
+
+                    version_hash['comment'] = ''
+                    if 'description' in i:
+                        version_hash['comment'] = i['description']
 
                 except ValueError:
                     print("Some version details missing ..")
 
                 try:
-                    version_hash['published_by'] = i['user']['username']
+                    version_hash['published_by'] = i['published_by']
                 except:
                     version_hash['published_by'] = 'unknown'
 
@@ -1891,16 +1944,15 @@ class Activity:
 
         self.send_email(subject, from_addr, to_addr, cc_addr, mail_body)
 
-
-    def get_version_notes(self, my_id, my_type, last_row, task, note_category=''):
+    def get_version_notes(self, my_id, my_type, last_row, task, note_category='', project='', path='', task_name=''):
         # self.reload_session()
-        query = self.get_version_object(my_id, my_type, task)
+        # # query = self.get_version_object(my_id, my_type, task, project, path, task_name)
         if last_row == 15:
             self.reload_session()
         last_row = int(last_row)
         first_row = last_row - 15
         last_row = last_row - 1
-
+        query = self.get_version_object(my_id, my_type, task, project, path, task_name, first_row, last_row)
         note_list = list()
         if query:
             for i in query:
@@ -2598,20 +2650,12 @@ class Activity:
             first = str(first) + ' 00:00:00'
             last = str(last) + ' 23:59:59'
 
-        # months = json.loads(months)
-
-        # start_date = datetime.datetime.strptime(str(first), '%Y-%m-%d %H:%M:%S')
-        # end_date = datetime.datetime.strptime(str(last), '%Y-%m-%d %H:%M:%S')
-
         task_col = self.mongo_database[project + '_tasks']
 
         match_dict = {
-            # 'updated_on': {'$gte': start_date, '$lte': end_date},
             'updated_on': {'$exists': True},
             'parent_object_type': parent_object_type,
-            # 'ftrack_status' : { "$in" : ['Internal Approved', 'Pending Client Review', 'Client approved'] },
             'name': {"$in": ['Modeling', 'Texturing', 'Rigging', 'CFX', 'Set Dressing']}
-            # 'object_type': 'Task'
         }
 
         aggregate = [{
@@ -2638,211 +2682,115 @@ class Activity:
 
         data_cursor = task_col.aggregate(aggregate)
 
-        shot_data_cursor = task_col.find(
-            {"object_type": "Task", "parent_object_type": "Shot", "updated_on": {"$exists": True},
-             'name': {"$in": ['Layout', 'Animation', 'Lighting', 'Shave Hair', 'Set Dressing']},
-             #             'ftrack_status': {
-             #                 "$in": ['Client approved', 'Pending Client Review', 'Internal Approved']
-             #             }
-             }, {"_id": 0, "parent_object_type": 1, "path": 1, "name": 1,
-                 "ftrack_status": 1, "updated_on": 1})
+	status_keys = ['WIP','Internal','Approved','Review']
 
         task_data = dict()
         for each in data_cursor:
 
-            task = each['_id']['name']
-            if task not in task_data:
-                task_data[task] = dict()
+	    task = each['_id']['name']
+	    self.initialize_asset_month(task_data,task,each,status_keys)
+	    self.calculate_asset_month(task_data,task,each)
 
-            if 'Total' not in task_data[task]:
-                task_data[task]['Total'] = 0
+	    task = 'Gross'
+	    self.initialize_asset_month(task_data,task,each,status_keys)
+	    self.calculate_asset_month(task_data,task,each)
 
-            if 'Approved' not in task_data[task]:
-                task_data[task]['Approved'] = 0
-
-            if 'Percent' not in task_data[task]:
-                task_data[task]['Percent'] = 0
-
-            parent_type = each['_id']['type']
-
-            if parent_type not in task_data[task]:
-                task_data[task][parent_type] = dict()
-
-            if 'Total' not in task_data[task][parent_type]:
-                task_data[task][parent_type]['Total'] = 0
-
-            if 'Approved' not in task_data[task][parent_type]:
-                task_data[task][parent_type]['Approved'] = 0
-
-            month = self.months_str[each['_id']['month']] + '-' + str(each['_id']['year'])
-
-            if month not in task_data[task]:
-                task_data[task][month] = dict()
-
-            if 'Count' not in task_data[task][month]:
-                task_data[task][month]['Count'] = 0
-            if 'WIP' not in task_data[task][month]:
-                task_data[task][month]['WIP'] = dict()
-                task_data[task][month]['WIP']['Count'] = 0
-                task_data[task][month]['WIP']['Task'] = list()
-            if 'Internal' not in task_data[task][month]:
-                task_data[task][month]['Internal'] = dict()
-                task_data[task][month]['Internal']['Count'] = 0
-                task_data[task][month]['Internal']['Task'] = list()
-            if 'Review' not in task_data[task][month]:
-                task_data[task][month]['Review'] = dict()
-                task_data[task][month]['Review']['Count'] = 0
-                task_data[task][month]['Review']['Task'] = list()
-            if 'Approved' not in task_data[task][month]:
-                task_data[task][month]['Approved'] = dict()
-                task_data[task][month]['Approved']['Count'] = 0
-                task_data[task][month]['Approved']['Task'] = list()
-            if 'Task' not in task_data[task][month]:
-                task_data[task][month]['Task'] = list()
-
-            if month not in task_data[task][parent_type]:
-                task_data[task][parent_type][month] = dict()
-
-            if 'Count' not in task_data[task][parent_type][month]:
-                task_data[task][parent_type][month]['Count'] = 0
-
-            # Total
-            if 'Total' not in task_data[task][parent_type][month]:
-                task_data[task][parent_type][month]['Total'] = dict()
-
-            if 'Count' not in task_data[task][parent_type][month]['Total']:
-                task_data[task][parent_type][month]['Total']['Count'] = 0
-
-            if 'Task' not in task_data[task][parent_type][month]['Total']:
-                task_data[task][parent_type][month]['Total']['Task'] = list()
-
-            # WIP
-            if 'WIP' not in task_data[task][parent_type][month]:
-                task_data[task][parent_type][month]['WIP'] = dict()
-
-            if 'Count' not in task_data[task][parent_type][month]['WIP']:
-                task_data[task][parent_type][month]['WIP']['Count'] = 0
-
-            if 'Total' not in task_data[task][parent_type][month]['WIP']:
-                task_data[task][parent_type][month]['WIP']['Total'] = 0
-
-            if 'Task' not in task_data[task][parent_type][month]['WIP']:
-                task_data[task][parent_type][month]['WIP']['Task'] = list()
-
-            # Internal
-            if 'Internal' not in task_data[task][parent_type][month]:
-                task_data[task][parent_type][month]['Internal'] = dict()
-
-            if 'Count' not in task_data[task][parent_type][month]['Internal']:
-                task_data[task][parent_type][month]['Internal']['Count'] = 0
-
-            if 'Total' not in task_data[task][parent_type][month]['Internal']:
-                task_data[task][parent_type][month]['Internal']['Total'] = 0
-
-            if 'Task' not in task_data[task][parent_type][month]['Internal']:
-                task_data[task][parent_type][month]['Internal']['Task'] = list()
-
-            # Client Review
-            if 'Review' not in task_data[task][parent_type][month]:
-                task_data[task][parent_type][month]['Review'] = dict()
-
-            if 'Count' not in task_data[task][parent_type][month]['Review']:
-                task_data[task][parent_type][month]['Review']['Count'] = 0
-
-            if 'Total' not in task_data[task][parent_type][month]['Review']:
-                task_data[task][parent_type][month]['Review']['Total'] = 0
-
-            if 'Task' not in task_data[task][parent_type][month]['Review']:
-                task_data[task][parent_type][month]['Review']['Task'] = list()
-
-            # Approved
-            if 'Approved' not in task_data[task][parent_type][month]:
-                task_data[task][parent_type][month]['Approved'] = dict()
-
-            if 'Count' not in task_data[task][parent_type][month]['Approved']:
-                task_data[task][parent_type][month]['Approved']['Count'] = 0
-
-            if 'Total' not in task_data[task][parent_type][month]['Approved']:
-                task_data[task][parent_type][month]['Approved']['Total'] = 0
-
-            if 'Task' not in task_data[task][parent_type][month]['Approved']:
-                task_data[task][parent_type][month]['Approved']['Task'] = list()
-
-            ftrack_status = each['_id']['status']
-
-            if ftrack_status == 'Internal Approved':
-                task_data[task][parent_type][month]['Internal']['Count'] = \
-                    task_data[task][parent_type][month]['Internal']['Count'] + int(each['total'])
-                task_data[task][parent_type][month]['Internal']['Task'] = \
-                    task_data[task][parent_type][month]['Internal']['Task'] + [new_ele.split(":")[1] for new_ele in
-                                                                               (set(each['path']))]
-
-                task_data[task][month]['Internal']['Count'] = task_data[task][month]['Internal']['Count'] + int(
-                    each['total'])
-                task_data[task][month]['Internal']['Task'].append([ele.split(":")[1] for ele in each['path']])
-
-            elif ftrack_status == 'Pending Client Review':
-                task_data[task][parent_type][month]['Review']['Count'] = task_data[task][parent_type][month]['Review'][
-                                                                             'Count'] + int(each['total'])
-                task_data[task][parent_type][month]['Review']['Task'] = task_data[task][parent_type][month]['Review'][
-                                                                            'Task'] + [new_ele.split(":")[1] for new_ele
-                                                                                       in (set(each['path']))]
-
-                # task_data[task][month]['Review'] = task_data[task][month]['Review'] + int(each['total'])
-                task_data[task][month]['Review']['Count'] = task_data[task][month]['Review']['Count'] + int(
-                    each['total'])
-                task_data[task][month]['Review']['Task'].append([ele.split(":")[1] for ele in each['path']])
-
-            elif ftrack_status == 'Client approved':
-                task_data[task][parent_type][month]['Approved']['Count'] = \
-                    task_data[task][parent_type][month]['Approved']['Count'] + int(each['total'])
-                task_data[task][parent_type][month]['Approved']['Task'] = \
-                    task_data[task][parent_type][month]['Approved']['Task'] + [new_ele.split(":")[1] for new_ele in
-                                                                               (set(each['path']))]
-                task_data[task][parent_type]['Approved'] = task_data[task][parent_type]['Approved'] + int(each['total'])
-                task_data[task]['Approved'] = task_data[task]['Approved'] + int(each['total'])
-
-                # task_data[task][month]['Approved'] = task_data[task][month]['Approved'] + int(each['total'])
-
-                task_data[task][month]['Approved']['Count'] = task_data[task][month]['Approved']['Count'] + int(
-                    each['total'])
-                task_data[task][month]['Approved']['Task'].append([ele.split(":")[1] for ele in each['path']])
-
-            else:
-                task_data[task][parent_type][month]['WIP']['Count'] = task_data[task][parent_type][month]['WIP'][
-                                                                          'Count'] + int(each['total'])
-                task_data[task][parent_type][month]['WIP']['Task'] = task_data[task][parent_type][month]['WIP'][
-                                                                         'Task'] + [new_ele.split(":")[1] for new_ele in
-                                                                                    (set(each['path']))]
-                # task_data[task][month]['WIP'] = task_data[task][month]['WIP'] + int(each['total'])
-
-                # task_data[task][month]['WIP'] = task_data[task][month]['WIP'] + int(each['total'])
-                task_data[task][month]['WIP']['Count'] = task_data[task][month]['WIP']['Count'] + int(
-                    each['total'])
-                task_data[task][month]['WIP']['Task'].append([ele.split(":")[1] for ele in each['path']])
-
-            task_data[task]['Total'] = task_data[task]['Total'] + int(each['total'])
-            task_data[task][parent_type]['Total'] = task_data[task][parent_type]['Total'] + int(each['total'])
-            task_data[task][month]['Count'] = task_data[task][month]['Count'] + int(each['total'])
-            task_data[task][month]['Task'] = task_data[task][month]['Task'] + [new_ele.split(":")[1] for new_ele in
-                                                                               (set(each['path']))]
-            task_data[task][parent_type][month]['Total']['Count'] = task_data[task][parent_type][month]['Total'][
-                                                                        'Count'] + int(each['total'])
-
-            task_data[task][parent_type][month]['Total']['Task'] = list(
-                set(task_data[task][parent_type][month]['Total']['Task'])) + [ele.split(":")[1] for ele in each['path']]
-            task_data[task][parent_type][month]['Count'] = task_data[task][parent_type][month]['Count'] + int(
-                each['total'])
-
-            task_data[task][parent_type]['Percent'] = (task_data[task][parent_type]['Approved'] * 100) / \
-                                                      task_data[task]['Total']
-            task_data[task]['Percent'] = (task_data[task]['Approved'] * 100) / task_data[task]['Total']
+	# For Shot Tab
+        shot_data_cursor = task_col.find(
+            {"object_type": "Task", "parent_object_type": "Shot", "updated_on": {"$exists": True},
+             'name': {"$in": ['Layout', 'Animation', 'Lighting', 'Shave Hair', 'Set Dressing']},
+             }, {"_id": 0, "parent_object_type": 1, "path": 1, "name": 1,
+                 "ftrack_status": 1, "updated_on": 1})
 
         shot_data = self.shot_month_wise_data(shot_data_cursor, self.months_str)
         data_list.append({'asset_build': task_data, 'shot': shot_data})
 
-        #	pprint(data_list)
+        pprint(task_data)
         return data_list
+
+    def initialize_asset_month(self, task_data, task, each, status_keys):
+
+        parent_type = each['_id']['type']
+        month = self.months_str[each['_id']['month']] + '-' + str(each['_id']['year'])
+	if task and parent_type and month:
+
+            if task not in task_data:
+                task_data[task] = dict()
+                task_data[task]['Total'] = 0
+                task_data[task]['Percent'] = 0
+		for m_key in status_keys:
+		    task_data[task][m_key] = 0
+
+            if parent_type not in task_data[task]:
+                task_data[task][parent_type] = dict()
+                task_data[task][parent_type]['Total'] = 0
+		for m_key in status_keys:
+		    task_data[task][parent_type][m_key] = 0
+
+            if month not in task_data[task]:
+                task_data[task][month] = dict()
+                task_data[task][month]['Count'] = 0
+                task_data[task][month]['Task'] = list()
+
+		for m_key in status_keys:
+		    if m_key not in task_data[task][month]:
+			task_data[task][month][m_key] = dict()
+			task_data[task][month][m_key]['Count'] = 0
+			task_data[task][month][m_key]['Task'] = list()
+	    
+            if month not in task_data[task][parent_type]:
+                task_data[task][parent_type][month] = dict()
+                task_data[task][parent_type][month]['Count'] = 0
+                task_data[task][parent_type][month]['Total'] = dict()
+                task_data[task][parent_type][month]['Total']['Count'] = 0
+                task_data[task][parent_type][month]['Total']['Task'] = list()
+
+		for m_key in status_keys:
+		    if m_key not in task_data[task][parent_type][month]:
+			task_data[task][parent_type][month][m_key] = dict()
+			task_data[task][parent_type][month][m_key]['Count'] = 0
+			task_data[task][parent_type][month][m_key]['Total'] = 0
+			task_data[task][parent_type][month][m_key]['Task'] = list()
+
+    def calculate_asset_month(self, task_data, task, each):
+
+        parent_type = each['_id']['type']
+        month = self.months_str[each['_id']['month']] + '-' + str(each['_id']['year'])
+	path = each['path']
+	total = int(each['total'])
+
+	report_status = 'WIP'
+        ftrack_status = each['_id']['status']
+        if ftrack_status == 'Internal Approved':
+	    report_status = 'Internal'
+        elif ftrack_status == 'Pending Client Review':
+	    report_status = 'Review'
+        elif ftrack_status == 'Client approved':
+	    report_status = 'Approved'
+
+	if task and parent_type and month:
+
+            task_data[task][report_status] += total
+            task_data[task][parent_type][report_status] += total
+
+            task_data[task][month][report_status]['Count'] += total
+            task_data[task][month][report_status]['Task'].append([ele.split(":")[1] for ele in path])
+
+            task_data[task][parent_type][month][report_status]['Count'] += total
+            task_data[task][parent_type][month][report_status]['Task'] += [new_ele.split(":")[1] for new_ele in (set(path))]
+
+            task_data[task]['Total'] += total
+            task_data[task][parent_type]['Total'] += total
+            task_data[task][month]['Count'] += total
+            task_data[task][month]['Task'] += [new_ele.split(":")[1] for new_ele in (set(path))]
+            task_data[task][parent_type][month]['Total']['Count'] += total
+
+            task_data[task][parent_type][month]['Total']['Task'] += [ele.split(":")[1] for ele in set(path)]
+            task_data[task][parent_type][month]['Count'] += total
+
+            task_data[task][parent_type]['Percent'] = (task_data[task][parent_type]['Approved'] * 100) / \
+                                                      task_data[task]['Total']
+            task_data[task]['Percent'] = (task_data[task]['Approved'] * 100) / task_data[task]['Total']
 
     def shot_month_wise_data(self, data_cursor, months_str):
 
@@ -3725,7 +3673,10 @@ class Activity:
                             note_obj = note_obj[0]
                             to_name = note_obj.to_name
                             pub_version = note_obj.pub_version
-                            prev_ver_no = '%003d' % (int(pub_version.split()[-1][-3:]) + 1)
+                            prev_ver_no = ''
+                            if pub_version != 'None':
+                                prev_ver_no = '%003d' % (int(pub_version.split()[-1][-3:]) + 1)
+
                             prev_ver = pub_version.split()[0] + ' v' + prev_ver_no
                             model_version_class = getModel(str(project) + '_versions')
                             version_path = from_name.replace(from_name.split(':')[-1], prev_ver)
@@ -5187,9 +5138,9 @@ class Activity:
 
                     task_id = task_obj['id']
 
-	    project_name = 'ice' or task_obj['project']['name'].lower()
-            link = task_obj['link']
-            path = (':'.join([each_link['name'] for each_link in link]))
+#	    project_name = 'ice' or task_obj['project']['name'].lower()
+#            link = task_obj['link']
+#            path = (':'.join([each_link['name'] for each_link in link]))
 
             if 'description' in each:
                 task_obj['description'] = each['description']
@@ -6380,7 +6331,7 @@ class Activity:
         last_row = int(last_row) - 1
         from_name = from_name.replace(from_name.split(':')[0], from_name.split(':')[0].lower())
         model_class = getModel(str(project) + '_notes')
-        notes_obj = model_class.objects.order_by('-added_on').filter(Q(from_name=from_name) | Q(to_name=from_name))[start_row:last_row]
+        notes_obj = model_class.objects.order_by('-added_on').filter(Q(from_name__iexact=from_name) | Q(to_name__iexact=from_name))[start_row:last_row]
         print("notes_obj: ", len(notes_obj))
         data_list = list()
         for obj in notes_obj:

@@ -92,8 +92,7 @@
                 <select id="selectObject" data-rel="chosen">
                   <option value="">Select Object</option>
                   {% for obj_name in task_temp_data %}
-                  {% if obj_name == 'Sequence' or obj_name == 'Asset Build' or obj_name == 'Shot' or obj_name == 'Shot
-                  Asset Build' %}
+                  {% if obj_name == 'Sequence' or obj_name == 'Asset Build' or obj_name == 'Shot' or obj_name == 'Shot Asset Build' %}
                   <option value="{{obj_name}}">{{obj_name}}</option>
                   {% endif %}
                   {% endfor %}
@@ -166,31 +165,8 @@
                 <i class="glyphicon glyphicon-save icon-white"></i></button>
             </div>
           </div>
-          <div class="col-at-12">
-            <div class="box-inner">
-              <div class="box-header well">
-                <h2><i class="glyphicon glyphicon-info-sign"></i> Introduction</h2>
-                <div class="box-icon">
-                  <a href="#" class="btn btn-minimize btn-round btn-default"><i
-                    class="glyphicon glyphicon-chevron-up"></i></a>
-                </div>
-              </div>
-              <div class="box-content row">
-                <div id="div_summary">
-                  <div class="box col-md-3 top-block">
-                    <span style="color: chartreuse;font-size: 20px;">Layout</span>
-                    <div class="row">
-                      <div class="col-md-6">
-                        <div id="demo" data-text="85%" data-percent="85" data-total="100"></div>
-                      </div>
-                      <div class="col-md-6" style="text-align: left;"><br>Bids : 30 <br> Shots : 45 <br>Users : 345 <br>
-                        Hours : 00:40:00
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
+          <div class="box col-at-11" style="display:none;">
+            <div id="div_summary">
             </div>
           </div>
           <div class="col-at-12">
@@ -318,6 +294,12 @@
                               Notes
                             </a>
                           </li>
+                          <li role="presentation">
+                          <a href="#my_version_notes_history" aria-controls="my_version_notes_history" role="tab"
+                             data-toggle="tab" id="my_vsn_not_htry">
+                            History
+                          </a>
+                        </li>
                         </ul>
 
                         <!-- Tab panes -->
@@ -538,7 +520,17 @@
                                  style="overflow:auto; overflow-y:auto; height:500px;"
                                  id="version_note_details" data-user-id="{{user_id}}"></div>
                           </div>
+                          <!------------------ History ------------------------------->
+                        <div role="tabpanel" class="tab-pane" id="my_version_notes_history">
 
+                          <div id="task_version_notes_history_loader"
+                               style="text-align: center; display: none;"><img
+                            src="/static/img/loading.gif"></div>
+                          <div class="box"
+                               style="overflow:auto; overflow-y:auto; height:500px;"
+                               id="version_note_details_history" data-user-id="{{user_id}}"></div>
+                        </div>
+                        <!--------------------- end ---------------------------->
 
                         </div>
                       </div>
@@ -637,6 +629,7 @@
                     <th>Task</th>
                     <th>User</th>
                     <th>Status</th>
+                    <th>Client Status</th>
                   </tr>
                   </thead>
                 </table>

@@ -1,0 +1,939 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AnalysisUIOptions">
+    <option name="SCOPE_TYPE" value="3" />
+    <option name="SHOW_STRUCTURE" value="true" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="1f87f359-dcfb-4e9e-84dc-5703e096035f" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/atom/classActivity.py" beforeDir="false" afterPath="$PROJECT_DIR$/atom/classActivity.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/db.sqlite3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/js/custom.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/custom.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/json/email.json" beforeDir="false" afterPath="$PROJECT_DIR$/static/json/email.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/json/user_details.json" beforeDir="false" afterPath="$PROJECT_DIR$/static/json/user_details.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/footer.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/footer.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/header.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/header.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/task_status.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/task_status.html" afterDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="TRACKING_ENABLED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FavoritesManager">
+    <favorites_list name="atomTrack" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="update_version.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/scripts/update_version.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="68">
+              <caret line="7" column="14" selection-start-line="7" selection-start-column="14" selection-end-line="7" selection-end-column="14" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="HTML File" />
+      </list>
+    </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>update_on</find>
+      <find>assignWidgets</find>
+      <find>start_clicked</find>
+      <find>get_artist_tasks</find>
+      <find>apply_artist_action</find>
+      <find>add_counter_version_details</find>
+      <find>attach_files</find>
+      <find>sock_port_no</find>
+      <find>Threa</find>
+      <find>sock_thre</find>
+      <find>cance</find>
+      <find>create_asse</find>
+      <find>Type</find>
+      <find>artist_p</find>
+      <find>sortOrder</find>
+      <find>all</find>
+      <find>get_user_task_reports</find>
+      <find>download_artist_product</find>
+      <find>download_</find>
+      <find>Attachment</find>
+      <find>upload_asset_csv</find>
+      <find>artist_productivity</find>
+      <find>find</find>
+      <find>Review Tasks</find>
+      <find>show_review_tasks</find>
+      <find>update_task</find>
+      <find>display_asset_details</find>
+      <find>summary_display</find>
+      <find>artist_pro</find>
+      <find>select_change</find>
+    </findStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="ROOT_SYNC" value="SYNC" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GithubProjectSettings">
+    <option name="CREATE_PULL_REQUEST_DEFAULT_BRANCH" value="master" />
+    <option name="CREATE_PULL_REQUEST_DEFAULT_REPO_USER" value="prafullsakharkar" />
+    <option name="CREATE_PULL_REQUEST_DEFAULT_REPO_NAME" value="atomTrack" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/templates/no_tasks.html" />
+        <option value="$PROJECT_DIR$/README.md" />
+        <option value="$PROJECT_DIR$/templates/mgm_dashboard.html" />
+        <option value="$PROJECT_DIR$/templates/dashboard.html" />
+        <option value="$USER_HOME$/atom_track_event.py" />
+        <option value="$PROJECT_DIR$/templates/project_creation.html" />
+        <option value="$PROJECT_DIR$/templates/top_bar.html" />
+        <option value="$PROJECT_DIR$/templates/left_side_menu.html" />
+        <option value="/ASE/01prj/NXP/programmer/prafull.sakharkar/Final/daily_backup/v000/DailyBackup/mods/ui/ui_main.py" />
+        <option value="/ASE/01prj/NXP/programmer/prafull.sakharkar/Final/daily_backup/v000/DailyBackup/mods/utilities/userUploadDownload.py" />
+        <option value="/ASE/01prj/NXP/programmer/prafull.sakharkar/Final/daily_backup/v000/DailyBackup/selectUserTask.py" />
+        <option value="$USER_HOME$/data/gen8TMS/gen8MainTMS.pyw" />
+        <option value="$PROJECT_DIR$/templates/create_entities.html" />
+        <option value="$PROJECT_DIR$/templates/artist_productivity.html" />
+        <option value="$PROJECT_DIR$/templates/show_task_entities.html" />
+        <option value="$PROJECT_DIR$/atom/urls.py" />
+        <option value="$PROJECT_DIR$/ase_tools/ase_atom.py" />
+        <option value="$PROJECT_DIR$/templates/month_wise_reports.html" />
+        <option value="$PROJECT_DIR$/templates/artist_tasks.html" />
+        <option value="$PROJECT_DIR$/templates/review_tasks.html" />
+        <option value="$PROJECT_DIR$/templates/upload_ftp.html" />
+        <option value="$PROJECT_DIR$/atom_events/atom_ftrack_event.py" />
+        <option value="$PROJECT_DIR$/templates/sequence_delivery.html" />
+        <option value="$PROJECT_DIR$/atom/classActivity.py" />
+        <option value="$PROJECT_DIR$/static/js/custom.js" />
+        <option value="$PROJECT_DIR$/templates/task_status.html" />
+        <option value="$PROJECT_DIR$/scripts/update_version.py" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="1926" />
+    <option name="y" value="61" />
+    <option name="width" value="1914" />
+    <option name="height" value="1028" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <showMembers ProjectPane="true" />
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="atomTrack" type="b2602c69:ProjectViewProjectNode" />
+              <item name="atomTrack" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="atomTrack" type="b2602c69:ProjectViewProjectNode" />
+              <item name="atomTrack" type="462c0819:PsiDirectoryNode" />
+              <item name="scripts" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="atomTrack" type="b2602c69:ProjectViewProjectNode" />
+              <item name="atomTrack" type="462c0819:PsiDirectoryNode" />
+              <item name="static" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="DefaultHtmlFileTemplate" value="HTML File" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/templates" />
+      <recent name="$PROJECT_DIR$/static/js" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="Python.update_version">
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <module name="projftrack" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <configuration name="classActivity" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="atomTrack" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/atom" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/atom/classActivity.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <configuration name="update_version" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="atomTrack" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/update_version.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <configuration default="true" type="Tox" factoryName="Tox">
+      <module name="projftrack" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Doctests">
+      <module name="gen8TMS" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Nosetests">
+      <module name="gen8TMS" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_regexPattern" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Twisted Trial">
+      <module name="gen8TMS" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Unittests">
+      <module name="gen8TMS" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Doctests">
+      <module name="projftrack" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Nosetests">
+      <module name="projftrack" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_regexPattern" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Twisted Trial">
+      <module name="projftrack" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Unittests">
+      <module name="projftrack" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="py.test">
+      <module name="projftrack" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+    </configuration>
+    <list>
+      <item itemvalue="Python.classActivity" />
+      <item itemvalue="Python.update_version" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.update_version" />
+        <item itemvalue="Python.classActivity" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="StructureViewFactory">
+    <option name="ACTIVE_ACTIONS" value=",ALPHA_COMPARATOR,SHOW_FIELDS" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="1f87f359-dcfb-4e9e-84dc-5703e096035f" name="Default" comment="" />
+      <created>1515847244508</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1515847244508</updated>
+    </task>
+    <task id="LOCAL-00001" summary="Initial commit for atomTrack">
+      <created>1515847571060</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1515847571060</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Initial commit for atomTrack">
+      <created>1515849310810</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1515849310810</updated>
+    </task>
+    <task id="LOCAL-00003" summary="README CHANGED">
+      <created>1515850329029</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1515850329029</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Code reformating">
+      <created>1516013618347</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1516013618347</updated>
+    </task>
+    <task id="LOCAL-00005" summary="commiting with configuration">
+      <created>1516018306798</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1516018306798</updated>
+    </task>
+    <task id="LOCAL-00006" summary="commiting html syntax error with configuration">
+      <created>1516018756645</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1516018756645</updated>
+    </task>
+    <task id="LOCAL-00007" summary="commiting changes for new coding style">
+      <created>1517402876224</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1517402876225</updated>
+    </task>
+    <task id="LOCAL-00008" summary="commiting changes for visiual note attachments">
+      <created>1517492281006</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1517492281006</updated>
+    </task>
+    <task id="LOCAL-00009" summary="commiting changes for create etities">
+      <created>1517899292901</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1517899292901</updated>
+    </task>
+    <task id="LOCAL-00010" summary="created new form elements for create &amp; update">
+      <created>1519109047526</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1519109047526</updated>
+    </task>
+    <task id="LOCAL-00011" summary="new MIS reports for artist">
+      <created>1520319822121</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1520319822121</updated>
+    </task>
+    <task id="LOCAL-00012" summary="new MIS reports for artist">
+      <created>1520499600644</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1520499600644</updated>
+    </task>
+    <task id="LOCAL-00013" summary="some changes regarding enlarge image &amp; approved note">
+      <created>1520591728377</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1520591728377</updated>
+    </task>
+    <task id="LOCAL-00014" summary="some changes regarding enlarge image &amp; approved note">
+      <created>1521903714696</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1521903714696</updated>
+    </task>
+    <task id="LOCAL-00015" summary="some changes regarding enlarge image &amp; approved note">
+      <created>1523019047598</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1523019047598</updated>
+    </task>
+    <task id="LOCAL-00016" summary="Some changes regarding reports &amp; review task">
+      <created>1523446323481</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1523446323481</updated>
+    </task>
+    <task id="LOCAL-00017" summary="Some changes regarding reports &amp; review task">
+      <created>1523618322014</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1523618322014</updated>
+    </task>
+    <task id="LOCAL-00018" summary="Some changes regarding reports &amp; review task">
+      <created>1526649418827</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1526649418827</updated>
+    </task>
+    <task id="LOCAL-00019" summary="Some changes regarding reports &amp; review task">
+      <created>1528198300505</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1528198300505</updated>
+    </task>
+    <task id="LOCAL-00020" summary="Some changes regarding reports &amp; review task">
+      <created>1529646230381</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1529646230382</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
+    <servers />
+  </component>
+  <component name="TodoView">
+    <todo-panel id="selected-file">
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+    <todo-panel id="all">
+      <are-packages-shown value="true" />
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="1918" y="25" width="1924" height="1059" extended-state="6" />
+    <editor active="true" />
+    <layout>
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49624062" visible="true" weight="0.12796208" />
+      <window_info anchor="bottom" id="TODO" order="6" sideWeight="0.49394417" weight="0.32760474" />
+      <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.50605583" side_tool="true" weight="0.32760474" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.32975295" />
+      <window_info anchor="bottom" id="Version Control" order="7" sideWeight="0.49394417" weight="0.32583067" />
+      <window_info anchor="bottom" id="Python Console" order="7" weight="0.32867885" />
+      <window_info id="Structure" order="1" sideWeight="0.5037594" side_tool="true" weight="0.12796208" />
+      <window_info anchor="bottom" id="Terminal" order="7" weight="0.3290461" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.39957035" />
+      <window_info id="Favorites" order="2" sideWeight="0.50375134" side_tool="true" weight="0.16166404" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info active="true" anchor="bottom" id="Inspection Results" order="8" visible="true" weight="0.32867885" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Find" order="1" />
+    </layout>
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.md" />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ORDER">
+      <list>
+        <option value="0" />
+        <option value="2" />
+        <option value="3" />
+        <option value="1" />
+      </list>
+    </option>
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="RECENTLY_FILTERED_USER_GROUPS">
+                <collection />
+              </option>
+              <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
+                <collection />
+              </option>
+              <option name="COLUMN_ORDER">
+                <list>
+                  <option value="0" />
+                  <option value="1" />
+                  <option value="2" />
+                  <option value="3" />
+                </list>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Initial commit for atomTrack" />
+    <MESSAGE value="README CHANGED" />
+    <MESSAGE value="Code reformating" />
+    <MESSAGE value="commiting with configuration" />
+    <MESSAGE value="commiting html syntax error with configuration" />
+    <MESSAGE value="commiting changes for new coding style" />
+    <MESSAGE value="commiting changes for visiual note attachments" />
+    <MESSAGE value="commiting changes for create etities" />
+    <MESSAGE value="created new form elements for create &amp; update" />
+    <MESSAGE value="new MIS reports for artist" />
+    <MESSAGE value="some changes regarding enlarge image &amp; approved note" />
+    <MESSAGE value="Some changes regarding reports &amp; review task" />
+    <option name="LAST_COMMIT_MESSAGE" value="Some changes regarding reports &amp; review task" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <option name="time" value="2" />
+    </breakpoint-manager>
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/atom/classActivity.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="101507">
+          <caret line="5971" column="20" selection-start-line="5971" selection-start-column="20" selection-end-line="5971" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/sequence_delivery.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="85">
+          <caret line="5" column="25" selection-start-line="5" selection-start-column="25" selection-end-line="5" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/artist_productivity.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="408">
+          <caret line="24" column="41" selection-start-line="24" selection-start-column="27" selection-end-line="24" selection-end-column="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/js/custom.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="175355">
+          <caret line="10315" lean-forward="true" selection-start-line="10315" selection-end-line="10315" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/atom/classActivity.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="89828">
+          <caret line="5284" column="9" lean-forward="true" selection-start-line="5284" selection-start-column="9" selection-end-line="5284" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/atom/classActivity.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="89828">
+          <caret line="5284" column="16" selection-start-line="5284" selection-start-column="16" selection-end-line="5284" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/atom/classActivity.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15011">
+          <caret line="883" column="31" selection-start-line="883" selection-start-column="31" selection-end-line="883" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/upload_ftp.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="782">
+          <caret line="46" column="53" selection-start-line="46" selection-start-column="38" selection-end-line="46" selection-end-column="53" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///ASE/01prj/NXP/programmer/kunal.jamdade/latest_code_push/14⁄02⁄2018/projftrack/templates/myapp/project_creation.html" />
+    <entry file="file://$USER_HOME$/data/gen8TMS/gen8MainTMS.pyw">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="7480">
+          <caret line="461" column="47" selection-start-line="461" selection-start-column="42" selection-end-line="461" selection-end-column="47" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/data/gen8TMS/class/classControlHandler.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="408">
+          <caret line="32" column="38" selection-start-line="32" selection-start-column="25" selection-end-line="32" selection-end-column="38" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/data/gen8TMS/class/classUpdateDetails.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2074">
+          <caret line="126" column="8" selection-start-line="126" selection-start-column="8" selection-end-line="126" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/atom/classActivity.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="55879">
+          <caret line="3287" column="58" selection-start-line="3284" selection-start-column="8" selection-end-line="3287" selection-end-column="58" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/project_creation.html" />
+    <entry file="file://$PROJECT_DIR$/templates/create_entities.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="731">
+          <caret line="43" column="90" selection-start-line="43" selection-start-column="90" selection-end-line="43" selection-end-column="90" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="153">
+          <caret line="9" column="2" lean-forward="true" selection-start-line="9" selection-start-column="2" selection-end-line="9" selection-end-column="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/atom_track_event.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="475">
+          <caret line="85" column="63" selection-start-line="85" selection-start-column="63" selection-end-line="85" selection-end-column="63" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/no_tasks.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="527">
+          <caret line="31" column="23" lean-forward="true" selection-start-line="31" selection-start-column="23" selection-end-line="31" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///ASE/01prj/NXP/programmer/kunal.jamdade/latest_code_push/2-Feb-18/projftrack/static/myapp/js/custom.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="573">
+          <caret line="5640" column="1" lean-forward="true" selection-start-line="4235" selection-end-line="5640" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///ASE/01prj/NXP/programmer/kunal.jamdade/latest_code_push/2-Feb-18/projftrack/myapp/classActivity.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="68">
+          <caret line="40" column="85" selection-start-line="40" selection-end-line="40" selection-end-column="85" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/project_creation.html" />
+    <entry file="file://$PROJECT_DIR$/templates/top_bar.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="561">
+          <caret line="33" lean-forward="true" selection-start-line="33" selection-end-line="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/left_side_menu.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="323">
+          <caret line="19" column="30" selection-start-line="19" selection-start-column="30" selection-end-line="19" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///ASE/01prj/NXP/programmer/prafull.sakharkar/Final/daily_backup/v000/DailyBackup/mods/ui/ui_main.py" />
+    <entry file="file:///ASE/01prj/NXP/programmer/prafull.sakharkar/Final/daily_backup/v000/DailyBackup/mods/utilities/userUploadDownload.py" />
+    <entry file="file://$PROJECT_DIR$/atom/forms.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="4" column="6" selection-start-line="4" selection-start-column="6" selection-end-line="4" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/data/gen8TMS/class/classControlHandler.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="408">
+          <caret line="32" column="38" selection-start-line="32" selection-start-column="25" selection-end-line="32" selection-end-column="38" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/data/gen8TMS/class/classUpdateDetails.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="561">
+          <caret line="126" column="8" selection-start-line="126" selection-start-column="8" selection-end-line="126" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/data/gen8TMS/gen8MainTMS.pyw">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="354">
+          <caret line="461" column="47" selection-start-line="461" selection-start-column="42" selection-end-line="461" selection-end-column="47" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///ASE/01prj/NXP/programmer/kunal.jamdade/latest_code_push/14⁄02⁄2018/projftrack/templates/myapp/task_status.html" />
+    <entry file="file:///ASE/01prj/NXP/programmer/kunal.jamdade/latest_code_push/14⁄02⁄2018/projftrack/templates/myapp/project_creation.html" />
+    <entry file="file:///ASE/01prj/NXP/programmer/prafull.sakharkar/Final/daily_backup/v000/DailyBackup/selectUserTask.py" />
+    <entry file="file://$PROJECT_DIR$/templates/artist_productivity" />
+    <entry file="file://$PROJECT_DIR$/templates/mgm_dashboard.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="284">
+          <caret line="99" column="80" selection-start-line="99" selection-start-column="71" selection-end-line="99" selection-end-column="80" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/dashboard.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="284">
+          <caret line="115" column="71" selection-start-line="115" selection-start-column="71" selection-end-line="115" selection-end-column="89" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/create_entities.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3602">
+          <caret line="571" column="41" selection-start-line="571" selection-start-column="41" selection-end-line="571" selection-end-column="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/js/custom_new.js" />
+    <entry file="file://$PROJECT_DIR$/templates/show_task_entities.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1003">
+          <caret line="114" column="22" selection-start-line="114" selection-start-column="22" selection-end-line="114" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ase_tools/ase_atom.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="697">
+          <caret line="41" column="30" selection-start-line="41" selection-start-column="30" selection-end-line="41" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/artist_tasks.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="257" column="83" selection-start-line="257" selection-start-column="83" selection-end-line="257" selection-end-column="83" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/review_tasks.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="323">
+          <caret line="53" column="83" selection-start-line="53" selection-start-column="83" selection-end-line="53" selection-end-column="83" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/upload_ftp.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="423">
+          <caret line="46" column="53" selection-start-line="46" selection-start-column="38" selection-end-line="46" selection-end-column="53" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/_pydev_bundle/pydev_monkey_qt.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1105">
+          <caret line="101" selection-start-line="101" selection-end-line="101" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/atom_events/atom_ftrack_event.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-6358" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/month_wise_reports.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1374">
+          <caret line="92" column="84" selection-start-line="92" selection-start-column="84" selection-end-line="92" selection-end-column="84" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/artist_productivity.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="408">
+          <caret line="24" column="41" selection-start-line="24" selection-start-column="27" selection-end-line="24" selection-end-column="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/sequence_delivery.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="17">
+          <caret line="5" column="25" selection-start-line="5" selection-start-column="25" selection-end-line="5" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/js/custom.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="986">
+          <caret line="10551" selection-start-line="10551" selection-end-line="10551" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/atom/classActivity.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="102952">
+          <caret line="6089" column="20" selection-start-line="6089" selection-start-column="20" selection-end-line="6089" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/task_status.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="613">
+          <caret line="167" column="35" selection-start-line="167" selection-start-column="35" selection-end-line="167" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/update_version.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="68">
+          <caret line="7" column="14" selection-start-line="7" selection-start-column="14" selection-end-line="7" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>
