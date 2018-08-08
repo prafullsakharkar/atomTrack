@@ -19,11 +19,12 @@ import ase_task
 import ldap
 import pymongo
 import csv
+import copy
 
 from django.http import HttpResponse, HttpResponseRedirect
 # from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
-from settings import BASE_DIR, PROJ_BASE_DIR
+from settings import BASE_DIR, PROJ_BASE_DIR, FTRACK_URL, MONGO_SERVER, DEVMODE
 
 from pprint import pprint
 from socket import socket, AF_INET, SOCK_DGRAM
@@ -55,28 +56,27 @@ class Activity:
     # noinspection PyBroadException
     def __init__(self):
 
-        self.session = ase_session.Session()
-        mongo_server = '192.168.1.19'
+        self.session = ase_session.Session(FTRACK_URL)
+        mongo_server = MONGO_SERVER
+        os.environ['FTRACK_SERVER'] = FTRACK_URL
+        self.debug = DEVMODE
 
-        try:
-            ips = check_output(['hostname', '--all-ip-addresses'])
-            ip_address = ips.strip()
-        # self.ipaddress = gethostbyname(self.machinename)
-        except ValueError:
-            ip_address = '127.0.0.1'
+#        try:
+#            ips = check_output(['hostname', '--all-ip-addresses'])
+#            ip_address = ips.strip()
+#        # self.ipaddress = gethostbyname(self.machinename)
+#        except ValueError:
+#            ip_address = '127.0.0.1'
+#
+#        if ip_address not in ['192.168.1.20', '192.168.1.19']:
+#            mongo_server = '192.168.1.128'
+#            os.environ['FTRACK_SERVER'] = "http://192.168.1.99"
+#            self.debug = True
 
-        self.debug = False
-        if ip_address not in ['192.168.1.20', '192.168.1.19']:
-            mongo_server = '192.168.1.128'
-            os.environ['FTRACK_SERVER'] = "http://192.168.1.99"
-            self.debug = True
-
-#        mongo_server = '192.168.1.19'
         self.reload_session()
 
-        #        mongo_server = '192.168.1.19'
         print("**************** START ******************")
-        print(os.environ['FTRACK_SERVER'], mongo_server, ip_address)
+        print(os.environ['FTRACK_SERVER'], mongo_server, self.debug)
 
         self.password_str = base64.b64decode("bWFkQHBpcDE=")
         self.projects = {}
@@ -138,10 +138,14 @@ class Activity:
         self.mongo_client = pymongo.MongoClient(mongo_server, 27017)
         self.mongo_database = self.mongo_client['userDailyBackupTask']
 
+	self.emp_db = self.mongo_client['employees']
+	self.col_emp_details = self.emp_db['employee_details']
+
         self.email_address = self.get_email_address()
         self.durations = ['Daily', 'Weekly', 'Monthly', 'Date Wise']
         self.empcode = {'prafull.sakharkar': 'RCP0713', 'muqtar.shaikh': 'RCM0800', 'ayush.goel': 'RCA0633'}
         self.employee_details = dict()
+	self.get_user_details()
 
         self.sequence_name = ''
         self.__result = []
@@ -202,7 +206,7 @@ class Activity:
         self.create_new_ftrack_user(username)
 
         self.get_user_columns(username)
-        print(str(datetime.datetime.now()), "User Login : %s" % username)
+        print(str(datetime.datetime.now()), "User (%s) Login : %s" % (self.user_role,username))
 
         if self.user_role == 'Supervisor':
             return HttpResponseRedirect('/mgm_dashboard/')
@@ -245,15 +249,7 @@ class Activity:
                     parent_ids = request.POST.get('parent_ids')
                     project_name = request.POST.get("project_name")
                     self.object_name = request.POST.get('parent_object_name')
-                    #data = self.get_task_detail(project_name, parent_ids)
                     data = self.get_task_detail_mongo(project_name, parent_ids)
-#                elif object_name == 'Tasks':
-#                    pparent_ids = request.POST.get('parent_ids')
-#                    self.object_name = request.POST.get('parent_object_name')
-#                    self.object_type = request.POST.get('parent_object_type')
-#                    project_name = request.POST.get("project_name")
-                    #data = self.get_task_details(project_name, pparent_ids)
-#                    data = self.get_task_detail_mongo(project_name, pparent_ids)
                 elif object_name == 'Select Task':
                     parent_id = request.POST.get('parent_id')
                     data = self.get_tasks(parent_id)
@@ -262,7 +258,8 @@ class Activity:
                     self.save_changes(data_list, proj_id)
                 elif object_name == 'Save Version Changes':
                     data_list = request.POST.get('data_list')
-                    self.save_version_changes(data_list)
+                    page = request.POST.get('page')
+                    self.save_version_changes(data_list, page)
                 elif object_name == 'Versions':
                     object_id = request.POST.get('object_id')
                     task_id = request.POST.get('task_id')
@@ -276,7 +273,9 @@ class Activity:
                     note_for = request.POST.get('note_for')
                     note_task = request.POST.get('note_task')
                     attach_files = request.POST.get('attach_files')
-                    data = self.create_entity_note(note, object_id, note_category, note_for, note_task, attach_files)
+                    page = request.POST.get('page')
+                    data = self.create_entity_note(note, object_id, note_category, note_for, note_task,
+                                                   attach_files, page)
                 elif object_name == 'DB Note':
                     note_text = request.POST.get('note_text')
                     object_id = request.POST.get('task_id')
@@ -287,8 +286,9 @@ class Activity:
                     version = request.POST.get('version')
                     from_name = request.POST.get('from')
                     to_name = request.POST.get('to')
+                    page = request.POST.get('page')
                     self.insert_db_note(note_text, note_category, object_id, change_status, users, task_path, version,
-                                        from_name, to_name)
+                                        from_name, to_name, page)
                 elif object_name == 'Reply Note':
                     note_id = request.POST.get('note_id')
                     reply_text = request.POST.get('reply_text')
@@ -364,7 +364,8 @@ class Activity:
                     task_id = request.POST.get('task_id')
                     type_name = request.POST.get('type_name')
                     # last_row = request.POST.get('last_row')
-                    data = self.get_link_details(task_id, type_name)
+                    project_name = request.POST.get('project_name')
+                    data = self.get_link_details(task_id, type_name, project_name)
                 elif object_name == 'Show Asset Versions':
                     task_id = request.POST.get('task_id')
                     type_name = request.POST.get('type_name')
@@ -383,15 +384,15 @@ class Activity:
                     project = request.POST.get('project')
                     path = request.POST.get('path')
                     task_name = request.POST.get('task_name')
-                    data = self.get_version_notes(task_id, type_name, last_row, task, note_category, project, path, task_name)
+                    data = self.get_version_notes(task_id, type_name, last_row, task, note_category, project,
+                                                  path, task_name)
                 elif object_name == 'Change Status':
                     new_status = request.POST.get('new_status')
                     old_status = request.POST.get('old_status')
                     object_id = request.POST.get('object_id')
                     status_for = request.POST.get('status_for')
-                    # from_name = request.POST.get('from')
-                    # to_name = request.POST.get('to')
-                    data = self.object_change_status(new_status, old_status, object_id, status_for)
+                    page = request.POST.get('page')
+                    data = self.object_change_status(new_status, old_status, object_id, status_for, page)
                 elif object_name == 'User Dashboard':
                     project = request.POST.get('project')
                     first = request.POST.get('first')
@@ -410,8 +411,11 @@ class Activity:
                     project = request.POST.get('project')
                     task_id = request.POST.get('task_id')
                     action = request.POST.get('action')
+                    page = request.POST.get('page')
+                    path = request.POST.get('path')
+                    parent_id = request.POST.get('parent_id')
                     # note_text = request.POST.get('note_text')
-                    self.apply_artist_action(username, project, task_id, action)
+                    self.apply_artist_action(username, project, task_id, action, page, path, parent_id)
                 elif object_name == 'Review Tasks':
                     project = request.POST.get('project')
                     review_status = request.POST.get('status')
@@ -480,7 +484,9 @@ class Activity:
                     selected_asset = request.POST.get('selected_asset')
                     asset_name = request.POST.get('asset_name')
                     old_asset_ids = request.POST.get('old_asset_ids')
-                    self.add_asset(task_id, selected_asset, asset_name, old_asset_ids)
+                    page = request.POST.get('page')
+                    parent_path = request.POST.get('parent_path')
+                    self.add_asset(task_id, selected_asset, asset_name, old_asset_ids, page, parent_path)
                 elif object_name == 'Delete Note':
                     note_id = request.POST.get('note_id')
                     self.delete_note(note_id)
@@ -500,15 +506,15 @@ class Activity:
                     parent_ids = request.POST.get('parent_ids')
                     selected_object = request.POST.get('selected_object')
                     selected_task = request.POST.get('selected_task')
-                    selected_ids = request.POST.get('selected_ids')
+                    # selected_ids = request.POST.get('selected_ids')
                     data = self.load_entity_data(parent_ids, project_name, selected_object, selected_task)
                 elif object_name == 'Save Entity Data':
-                    selected_project = request.POST.get('selected_project')
-                    selected_asset_type = request.POST.get('selected_asset_type')
-                    selected_object = request.POST.get('selected_object')
-                    selected_task = request.POST.get('selected_task')
+                    # selected_project = request.POST.get('selected_project')
+                    # selected_asset_type = request.POST.get('selected_asset_type')
+                    # selected_object = request.POST.get('selected_object')
+                    # selected_task = request.POST.get('selected_task')
                     data_list = request.POST.get('data_str_list')
-                    parent_ids = request.POST.get('parent_ids')
+                    # parent_ids = request.POST.get('parent_ids')
                     data = self.save_entity_data(data_list)
                 elif object_name == 'Asset Build Create':
                     entity_name = request.POST.get('entity_name')
@@ -527,8 +533,23 @@ class Activity:
                 elif object_name == 'Note History':
                     from_name = request.POST.get('from')
                     last_row = request.POST.get('last_row')
+                    page = request.POST.get('page')
                     project = (from_name.split(":")[0]).lower()
-                    data = self.get_note_history(from_name, project, last_row)
+                    data = self.get_note_history(from_name, project, last_row, page)
+                elif object_name == 'Activity Log':
+                    from_name = request.POST.get('from')
+                    last_row = request.POST.get('last_row')
+                    task = request.POST.get('task')
+                    page = request.POST.get('page')
+                    parent_id = request.POST.get('parent_id')
+                    project = (from_name.split(":")[0]).lower()
+                    data = self.get_activity_log_details(from_name, project, last_row, task, page, parent_id)
+                elif object_name == 'Show Tab Link Details':
+                    task_id = request.POST.get('task_id')
+                    type_name = request.POST.get('type_name')
+                    # last_row = request.POST.get('last_row')
+                    project_name = request.POST.get('project_name')
+                    data = self.get_tab_link_details(task_id, type_name, project_name)
 
             if request.FILES:
                 data = self.attach_upload_files(request)
@@ -542,34 +563,26 @@ class Activity:
     def get_user_details(self):
 
         json_data = {}
-        if os.path.isfile(self.employee_details_jfile):
-            data_file = open(self.employee_details_jfile, 'r')
-            try:
-                json_data = json.load(data_file)
-            finally:
-                data_file.close()
+
+	emp_data = self.col_emp_details.find({"user_name":{"$exists":True}, "active": 1})
+	for each in emp_data:
+	    json_data[each['user_name']] = each
+#        if os.path.isfile(self.employee_details_jfile):
+#            data_file = open(self.employee_details_jfile, 'r')
+#            try:
+#                json_data = json.load(data_file)
+#            finally:
+#                data_file.close()
 
         self.employee_details = json_data
 
     def get_user_columns(self, username):
 
         self.user_role = 'Artist'
-        # json_data = {}
-        if os.path.isfile(self.user_details_jfile):
-            data_file = open(self.user_details_jfile, 'r')
-            try:
-                json_data = json.load(data_file)
-            finally:
-                data_file.close()
-
-            if username in json_data:
-                self.user_role = json_data[username]['role']
-                self.users_columns = ','.join(json_data[username]['columns'])
-
-                # if (username in json_data) and (
-                #         json_data[username]['role'] == 'Supervisor' or json_data[username]['role'] == 'Co-ordinator'):
-                #     self.user_role = json_data[username]['role']
-                #     self.users_columns = ','.join(json_data[username]['columns'])
+	self.users_columns = ''
+        if username in self.employee_details:
+            self.user_role = self.employee_details[username]['role']
+            self.users_columns = ','.join(self.employee_details[username]['columns'])
 
     def get_projects(self):
         """
@@ -816,7 +829,7 @@ class Activity:
             status = 'and status.name is "Internal approved"'
         elif upload_for == 'Outsource':
             status = 'and status.name is "Outsource Approved"'
-        query = 'AssetVersion where asset.name is "%s" and asset.parent.id is "%s" and task.name is "%s" %s' % (
+        query = 'AssetVersion where asset.name is "%s" and asset.parent.id is "%s" and task.name is "%s" %s order by date desc' % (
             asset_name, parent_id, dept, status)
 
         print(query)
@@ -862,8 +875,12 @@ class Activity:
                 dict_task['name'] = task['name']
                 dict_task['id'] = task['id']
                 link = task['link']
-                path = (':'.join([each_link['name'] for each_link in link]))
+                # print("----------link: ", type(link))
+                path = ''
+                if isinstance(type(link), list):
+                    path = (':'.join([each_link['name'] for each_link in link]))
                 dict_task['path'] = path
+
                 task_list.append(dict_task)
 
         task_list = sorted(task_list, key=lambda x: x['name'])
@@ -1010,74 +1027,80 @@ class Activity:
         coll = self.mongo_database[project_name + "_tasks"]
         ver_coll = self.mongo_database[project_name + "_versions"]
 
-        inner_dict = {}
+        proj_find = coll.find_one({'name': project_name})
+        fps = 0
+        if proj_find:
+            fps = int(proj_find['fps'])
 
-        for parent_id in parent_ids:
+	if self.object_name == 'Shot Asset Build':
+	    shot_results = coll.find(
+		{"ftrack_id": {"$in": parent_ids}, "links" : {"$exists": True}},
+		{"links": 1}
+	    )
+	    new_parent_ids = list()
+	    for obj_shot in shot_results:
+		new_parent_ids += obj_shot['links']
 
-            if self.object_name == 'Shot Asset Build':
-                parent_dict = self.task_for_shot_asset_build(parent_id, parent_dict)
-            else:
-                # task_list = []
-                task_results = coll.find(
-                    {"parent_id": parent_id},
-                    {"id": 0}
-                )
+	    parent_ids = new_parent_ids
 
-		# Getting bid & shot seconds
-		seconds = 0
-		if self.object_name == 'Shot':
-		    proj_find = coll.find_one({'name':project_name})
-		    fps = 0
-		    if proj_find:
-			fps = int(proj_find['fps'])
+        task_results = coll.find(
+            {"parent_id": {"$in": parent_ids}},
+            {"id": 0}
+        )
+        for ele in task_results:
+            inner_dict = {}
+            bid = 0
+            if 'bid' in ele:
+                bid = round(float(ele['bid']) / 36000, 2)
 
-		    f_start = f_end = 0
-		    shot_find = coll.find_one({'ftrack_id': parent_id})
-		    if 'startframe' in shot_find:
-			f_start = float(shot_find['startframe'])
-		    if 'endframe' in shot_find:
-			f_end = float(shot_find['endframe'])
+            # Client Status find
+            client_status = '---'
+            parent_id = ele['parent_id']
 
-		    seconds = round(float(f_end - (f_start - 1)) / fps, 2)
+            # Getting bid & shot seconds
+            seconds = 0
+            if self.object_name == 'Shot':
+                f_start = f_end = 0
+                shot_find = coll.find_one({'ftrack_id': parent_id})
+                if 'startframe' in shot_find:
+                    f_start = float(shot_find['startframe'])
+                if 'endframe' in shot_find:
+                    f_end = float(shot_find['endframe'])
 
-                for ele in task_results:
-		    bid = 0
-		    if 'bid' in ele:
-			bid = round(float(ele['bid']) / 36000, 2)
+                seconds = round(float(f_end - (f_start - 1)) / fps, 2)
 
-		    # Client Status find
-		    client_status = '---'
-		   
-		    try: 
-			path_arr = ele['path'].split(':')[:-1]
-			parent_path = ':'.join(path_arr)
-			
-			task_name = ele['name']
-			ver_cur = ver_coll.find({"path" : {"$regex": parent_path+".*"}, "task_name":task_name, "ftrack_status":{"$regex":".*Client.*"}}).sort('updated_on',-1)
-			if ver_cur.count():
-			    client_status = ver_cur[0]['ftrack_status']
-		    except:
-			client_status = '---'
+            try:
+                path_arr = ele['path'].split(':')[:-1]
+                parent_path = ':'.join(path_arr)
 
-                    try:
-                        inner_dict = {'id': ele['ftrack_id'], 'name': ele['name'], 'parent_d': ele['parent_id'],
-                                      'parent_type': ele["parent_type"], 'status': ele['ftrack_status'], 'bid': bid, 'seconds': seconds, 'client_status': client_status}
+                task_name = ele['name']
+                ver_cur = ver_coll.find({"task_path": ele['path'], "ftrack_status": {"$regex": ".*Client.*"}}).sort(
+                    'updated_on', -1).limit(1)
+                if ver_cur.count():
+                    client_status = ver_cur[0]['ftrack_status']
+            except:
+                client_status = '---'
 
-                        user_name = map(lambda user: user['user_name'], ele['current_assignees'])
+            try:
+                inner_dict = {'id': ele['ftrack_id'], 'name': ele['name'], 'parent_d': ele['parent_id'],
+                              'parent_type': ele["parent_type"], 'status': ele['ftrack_status'], 'bid': bid,
+                              'seconds': seconds, 'client_status': client_status}
 
-                        if user_name:
-                            inner_dict['users'] = user_name
-                        else:
-                            inner_dict['users'] = ['---']
-                    except KeyError as ke:
-                        inner_dict[str(ke)] = ['---']
+                user_name = map(lambda user: user['user_name'], ele['current_assignees'])
 
-                    inner_dict['parent_name'] = "_".join(ele['path'].split(":")[1:-1])
+                if user_name:
+                    inner_dict['users'] = user_name
+                else:
+                    inner_dict['users'] = ['---']
+            except KeyError as ke:
+                inner_dict[str(ke)] = ['---']
 
-                    if parent_id not in parent_dict:
-                        parent_dict[parent_id] = []
+            inner_dict['parent_name'] = "_".join(ele['path'].split(":")[1:-1])
 
-                    parent_dict[parent_id].append(inner_dict)
+            if parent_id not in parent_dict:
+                parent_dict[parent_id] = []
+
+            parent_dict[parent_id].append(inner_dict)
 
         return parent_dict
 
@@ -1192,7 +1215,7 @@ class Activity:
 
         self.username = username
 
-        self.get_user_columns(username)
+#        self.get_user_columns(username)
         # if not self.master_login:
         #            return HttpResponseRedirect('/tasks/')
 
@@ -1200,7 +1223,7 @@ class Activity:
         # projects = {}
         self.projects = self.get_projects()
 
-        self.get_user_details()
+#        self.get_user_details()
         task_hash['emp_code'] = 'blank'
         if username in self.employee_details:
             task_hash['emp_code'] = self.employee_details[username]['emp_code']
@@ -1306,7 +1329,17 @@ class Activity:
         return details_list
 
     def get_note_details(self, task_id, type_name, last_row, note_task, note_category=''):
-
+        """
+        Function to get details data for notes of task.
+        :param task_id: Task id
+        :param type_name: Object type
+        :param last_row: Last row
+        :param note_task: Task name
+        :param note_category: Note category
+        :return: List of dictionary of note data
+        """
+        print("--------get note details-------------")
+        # print(task_id, type_name, last_row, note_task, note_category)
         self.reload_session()
 
         type_name = type_name.replace(' ', '')
@@ -1323,7 +1356,7 @@ class Activity:
 
         # for change in note category
         obj_notes = []
-        if note_category:
+        if note_category and task_obj:
             obj_nts = task_obj['notes']  # [start_row:last_row]
 
             for note in obj_nts:
@@ -1332,21 +1365,27 @@ class Activity:
                     obj_notes.append(note)
 
             obj_notes = obj_notes[start_row:last_row]
-        else:
+        elif task_obj:
             obj_notes = task_obj['notes'][start_row:last_row]
 
         note_list = self.get_note_data(obj_notes)
 
         return note_list
 
-    def get_link_details(self, task_id, type_name):
+    def get_link_details(self, task_id, type_name, project_name=''):
+        """
+        Function to get links details.
+        :param task_id: Task id
+        :param type_name: Object type name
+        :param project_name: Project name
+        :return: List of dictionay of linke data.
+        """
+        print("--------- get link----------")
         self.reload_session()
+
+        # ----- old code -------
         type_name = type_name.replace(' ', '')
         task_obj = self.session.query('%s where id is "%s"' % (type_name, task_id)).first()
-
-        # start_row = int(last_row) - 15
-        # last_row = int(last_row) - 1
-
         if type_name == 'Task':
             obj_links = task_obj['parent']['incoming_links']
         else:
@@ -1356,8 +1395,100 @@ class Activity:
         for link in obj_links:
             link_dict = dict()
             link_dict['name'] = link['from']['name']
+            if not link_dict['name']:
+                continue
             link_dict['id'] = link['from']['id']
             links.append(link_dict)
+        # -------
+        # model_tasks_class = getModel(str(project_name) + '_tasks')
+        # tsk_obj = model_tasks_class.objects.get(ftrack_id=task_id)
+        # links = list()
+        # if tsk_obj.links:
+        #     for lnk in tsk_obj.links:
+        #         task__link_obj = model_tasks_class.objects.get(ftrack_id=lnk)
+        #         link_dict = dict()
+        #         link_dict['name'] = task__link_obj.name
+        #         link_dict['id'] = lnk
+        #         to_name = project_name + ':' + task__link_obj.name + ':'
+        #         model_notes_class = getModel(str(project_name) + '_notes')
+        #         notes_obj = model_notes_class.objects.order_by('-added_on').filter(Q(to_name__startswith=to_name))
+        #         data_list = list()
+        #         for obj in notes_obj:
+        #             data_dict = dict()
+        #             data_dict['department'] = obj.task
+        #             data_dict['status'] = obj.status
+        #             data_dict['added_by'] = obj.added_by
+        #             data_dict['added_on'] = str(obj.added_on).split('.')[0]
+        #             # version
+        #             path = obj.task_path
+        #             task_path = path.replace(path.split(':')[-1], obj.pub_version)
+        #             data_dict['task_path'] = task_path
+        #             data_dict['note_text'] = obj.note_text
+        #
+        #             data_list.append(data_dict)
+        #
+        #         link_dict['notes'] = data_list
+        #         # pprint(data_list)
+        #         links.append(link_dict)
+
+        return links
+
+    def get_tab_link_details(self, task_id, type_name, project_name=''):
+        """
+        Function to get links details of a task.
+        :param task_id: Task id
+        :param type_name: Object type name
+        :param project_name: Project name
+        :return: List of dictionay of linke data.
+        """
+        print("--------- get link----------")
+        self.reload_session()
+
+        # ----- old code -------
+        # type_name = type_name.replace(' ', '')
+        # task_obj = self.session.query('%s where id is "%s"' % (type_name, task_id)).first()
+        # if type_name == 'Task':
+        #     obj_links = task_obj['parent']['incoming_links']
+        # else:
+        #     obj_links = task_obj['incoming_links']
+        #
+        # links = list()
+        # for link in obj_links:
+        #     link_dict = dict()
+        #     link_dict['name'] = link['from']['name']
+        #     link_dict['id'] = link['from']['id']
+        #     links.append(link_dict)
+        # -------
+        model_tasks_class = getModel(str(project_name) + '_tasks')
+        tsk_obj = model_tasks_class.objects.get(ftrack_id=task_id)
+        links = list()
+        if tsk_obj.links:
+            for lnk in tsk_obj.links:
+                task__link_obj = model_tasks_class.objects.get(ftrack_id=lnk)
+                link_dict = dict()
+                link_dict['name'] = task__link_obj.name
+                link_dict['id'] = lnk
+                to_name = project_name + ':' + task__link_obj.name + ':'
+                model_notes_class = getModel(str(project_name) + '_notes')
+                acitivity_obj = model_notes_class.objects.order_by('-added_on').filter(Q(to_name__startswith=to_name))
+                data_list = list()
+                for obj in acitivity_obj:
+                    data_dict = dict()
+                    data_dict['department'] = obj.task
+                    data_dict['status'] = obj.status
+                    data_dict['added_by'] = obj.added_by
+                    data_dict['added_on'] = str(obj.added_on).split('.')[0]
+                    # version
+                    path = obj.task_path
+                    task_path = path.replace(path.split(':')[-1], obj.pub_version)
+                    data_dict['task_path'] = task_path
+                    data_dict['note_text'] = obj.note_text
+
+                    data_list.append(data_dict)
+
+                link_dict['notes'] = data_list
+                # pprint(data_list)
+                links.append(link_dict)
 
         return links
 
@@ -1390,7 +1521,20 @@ class Activity:
 
         return sorted(asset_types)
 
-    def get_version_object(self, my_id, my_type, task, project='', path='', task_name='', first_row=0, last_row=15, flag=''):
+    def get_version_object(self, my_id, my_type, task, project='', path='', task_name='', first_row=0, last_row=15,
+                           flag=''):
+        """
+        Function to get object of the version
+        :param my_id: Task id
+        :param my_type: Object type
+        :param task: Task name
+        :param project: Project name
+        :param path: Task path
+        :param task_name: Task name
+        :param last_row: Last index
+        :param first_row: Start index
+        :return: List of dictionary of version data
+        """
         query = ''
         # parent_id = ''
         if my_type == 'Sequence':
@@ -1408,15 +1552,18 @@ class Activity:
         print(my_query)
         # query = self.session.query(my_query)
         path = str(path).replace(' ', '')
-        task_name = str(task_name).replace(' ', '')
+        #        task_name = str(task_name).replace(' ', '')
+
+        path = path.replace(path.split(':')[0], path.split(':')[0].lower())
+
         if flag:
             db_table = str(project).strip() + '_versions'
             model_class = getModel(db_table)
-            if task_name:
-                q = Q(path__startswith=path, task_name=task_name)
+            if task:
+                q = Q(task_id=task)
             else:
-                q = Q(path__startswith=path)
-            version_obj = model_class.objects.order_by('-updated_on').filter(q)[first_row:last_row]
+                q = Q(task_path=path)
+            version_obj = model_class.objects.order_by('-published_on').filter(q)[first_row:last_row]
         else:
             version_obj = self.session.query(my_query)
 
@@ -1424,10 +1571,21 @@ class Activity:
         return query
 
     def show_asset_versions(self, my_id, my_type, last_row, task, project='', path='', task_name=''):
+        """
+        Function to get the list of assset versions for task
+        :param my_id: Task id
+        :param my_type: Object type
+        :param last_row: Last index
+        :param task: Task name
+        :param project: Project name
+        :param path: Task path
+        :param task_name: Task name
+        :return: List of dictionary of version data
+        """
         print("Asset versions : ", my_id, my_type, task, project, path, task_name)
         self.reload_session()
 
-        self.get_user_columns(self.username)
+#        self.get_user_columns(self.username)
 
         query = self.get_version_object(my_id, my_type, task)
 
@@ -1568,7 +1726,7 @@ class Activity:
                             'Appointment where context_id is "%s" and resource.username is "%s"' % (
                                 task_id, del_user)).first()
                         self.session.delete(obj_app)
-			self.session.commit()
+                        self.session.commit()
 
             task_data = dict()
             search_key = dict()
@@ -1662,7 +1820,7 @@ class Activity:
         # self.reload_session()
         return obj_tasks
 
-    def save_version_changes(self, data_list=''):
+    def save_version_changes(self, data_list='', page=''):
 
         if not data_list:
             return False
@@ -1670,6 +1828,7 @@ class Activity:
         data_list = json.loads(data_list)
         print('+++++++++++++++++++++++++++++++')
         print('%s : Change Data %s' % (self.username, data_list))
+        log_data_list = []
         for data in data_list:
             change_value = str(data[0])
             version_id = str(data[1])  # version id
@@ -1683,11 +1842,39 @@ class Activity:
             if obj_status:
                 obj_version = self.session.query("AssetVersion where id is '%s'" % version_id).first()
                 obj_version['status'] = obj_status
-
+                # for logs
+                path = (':'.join([each_link['name'] for each_link in obj_version['link']]))
+                path = path.replace(path.split(':')[0], path.split(':')[0].lower())
+                log_dict = dict()
+                log_dict['project'] = path.split(":")[0]
+                log_dict['action'] = "update"
+                log_dict['object_type'] = 'AssetVersion'
+                log_dict['sub_type'] = 'AssetVersion'
+                log_dict['parent_id'] = obj_version['task_id']
+                log_dict['path'] = path
+                log_dict['page'] = page.strip()
+                log_dict['ftrack_id'] = version_id
+                log_dict['value'] = change_value
+                log_dict['details_for'] = 'Status'
+                log_data_list.append(log_dict)
         self.session.commit()
+        for log in log_data_list:
+            self.add_activity_log(project=log['project'], value=log['value'], ftrack_id=log['ftrack_id'],
+                                  action=log['action'], object_type=log['object_type'],
+                                  details_for=log['details_for'],
+                                  sub_type=log['sub_type'], parent_id=log['parent_id'],
+                                  path=log['path'], page=log['page'])
 
-    def object_change_status(self, new_status, old_status, object_id, status_for):
-
+    def object_change_status(self, new_status, old_status, object_id, status_for, page=''):
+        """
+        Function to change status of the task.
+        :param new_status: New status
+        :param old_status: Old status
+        :param object_id: Selected object id
+        :param status_for: Value of the entity for which the status changed.
+        :param page: Current page name
+        :return: None
+        """
         if (new_status == old_status) or not object_id:
             return False
 
@@ -1697,7 +1884,7 @@ class Activity:
         obj_status = self.session.query('Status where name is "%s"' % new_status).first()
 
         project = 'ice'
-        if new_status.startswith("Client") and status_for == 'AssetVersion':
+        if status_for == 'AssetVersion':
             asset_version_obj = self.session.query("AssetVersion where id is '%s'" % object_id).first()
             parent_id = asset_version_obj['asset']['parent']['id']
             asset_reject_obj = self.session.query(
@@ -1728,24 +1915,44 @@ class Activity:
 
         self.session.commit()
 
-        search_key = dict()
-        search_key['ftrack_id'] = object_id
-
-        task_data = dict()
-        task_data['updated_by'] = self.username
-        task_data['updated_on'] = datetime.datetime.now()
-
         if status_for == 'Task':
-            collection = self.mongo_database['%s_tasks' % project]
-            collection.update_one(search_key, {'$set': task_data}, upsert=True)
+            path = ''
+            if my_object['_link']:
+                path = (':'.join([each_link['name'] for each_link in my_object['_link']]))
+                path = path.replace(path.split(':')[0], path.split(':')[0].lower())
+            self.add_activity_log(project=project, value=new_status, ftrack_id=my_object['id'],
+                                  action='update', object_type='Task', details_for='Status',
+                                  sub_type='Task', parent_id=my_object['parent_id'],
+                                  path=path, page=page.strip())
 
         elif status_for == 'AssetVersion':
-            collection = self.mongo_database['%s_versions' % project]
-            collection.update_one(search_key, {'$set': task_data}, upsert=True)
+            path = ''
+            if asset_version_obj['link']:
+                path = (':'.join([each_link['name'] for each_link in asset_version_obj['link']]))
+                path = path.replace(path.split(':')[0], path.split(':')[0].lower())
+            self.add_activity_log(project=project, value=new_status, ftrack_id=asset_version_obj['id'],
+                                  action='update', object_type='AssetVersion', details_for='Status',
+                                  sub_type=status_for, parent_id=asset_version_obj['task_id'],
+                                  path=path, page=page.strip())
 
     def insert_db_note(self, note_text, note_category, object_id, change_status, users, task_path, pub_version,
-                       from_name, to_name):
+                       from_name, to_name, page=''):
+        """
+        Function for adding note in database
+        :param note_text: Note text
+        :param note_category: Note category
+        :param object_id: Selected object type id
+        :param change_status: Changed task status
+        :param users: Assigned user name
+        :param task_path: Task path
+        :param pub_version: Published version name
+        :param from_name: Current task path
+        :param to_name: Path of the task on which note added
+        :param page: Current page value
+        :return: None
+        """
 
+        # log_data_list = []
         if not task_path:
             return False
 
@@ -1763,11 +1970,9 @@ class Activity:
             latest_version = collection.find(search_key).sort('added_on', -1).limit(1)
             version = int(latest_version[0]['version']) + 1
 
-        #
-#        from_name = from_name.replace(from_name.split(':')[0], from_name.split(':')[0].lower())
-#        to_name = to_name.replace(to_name.split(':')[0], to_name.split(':')[0].lower())
+        #        from_name = from_name.replace(from_name.split(':')[0], from_name.split(':')[0].lower())
+        #        to_name = to_name.replace(to_name.split(':')[0], to_name.split(':')[0].lower())
         task_path = task_path.replace(task_path.split(':')[0], task_path.split(':')[0].lower())
-        #
         task_data = dict()
 
         task = task_path.split(':')[-1]
@@ -1789,7 +1994,7 @@ class Activity:
         collection.insert_one(task_data)
 
         # Send reject email or approve mail
-        approved_status = ['Client Approved', 'Ready to Publish', 'Outsource Approved', 'Outsource Client Approved', 'Final Publish']
+        approved_status = ['Client Approved', 'Ready to Publish', 'Outsource Approved', 'Outsource Client Approved', 'Final Publish', 'Internal Approved']
 
         if change_status in approved_status:
             print("************ Client Approved ****************")
@@ -1798,7 +2003,20 @@ class Activity:
             print("************ Client Reject ****************")
             self.reject_mail(task_data)
 
-    def create_entity_note(self, note, object_id, note_category, note_for, note_task, attach_files):
+    def create_entity_note(self, note, object_id, note_category, note_for, note_task, attach_files, page=''):
+        """
+        Function to add note on task or version.
+        :param note: Note text
+        :param object_id: Selected object type id
+        :param note_category: Note category
+        :param note_for: Version or Task name
+        :param note_task: Task name
+        :param attach_files: File name attached with note.
+        :param page: Current activity page
+        :return: Dictionary of note
+        """
+        print("------- create note-------------")
+        log_data_list = []
         if note != 'None':
             note_dict = {}
             obj_cat = self.session.query('NoteCategory where name is "%s"' % note_category).first()
@@ -1820,6 +2038,28 @@ class Activity:
                     return False
 
                 obj_note = my_obj.create_note(note, user, category=obj_cat)
+
+                # for activity logs
+                # for k, v in my_obj.items():
+                #     print(k, ": ", v)
+
+                path = ''
+                if my_obj['link']:
+                    path = (':'.join([each_link['name'] for each_link in my_obj['link']]))
+                    path = path.replace(path.split(':')[0], path.split(':')[0].lower())
+
+                log_dict = dict()
+                log_dict['project'] = path.split(':')[0]
+                log_dict['action'] = 'add'
+                log_dict['object_type'] = note_for
+                log_dict['sub_type'] = note_for
+                log_dict['parent_id'] = object_id # my_obj['parent_id']
+                log_dict['path'] = path
+                log_dict['page'] = page.strip()
+                log_dict['ftrack_id'] = my_obj['id']
+                log_dict['value'] = note
+                log_dict['details_for'] = 'Note'
+                log_data_list.append(log_dict)
 
                 if attach_files:
                     attach_files = json.loads(attach_files)
@@ -1850,8 +2090,15 @@ class Activity:
 
                 self.session.commit()
                 note_dict = {"note_id": obj_note['id']}
+                # call logs
+                for log in log_data_list:
+                    self.add_activity_log(project=log['project'], value=log['value'], ftrack_id=log['ftrack_id'],
+                                          action=log['action'], object_type=log['object_type'],
+                                          details_for=log['details_for'],
+                                          sub_type=log['sub_type'], parent_id=log['parent_id'],
+                                          path=log['path'], page=log['page'])
 
-            return note_dict
+        return note_dict
 
     def reply_note(self, reply_text, note_id):
         """
@@ -1945,6 +2192,18 @@ class Activity:
         self.send_email(subject, from_addr, to_addr, cc_addr, mail_body)
 
     def get_version_notes(self, my_id, my_type, last_row, task, note_category='', project='', path='', task_name=''):
+        """
+        Function to get the note data for the version
+        :param my_id: Task id
+        :param my_type: Selected object type
+        :param last_row: Index of last row
+        :param task: Task name
+        :param note_category: Category of note
+        :param project: Project name
+        :param path: Task path
+        :param task_name: Task name
+        :return: List of notes data
+        """
         # self.reload_session()
         # # query = self.get_version_object(my_id, my_type, task, project, path, task_name)
         if last_row == 15:
@@ -2074,7 +2333,7 @@ class Activity:
         user = self.session.query('User where username is "%s"' % username).one()
         self.user = user
 
-        self.get_user_columns(username)
+#        self.get_user_columns(username)
 
         # Current Project
         project = 'ice'
@@ -2092,7 +2351,7 @@ class Activity:
 
         task_hash['statuses'] = statuses
 
-        self.get_user_details()
+#        self.get_user_details()
         task_hash['emp_code'] = 'blank'
         if username in self.employee_details:
             task_hash['emp_code'] = self.employee_details[username]['emp_code']
@@ -2143,6 +2402,12 @@ class Activity:
         return csv_data
 
     def asset_csv_data_validation(self, reader, project):
+        """
+        Function to validate data inside csv file to upload
+        :param reader: List of rows from csv file.
+        :param project: Project name
+        :return: CSV data list
+        """
         duplicate = dict()
         csv_data_list = list()
         asset_types = ['Set', 'FX', 'Prop', 'Character', 'Vehicle', 'Environment']
@@ -2246,7 +2511,14 @@ class Activity:
         return csv_data_list
 
     def create_entity_from_csv(self, data_list, parent_id, project, entity):
-
+        """
+        Function to create entities like AssetBuild or Shot using csv file.
+        :param data_list: List of new entities
+        :param parent_id: Parent name of the entity
+        :param project: Project name
+        :param entity: Entity type like AssetBuild or Shot
+        :return: Success message
+        """
         if data_list:
             data_list = json.loads(data_list)
 
@@ -2326,7 +2598,7 @@ class Activity:
         user = self.session.query('User where username is "%s"' % username).one()
         self.user = user
 
-        self.get_user_columns(username)
+#        self.get_user_columns(username)
 
         if not self.user_role or self.user_role not in ['Supervisor', 'Co-ordinator']:
             return HttpResponseRedirect('/tasks/')
@@ -2339,7 +2611,7 @@ class Activity:
         #       task_list = self.get_review_tasks(project)
         #       task_hash['tasks'] = task_list
 
-        self.get_user_details()
+#        self.get_user_details()
         task_hash['emp_code'] = 'blank'
         if username in self.employee_details:
             task_hash['emp_code'] = self.employee_details[username]['emp_code']
@@ -2352,6 +2624,11 @@ class Activity:
         return render(request, 'review_tasks.html', task_hash)
 
     def show_task_entities(self, request):
+        """
+        Function to show details about the task
+        :param request:
+        :return:
+        """
         username = request.user.username
         if not username:
             return HttpResponseRedirect('/login/')
@@ -2361,7 +2638,7 @@ class Activity:
         user = self.session.query('User where username is "%s"' % username).one()
         self.user = user
 
-        self.get_user_columns(username)
+#        self.get_user_columns(username)
 
         if not self.user_role or self.user_role not in ['Supervisor', 'Co-ordinator']:
             return HttpResponseRedirect('/tasks/')
@@ -2369,7 +2646,7 @@ class Activity:
         # Get task details
         task_hash = dict()
 
-        self.get_user_details()
+#        self.get_user_details()
         task_hash['emp_code'] = 'blank'
         if username in self.employee_details:
             task_hash['emp_code'] = self.employee_details[username]['emp_code']
@@ -2377,7 +2654,7 @@ class Activity:
         task_hash['user_id'] = username.upper()
         task_hash['first_name'] = user['first_name']
         objects = ['Asset Build', 'Shot', 'Sequence']
-        asset_type = ['Set', 'Character', 'Prop', 'Vehicle']
+        asset_type = ['Set', 'Character', 'Prop', 'Vehicle', 'FX']
         task_hash['data'] = {'projects': self.projects, 'user_role': self.user_role, 'objects': objects,
                              'asset_type': asset_type}
         statuses = self.all_status()
@@ -2389,8 +2666,10 @@ class Activity:
         bids = [str(i).replace(".0", "") for i in bid_range]
         task_hash['bids'] = bids
 
-        task_hash['stf_range'] = ["%03d" % x for x in range(101, 1000)]  # self.range_sq_sc('sq', "")
-        task_hash['enf_range'] = ["%03d" % x for x in range(101, 1000)]  # self.range_sq_sc('sq', "")
+        task_hash['stf_range'] = ["%03d" % x for x in range(101, 9999)]  # self.range_sq_sc('sq', "")
+        task_hash['enf_range'] = ["%03d" % x for x in range(101, 9999)]  # self.range_sq_sc('sq', "")
+        asset_types = self.get_asset_types()
+        task_hash['asset_types'] = asset_types
 
         return render(request, 'show_task_entities.html', task_hash)
 
@@ -2404,8 +2683,8 @@ class Activity:
         user = self.session.query('User where username is "%s"' % username).first()
         self.user = user
 
-        self.user_role = ''
-        self.get_user_columns(username)
+#        self.user_role = ''
+#        self.get_user_columns(username)
 
         if not self.user_role or self.user_role not in ['Supervisor', 'Co-ordinator']:
             return HttpResponseRedirect('/login/')
@@ -2419,7 +2698,7 @@ class Activity:
         task_hash['task_temp_data'] = task_temp_data
         task_hash['asset_types'] = asset_types
 
-        self.get_user_details()
+#        self.get_user_details()
         task_hash['emp_code'] = 'blank'
         if username in self.employee_details:
             task_hash['emp_code'] = self.employee_details[username]['emp_code']
@@ -2468,7 +2747,7 @@ class Activity:
 
         self.username = username
 
-        self.get_user_columns(username)
+#        self.get_user_columns(username)
 
         if not self.user_role or self.user_role != 'Supervisor':
             return HttpResponseRedirect('/tasks/')
@@ -2500,7 +2779,7 @@ class Activity:
         #            task_hash['tash_graph_data'] = dashboard_data[0]['tash_graph_data']
         #            task_hash['status_graph_data'] = dashboard_data[0]['status_graph_data']
 
-        self.get_user_details()
+#        self.get_user_details()
         task_hash['emp_code'] = 'blank'
         if username in self.employee_details:
             task_hash['emp_code'] = self.employee_details[username]['emp_code']
@@ -2521,7 +2800,7 @@ class Activity:
         user = self.session.query('User where username is "%s"' % username).one()
         self.user = user
 
-        self.get_user_columns(username)
+#        self.get_user_columns(username)
 
         if not self.user_role or self.user_role not in ['Supervisor', 'Co-ordinator']:
             return HttpResponseRedirect('/login/')
@@ -2537,7 +2816,7 @@ class Activity:
 
         self.projects = self.get_projects()
 
-        self.get_user_details()
+#        self.get_user_details()
         task_hash['emp_code'] = 'blank'
         if username in self.employee_details:
             task_hash['emp_code'] = self.employee_details[username]['emp_code']
@@ -2557,7 +2836,7 @@ class Activity:
         user = self.session.query('User where username is "%s"' % username).one()
         self.user = user
 
-        self.get_user_columns(username)
+#        self.get_user_columns(username)
 
         if not self.user_role or self.user_role not in ['Supervisor', 'Co-ordinator']:
             return HttpResponseRedirect('/login/')
@@ -2580,7 +2859,7 @@ class Activity:
         self.projects = self.get_projects()
 
         status = {"Internal": "Internal", "OutSource": "OutSource"}
-        self.get_user_details()
+#        self.get_user_details()
 
         task_hash['emp_code'] = 'blank'
 
@@ -2600,7 +2879,7 @@ class Activity:
 
         self.username = username
 
-        self.get_user_columns(username)
+#        self.get_user_columns(username)
 
         if not self.user_role or self.user_role != 'Supervisor':
             return HttpResponseRedirect('/tasks/')
@@ -2627,7 +2906,7 @@ class Activity:
 
         #        task_hash['reports'] = self.get_artist_productivity_reports(project, first, last, artist)
 
-        self.get_user_details()
+#        self.get_user_details()
         task_hash['emp_code'] = 'blank'
         if username in self.employee_details:
             task_hash['emp_code'] = self.employee_details[username]['emp_code']
@@ -2655,7 +2934,7 @@ class Activity:
         match_dict = {
             'updated_on': {'$exists': True},
             'parent_object_type': parent_object_type,
-            'name': {"$in": ['Modeling', 'Texturing', 'Rigging', 'CFX', 'Set Dressing']}
+            'name': {"$in": ['Modeling', 'Texturing', 'Rigging', 'CFX', 'Set Dressing', 'Blend Shape']}
         }
 
         aggregate = [{
@@ -2682,62 +2961,89 @@ class Activity:
 
         data_cursor = task_col.aggregate(aggregate)
 
-	status_keys = ['WIP','Internal','Approved','Review']
+        status_keys = ['WIP', 'Internal', 'Approved', 'Review']
 
         task_data = dict()
         for each in data_cursor:
+            month = self.months_str[each['_id']['month']] + '-' + str(each['_id']['year'])
+            parent_type = each['_id']['type']
+            ftrack_status = each['_id']['status']
+            total = int(each['total'])
 
-	    task = each['_id']['name']
-	    self.initialize_asset_month(task_data,task,each,status_keys)
-	    self.calculate_asset_month(task_data,task,each)
+            task = each['_id']['name']
+            self.initialize_asset_month(task_data, task, status_keys, month, parent_type)
+            self.calculate_asset_month(task_data, task, each, ftrack_status, month, parent_type, total)
 
-	    task = 'Gross'
-	    self.initialize_asset_month(task_data,task,each,status_keys)
-	    self.calculate_asset_month(task_data,task,each)
+            task = 'Gross'
+            self.initialize_asset_month(task_data, task, status_keys, month, parent_type)
+            self.calculate_asset_month(task_data, task, each, ftrack_status, month, parent_type, total)
+
 
 	# For Shot Tab
         shot_data_cursor = task_col.find(
-            {"object_type": "Task", "parent_object_type": "Shot", "updated_on": {"$exists": True},
-             'name': {"$in": ['Layout', 'Animation', 'Lighting', 'Shave Hair', 'Set Dressing']},
+            {"object_type": 'Task', "parent_object_type": "Shot",
+             "updated_on": {"$exists": True},
+             'name': {"$in": ['Layout', 'Animation', 'Lighting']},
              }, {"_id": 0, "parent_object_type": 1, "path": 1, "name": 1,
                  "ftrack_status": 1, "updated_on": 1})
 
-        shot_data = self.shot_month_wise_data(shot_data_cursor, self.months_str)
+        shot_data = dict()
+        for element in shot_data_cursor:
+            task_name = element['name']
+            updated_date = element['updated_on']
+            format_date = datetime.datetime.strftime(datetime.datetime.strptime(str(updated_date).split(".")[0],
+                                                                                "%Y-%m-%d ""%H:%M:%S"), "%Y/%-m/%-d")
+            month = self.months_str[int(format_date.split("/")[1])] + "-" + format_date.split("/")[0]
+            ftrack_status = element['ftrack_status']
+
+            sequence_name = element['path'].split(":")[1]
+            self.initialize_asset_month(shot_data, sequence_name, status_keys, month, task_name)
+            self.calculate_asset_month(shot_data, sequence_name, element, ftrack_status, month, task_name, 1)
+
+            task = 'Gross'
+            self.initialize_asset_month(shot_data, task, status_keys, month, task_name)
+            self.calculate_asset_month(shot_data, task, element, ftrack_status, month, task_name, 1)
+
         data_list.append({'asset_build': task_data, 'shot': shot_data})
 
-        pprint(task_data)
-        return data_list
+#        pprint(data_list)
 
-    def initialize_asset_month(self, task_data, task, each, status_keys):
+        return sorted(data_list)
 
-        parent_type = each['_id']['type']
-        month = self.months_str[each['_id']['month']] + '-' + str(each['_id']['year'])
-	if task and parent_type and month:
+    def initialize_asset_month(self, task_data, task, status_keys, month, parent_type):
+
+        if task and parent_type and month:
 
             if task not in task_data:
                 task_data[task] = dict()
                 task_data[task]['Total'] = 0
                 task_data[task]['Percent'] = 0
+                task_data[task]['Done'] = 0
+
 		for m_key in status_keys:
 		    task_data[task][m_key] = 0
 
             if parent_type not in task_data[task]:
                 task_data[task][parent_type] = dict()
                 task_data[task][parent_type]['Total'] = 0
+                task_data[task][parent_type]['Percent'] = 0
+                task_data[task][parent_type]['Done'] = 0
+
 		for m_key in status_keys:
 		    task_data[task][parent_type][m_key] = 0
 
             if month not in task_data[task]:
                 task_data[task][month] = dict()
-                task_data[task][month]['Count'] = 0
-                task_data[task][month]['Task'] = list()
+                task_data[task][month]['Total'] = dict()
+                task_data[task][month]['Total']['Count'] = 0
+                task_data[task][month]['Total']['Task'] = list()
 
 		for m_key in status_keys:
 		    if m_key not in task_data[task][month]:
 			task_data[task][month][m_key] = dict()
 			task_data[task][month][m_key]['Count'] = 0
 			task_data[task][month][m_key]['Task'] = list()
-	    
+
             if month not in task_data[task][parent_type]:
                 task_data[task][parent_type][month] = dict()
                 task_data[task][parent_type][month]['Count'] = 0
@@ -2752,281 +3058,60 @@ class Activity:
 			task_data[task][parent_type][month][m_key]['Total'] = 0
 			task_data[task][parent_type][month][m_key]['Task'] = list()
 
-    def calculate_asset_month(self, task_data, task, each):
+    def calculate_asset_month(self, task_data, task, each, ftrack_status, month, parent_type, total):
 
-        parent_type = each['_id']['type']
-        month = self.months_str[each['_id']['month']] + '-' + str(each['_id']['year'])
-	path = each['path']
-	total = int(each['total'])
+        path = each['path']
 
 	report_status = 'WIP'
-        ftrack_status = each['_id']['status']
         if ftrack_status == 'Internal Approved':
-	    report_status = 'Internal'
+            report_status = 'Internal'
         elif ftrack_status == 'Pending Client Review':
-	    report_status = 'Review'
+            report_status = 'Review'
         elif ftrack_status == 'Client approved':
-	    report_status = 'Approved'
+            report_status = 'Approved'
+        elif ftrack_status == 'In progress':
+            report_status = 'WIP'
+        else:
+            return task_data
 
-	if task and parent_type and month:
-
-            task_data[task][report_status] += total
-            task_data[task][parent_type][report_status] += total
-
-            task_data[task][month][report_status]['Count'] += total
-            task_data[task][month][report_status]['Task'].append([ele.split(":")[1] for ele in path])
-
-            task_data[task][parent_type][month][report_status]['Count'] += total
-            task_data[task][parent_type][month][report_status]['Task'] += [new_ele.split(":")[1] for new_ele in (set(path))]
+        if task and parent_type and month and total:
+	    if report_status != 'WIP':
+		task_data[task]['Done'] += total
+		task_data[task][parent_type]['Done'] += total
 
             task_data[task]['Total'] += total
-            task_data[task][parent_type]['Total'] += total
-            task_data[task][month]['Count'] += total
-            task_data[task][month]['Task'] += [new_ele.split(":")[1] for new_ele in (set(path))]
-            task_data[task][parent_type][month]['Total']['Count'] += total
+            task_data[task][report_status] += total
+            task_data[task]['Percent'] = (task_data[task]['Done'] * 100) / task_data[task]['Total']
 
-            task_data[task][parent_type][month]['Total']['Task'] += [ele.split(":")[1] for ele in set(path)]
+            task_data[task][month]['Total']['Count'] += total
+            task_data[task][month][report_status]['Count'] += total
+
+            task_data[task][parent_type]['Total'] += total
+            task_data[task][parent_type][report_status] += total
+
+            task_data[task][parent_type]['Percent'] = (task_data[task][parent_type]['Done'] * 100) / task_data[task][parent_type]['Total']
+
+            task_data[task][parent_type][month][report_status]['Count'] += total
+            task_data[task][parent_type][month]['Total']['Count'] += total
             task_data[task][parent_type][month]['Count'] += total
 
-            task_data[task][parent_type]['Percent'] = (task_data[task][parent_type]['Approved'] * 100) / \
-                                                      task_data[task]['Total']
-            task_data[task]['Percent'] = (task_data[task]['Approved'] * 100) / task_data[task]['Total']
+            if isinstance(path, list):
+                task_data[task][month][report_status]['Task'].append([ele.split(":")[1] for ele in path])
+                task_data[task][parent_type][month][report_status]['Task'] += [new_ele.split(":")[1] for new_ele in
+                                                                               (set(path))]
+                task_data[task][parent_type][month]['Total']['Task'] += [ele.split(":")[1] for ele in set(path)]
 
-    def shot_month_wise_data(self, data_cursor, months_str):
+                task_data[task][month]['Total']['Task'] += [new_ele.split(":")[1] for new_ele in (set(path))]
+            else:
+                task_data[task][month][report_status]['Task'].append(str(path))
+                task_data[task][parent_type][month][report_status]['Task'].append(str(path))
+                task_data[task][parent_type][month]['Total']['Task'].append(str(path))
+                task_data[task][month]['Total']['Task'].append(str(path))
 
-        shot_data = {}
-        parent_object_type = 'Shot'
-
-        for element in data_cursor:
-            sequence_name = element['path'].split(":")[1]
-            task_name = element['name']
-            updated_date = element['updated_on']
-            format_date = datetime.datetime.strftime(datetime.datetime.strptime(str(updated_date).split(".")[0],
-                                                                                "%Y-%m-%d %H:%M:%S"), "%Y/%-m/%-d")
-            ftrack_status = element['ftrack_status']
-
-            # if parent_object_type not in shot_data:
-            #     shot_data = dict()
-
-            if sequence_name not in shot_data:
-                shot_data[sequence_name] = dict()
-            self.check_add_keys_in_sequence_name_in_dict(shot_data, sequence_name)
-
-            if task_name not in shot_data[sequence_name]:
-                shot_data[sequence_name][task_name] = dict()
-            self.check_add_task_name_in_sequence_name_in_dict(shot_data, sequence_name, task_name)
-
-            month = months_str[int(format_date.split("/")[1])] + "-" + format_date.split("/")[0]
-            if month not in shot_data[sequence_name]:
-                shot_data[sequence_name][month] = dict()
-            self.check_add_month_in_task_name_in_seq_name_in_dict(shot_data, sequence_name, month)
-
-            if month not in shot_data[sequence_name][task_name]:
-                shot_data[sequence_name][task_name][month] = dict()
-            self.check_month_key_in_parent_type_dict(shot_data, sequence_name, month, task_name)
-
-            self.add_ftrack_status_parent_type_month(shot_data, sequence_name, month, task_name,
-                                                     ftrack_status, 1, element['path'])
-            self.adding_total_count_task_data(sequence_name, task_name, 1, month, shot_data, element['path'])
-
-        return shot_data
-
-    def check_add_keys_in_sequence_name_in_dict(self, shot_data, sequence_name):
-        if 'Total' not in shot_data[sequence_name]:
-            shot_data[sequence_name]['Total'] = 0
-        if 'Percent' not in shot_data[sequence_name]:
-            shot_data[sequence_name]['Percent'] = 0
-        if 'Approved' not in shot_data[sequence_name]:
-            shot_data[sequence_name]['Approved'] = 0
-        # if 'Shot_Count' not in shot_data[parent_object_type][sequence_name]:
-        #     shot_data[parent_object_type][sequence_name]['Shot_Count'] = 0
-
-    def check_add_task_name_in_sequence_name_in_dict(self, shot_data, sequence_name, task_name):
-        if 'Approved' not in shot_data[sequence_name][task_name]:
-            shot_data[sequence_name][task_name]['Approved'] = 0
-        if 'Total' not in shot_data[sequence_name][task_name]:
-            shot_data[sequence_name][task_name]['Total'] = 0
-        if 'Percent' not in shot_data[sequence_name][task_name]:
-            shot_data[sequence_name][task_name]['Percent'] = 0
-        if 'Shot_Count' not in shot_data[sequence_name]:
-            shot_data[sequence_name]['Shot_Count'] = 0
-
-    def check_add_month_in_task_name_in_seq_name_in_dict(self, shot_data, sequence_name, month):
-        if 'Count' not in shot_data[sequence_name][month]:
-            shot_data[sequence_name][month]['Count'] = 0
-        if 'WIP' not in shot_data[sequence_name][month]:
-            shot_data[sequence_name][month]['WIP'] = dict()
-            shot_data[sequence_name][month]['WIP']['Count'] = 0
-            shot_data[sequence_name][month]['WIP']['Task'] = list()
-        if 'Internal' not in shot_data[sequence_name][month]:
-            shot_data[sequence_name][month]['Internal'] = dict()
-            shot_data[sequence_name][month]['Internal']['Count'] = 0
-            shot_data[sequence_name][month]['Internal']['Task'] = list()
-        if 'Review' not in shot_data[sequence_name][month]:
-            shot_data[sequence_name][month]['Review'] = dict()
-            shot_data[sequence_name][month]['Review']['Count'] = 0
-            shot_data[sequence_name][month]['Review']['Task'] = list()
-        if 'Approved' not in shot_data[sequence_name][month]:
-            shot_data[sequence_name][month]['Approved'] = dict()
-            shot_data[sequence_name][month]['Approved']['Count'] = 0
-            shot_data[sequence_name][month]['Approved']['Task'] = list()
-        if 'Task' not in shot_data[sequence_name][month]:
-            shot_data[sequence_name][month]['Task'] = list()
-
-    def check_month_key_in_parent_type_dict(self, shot_data, sequence_name, month, parent_type):
-        if 'Count' not in shot_data[sequence_name][parent_type][month]:
-            shot_data[sequence_name][parent_type][month]['Count'] = 0
-
-        # Total
-        if 'Total' not in shot_data[sequence_name][parent_type][month]:
-            shot_data[sequence_name][parent_type][month]['Total'] = dict()
-
-        if 'Count' not in shot_data[sequence_name][parent_type][month]['Total']:
-            shot_data[sequence_name][parent_type][month]['Total']['Count'] = 0
-
-        if 'Task' not in shot_data[sequence_name][parent_type][month]['Total']:
-            shot_data[sequence_name][parent_type][month]['Total']['Task'] = list()
-
-        # WIP
-        if 'WIP' not in shot_data[sequence_name][parent_type][month]:
-            shot_data[sequence_name][parent_type][month]['WIP'] = dict()
-
-        if 'Count' not in shot_data[sequence_name][parent_type][month]['WIP']:
-            shot_data[sequence_name][parent_type][month]['WIP']['Count'] = 0
-
-        if 'Total' not in shot_data[sequence_name][parent_type][month]['WIP']:
-            shot_data[sequence_name][parent_type][month]['WIP']['Total'] = 0
-
-        if 'Task' not in shot_data[sequence_name][parent_type][month]['WIP']:
-            shot_data[sequence_name][parent_type][month]['WIP']['Task'] = list()
-
-        # Internal
-        if 'Internal' not in shot_data[sequence_name][parent_type][month]:
-            shot_data[sequence_name][parent_type][month]['Internal'] = dict()
-
-        if 'Count' not in shot_data[sequence_name][parent_type][month]['Internal']:
-            shot_data[sequence_name][parent_type][month]['Internal']['Count'] = 0
-
-        if 'Total' not in shot_data[sequence_name][parent_type][month]['Internal']:
-            shot_data[sequence_name][parent_type][month]['Internal']['Total'] = 0
-
-        if 'Task' not in shot_data[sequence_name][parent_type][month]['Internal']:
-            shot_data[sequence_name][parent_type][month]['Internal']['Task'] = list()
-
-        # Client Review
-        if 'Review' not in shot_data[sequence_name][parent_type][month]:
-            shot_data[sequence_name][parent_type][month]['Review'] = dict()
-
-        if 'Count' not in shot_data[sequence_name][parent_type][month]['Review']:
-            shot_data[sequence_name][parent_type][month]['Review']['Count'] = 0
-
-        if 'Total' not in shot_data[sequence_name][parent_type][month]['Review']:
-            shot_data[sequence_name][parent_type][month]['Review']['Total'] = 0
-
-        if 'Task' not in shot_data[sequence_name][parent_type][month]['Review']:
-            shot_data[sequence_name][parent_type][month]['Review']['Task'] = list()
-
-        # Approved
-        if 'Approved' not in shot_data[sequence_name][parent_type][month]:
-            shot_data[sequence_name][parent_type][month]['Approved'] = dict()
-
-        if 'Count' not in shot_data[sequence_name][parent_type][month]['Approved']:
-            shot_data[sequence_name][parent_type][month]['Approved']['Count'] = 0
-
-        if 'Total' not in shot_data[sequence_name][parent_type][month]['Approved']:
-            shot_data[sequence_name][parent_type][month]['Approved']['Total'] = 0
-
-        if 'Task' not in shot_data[sequence_name][parent_type][month]['Approved']:
-            shot_data[sequence_name][parent_type][month]['Approved']['Task'] = list()
-
-    def add_ftrack_status_parent_type_month(self, shot_data, sequence_name, month, parent_type,
-                                            ftrack_status, element, sequences):
-        if ftrack_status == 'Internal Approved':
-            shot_data[sequence_name][parent_type][month]['Internal']['Count'] = \
-                shot_data[sequence_name][parent_type][month]['Internal']['Count'] + 1
-            shot_data[sequence_name][parent_type][month]['Internal']['Task'] = \
-                shot_data[sequence_name][parent_type][month]['Internal']['Task'] + [str(sequences)]
-            # [new_ele.split(":")[1] fornew_ele in(set(element['path']))]
-
-            shot_data[sequence_name][month]['Internal']['Count'] = \
-                shot_data[sequence_name][month]['Internal']['Count'] + 1
-            shot_data[sequence_name][month]['Internal']['Task'].append(str(sequences))
-            # [ele.split(":")[1] for ele in element['path']])
-
-        elif ftrack_status == 'Pending Client Review':
-            shot_data[sequence_name][parent_type][month]['Review']['Count'] = \
-                shot_data[sequence_name][parent_type][month]['Review'][
-                    'Count'] + 1
-            shot_data[sequence_name][parent_type][month]['Review']['Task'] = \
-                shot_data[sequence_name][parent_type][month]['Review']['Task'] + [
-                    str(sequences)]  # [new_ele.split(":")[1] for new_ele in (set(element['path']))]
-
-            shot_data[sequence_name][month]['Review']['Count'] = \
-                shot_data[sequence_name][month]['Review']['Count'] + 1  # int(element['total'])
-            shot_data[sequence_name][month]['Review']['Task'].append(str(sequences))
-            # [ele.split(":")[1] for ele in element['path']])
-
-        elif ftrack_status == 'Client approved':
-            shot_data[sequence_name][parent_type][month]['Approved']['Count'] = \
-                shot_data[sequence_name][parent_type][month]['Approved'][
-                    'Count'] + 1
-            shot_data[sequence_name][parent_type][month]['Approved']['Task'] = \
-                shot_data[sequence_name][parent_type][month]['Approved']['Task'] + [str(sequences)]
-            # [new_ele.split(":")[1] for new_ele in(set(element['path']))]
-
-            shot_data[sequence_name][parent_type]['Approved'] = shot_data[sequence_name][parent_type]['Approved'] + 1
-            shot_data[sequence_name]['Approved'] = shot_data[sequence_name]['Approved'] + 1
-
-            shot_data[sequence_name][month]['Approved']['Count'] = \
-                shot_data[sequence_name][month]['Approved']['Count'] + 1
-
-            shot_data[sequence_name][month]['Approved']['Task'].append(str(sequences))
-            # [ele.split(":")[1] for ele in element['path']])
-
-        else:
-            shot_data[sequence_name][parent_type][month]['WIP']['Count'] = \
-                shot_data[sequence_name][parent_type][month]['WIP'][
-                    'Count'] + 1
-            shot_data[sequence_name][parent_type][month]['WIP']['Task'] = \
-                shot_data[sequence_name][parent_type][month]['WIP'][
-                    'Task'] + [str(sequences)]  # [new_ele.split(":")[1] for new_ele in (set(element['path']))]
-
-            shot_data[sequence_name][month]['WIP']['Count'] = \
-                shot_data[sequence_name][month]['WIP'][
-                    'Count'] + 1
-            shot_data[sequence_name][month]['WIP']['Task'].append(str(sequences))
-            # [ele.split(":")[1] for ele in element['path']])
-
-    def adding_total_count_task_data(self, sequence_name, parent_type, element, month, shot_data,
-                                     sequences):
-        shot_data[sequence_name]['Total'] = \
-            shot_data[sequence_name]['Total'] + 1
-
-        shot_data[sequence_name][parent_type]['Total'] = \
-            shot_data[sequence_name][parent_type][
-                'Total'] + 1
-        shot_data[sequence_name][month]['Count'] = \
-            shot_data[sequence_name][month][
-                'Count'] + 1
-        shot_data[sequence_name][month]['Task'] = \
-            shot_data[sequence_name][month][
-                'Task'] + [str(sequences)]
-        # [new_ele.split(":")[1] for new_ele in(set(element['path']))]
-        shot_data[sequence_name][parent_type][month]['Total']['Count'] = \
-            shot_data[sequence_name][parent_type][month]['Total'][
-                'Count'] + 1  # int(element['total'])
-        shot_data[sequence_name][parent_type][month]['Total']['Task'] = list(
-            set(shot_data[sequence_name][parent_type][month]['Total']['Task'])) + [str(sequences)]
-        # [ele.split(":")[1] for ele in element['path']]
-        shot_data[sequence_name][parent_type][month]['Count'] = \
-            shot_data[sequence_name][parent_type][month]['Count'] + 1
-
-        shot_data[sequence_name][parent_type]['Percent'] = \
-            (shot_data[sequence_name][parent_type]['Approved'] * 100) \
-            / shot_data[sequence_name]['Total']
-        shot_data[sequence_name]['Percent'] = \
-            (shot_data[sequence_name]['Approved'] * 100) / \
-            shot_data[sequence_name]['Total']
+	    task_data[task][month][report_status]['Task'] = sorted(task_data[task][month][report_status]['Task'])
+            task_data[task][parent_type][month][report_status]['Task'] = sorted(task_data[task][parent_type][month][report_status]['Task'])
+            task_data[task][parent_type][month]['Total']['Task'] = sorted(task_data[task][parent_type][month]['Total']['Task'])
+            task_data[task][month]['Total']['Task'] = sorted(task_data[task][month]['Total']['Task'])
 
     def get_artist_productivity_reports(self, project='ice', first='', last='', artist='all', task_name='all'):
 
@@ -3547,6 +3632,7 @@ class Activity:
         #        check_status = ["Pending Client Review", "Pending Internal Review", "Outsource Client Review"]
 
         obj_col = self.mongo_database['%s_tasks' % project]
+        obj_col_ver = self.mongo_database['%s_versions' % project]
 
         data = obj_col.find({"name": {"$in": user_columns}, "ftrack_status": {"$in": check_status}}).sort(
             "updated_on", -1)
@@ -3573,14 +3659,16 @@ class Activity:
                 task_details['path'] = path
                 task_details['task_id'] = each['ftrack_id']
 
-                query = 'AssetVersion where task_id is "%s" and task.name is "%s" and ' \
-                        'status.name is "%s" order by date desc' % (ftrack_id, task, review_status)
-                print(query)
-                obj_versions = self.session.query(query).first()
-                if obj_versions:
-                    task_details['version'] = obj_versions['_link'][-1]['name']
+		obj_versions = obj_col_ver.find({"ftrack_status":review_status,"task_id":ftrack_id}).sort("updated_on", -1).limit(1)
+		
+#                query = 'AssetVersion where task_id is "%s" and task.name is "%s" and ' \
+#                        'status.name is "%s" order by date desc' % (ftrack_id, task, review_status)
+#                print(query)
+#                obj_versions = self.session.query(query).first()
+                if obj_versions.count():
+                    task_details['version'] = obj_versions[0]['name']
                     task_details['object_type'] = 'AssetVersion'
-                    task_details['version_id'] = obj_versions['id']
+                    task_details['version_id'] = obj_versions[0]['ftrack_id']
 
             if 'name' in each:
                 task_details['task_name'] = each['name']
@@ -3763,13 +3851,37 @@ class Activity:
                     print("No task a live")
                 daily_task_col.update_one({'_id': each['_id']}, {'$set': {'active': 0}})
 
-    def apply_artist_action(self, username, project, task_id, action):
+    def apply_artist_action(self, username, project, task_id, action, page, path, parent_id):
+        """
+        Function to add or update detail about the task by the artist.
+        :param username: Name of the artist or user
+        :param project: Project name
+        :param task_id: Task id
+        :param action: Action performed by the artist as START, STOP or Paused
+        :param page: Current page name.
+        :param path: Path of current task
+        :param parent_id: Parent id of the current task.
+        :return: None
+        """
         obj_col = self.mongo_database[project + '_tasks']
         search_key = {'current_assignees.user_name': username, 'ftrack_id': task_id}
 
         find_obj = obj_col.find_one(search_key)
         task_path = find_obj['path']
 
+        # For activity logs
+        log_data_list = []
+        log_dict = {}
+        log_dict['project'] = project
+        log_dict['action'] = "update"
+        log_dict['object_type'] = 'Task'
+        log_dict['sub_type'] = 'Task'
+        log_dict['parent_id'] = parent_id
+        log_dict['path'] = task_path
+        log_dict['page'] = page.strip()
+        log_dict['ftrack_id'] = task_id
+        log_dict['value'] = action
+        log_dict['details_for'] = 'Task'
         update_value = dict()
         if action == 'Started':
             update_value['current_assignees.$.start_date'] = datetime.datetime.now()
@@ -3778,6 +3890,11 @@ class Activity:
         else:
             update_value['current_assignees.$.finish_date'] = datetime.datetime.now()
             self.stop_active_task(project, task_path)
+
+        tsk_dict = copy.deepcopy(log_dict)
+        tsk_dict['value'] = action
+        tsk_dict['details_for'] = 'Task Status'
+        log_data_list.append(tsk_dict)
 
         if task_id and (action == 'Started' or action == 'Review'):
             change_status = 'In progress'
@@ -3788,6 +3905,13 @@ class Activity:
             my_obj_status = self.session.query("Status where name is '%s'" % change_status).first()
             my_obj_task = self.session.query("Task where id is '%s'" % task_id).first()
             if my_obj_task:
+                if my_obj_task['status']['name'] != change_status:
+                    # for task
+                    tsk_dict = copy.deepcopy(log_dict)
+                    tsk_dict['value'] = change_status
+                    tsk_dict['details_for'] = 'Status'
+                    log_data_list.append(tsk_dict)
+
                 my_obj_task['status'] = my_obj_status
 
             self.session.commit()
@@ -3795,6 +3919,13 @@ class Activity:
         update_value['current_assignees.$.backup_status'] = action
         # update backup status
         obj_col.update_one(search_key, {'$set': update_value}, upsert=True)
+
+        # call logs
+        for log in log_data_list:
+            self.add_activity_log(project=log['project'], value=log['value'], ftrack_id=log['ftrack_id'],
+                                  action=log['action'], object_type=log['object_type'], details_for=log['details_for'],
+                                  sub_type=log['sub_type'], parent_id=log['parent_id'],
+                                  path=(log['path']), page=log['page'])
 
     def get_user_task_reports(self, project, first, last, task):
 
@@ -3811,7 +3942,7 @@ class Activity:
         startdate = datetime.datetime.strptime(str(first), '%Y-%m-%d %H:%M:%S')
         enddate = datetime.datetime.strptime(str(last), '%Y-%m-%d %H:%M:%S')
 
-        self.get_user_details()
+#        self.get_user_details()
 
         print(startdate, enddate)
 
@@ -4041,6 +4172,11 @@ class Activity:
         return task_user_details
 
     def get_note_data(self, obj_notes):
+        """
+        Function to get notes data from database.
+        :param obj_notes: List of objects of notes
+        :return: List of dictionary of note data
+        """
         note_list = []
         for note in obj_notes:
             noteid = note['id']
@@ -4048,8 +4184,8 @@ class Activity:
             if note['in_reply_to'] is None and noteid:
                 try:
                     category = note['category']['name'].replace(' ', '_')
-                except ValueError:
-                    category = None
+                except:
+                    category = 'None'
                 comments_hash['note_category'] = category
                 try:
                     comments_hash['note_author'] = note['author']['username']
@@ -4065,7 +4201,9 @@ class Activity:
                 if note['parent_id'] and note['parent_type']:
                     parent = self.session.query(
                         "%s where id is '%s'" % (note['parent_type'], note['parent_id'])).first()
-                    path_list = map(lambda x: x['name'], parent['_link'])
+                    path_list = []
+                    if parent:
+                        path_list = map(lambda x: x['name'], parent['_link'])
                     comments_hash['note_info'] = ' / '.join(path_list)
                     if note['parent_type'] == 'AssetVersion':
                         comments_hash['task_name'] = parent['task']['name']
@@ -4132,12 +4270,12 @@ class Activity:
 
         ftp_hash = {}
         self.projects = self.get_projects()
-        self.get_user_columns(username)
+#        self.get_user_columns(username)
 
         if not self.user_role or self.user_role not in ['Supervisor', 'Co-ordinator']:
             return HttpResponseRedirect('/tasks/')
 
-        self.get_user_details()
+#        self.get_user_details()
         ftp_hash['emp_code'] = 'blank'
         if username in self.employee_details:
             ftp_hash['emp_code'] = self.employee_details[username]['emp_code']
@@ -4564,7 +4702,7 @@ class Activity:
                                         # file_name = prj_name + "_" + obj_name + "_" + clt_rej_ver_no + "_" + version_name + "." + ext
                                     else:
                                         file_name = prj_name + '_' + obj_name + '_' + clt_rej_ver_no + '.' + ext
-                                
+
                                 finale = os.path.join(destination_folder1, file_name)
                                 source_final = os.path.join(source_path1, ver_file3)
 
@@ -4628,7 +4766,7 @@ class Activity:
 
     def change_status_after_upload(self, ver_id, upload_status, client_final_combo):
         print("Changing Status To : ", ver_id, client_final_combo, upload_status)
-        finale_version = self.session.query("AssetVersion where id is '%s'" % ver_id).one()
+        finale_version = self.session.query("AssetVersion where id is '%s'" % ver_id).first()
         changed_status = ''
         if client_final_combo == 'final' and upload_status == 'Client':
             changed_status = self.session.query("Status where name is 'Client Approved'").first()
@@ -4650,6 +4788,31 @@ class Activity:
 
         finale_version['status'] = changed_status
         self.session.commit()
+	
+	try:
+	    log = dict()
+	    log['acitivity_date'] = datetime.datetime.now()
+	    log['action'] = 'update'
+	    log['page'] = 'FTP Upload'
+	    log['value'] = changed_status['name']
+	    log['ftrack_id'] = ver_id
+	    log['action'] = 'update'
+	    log['object_type'] = 'AssetVersion'
+	    log['details_for'] = 'Status'
+	    log['sub_type'] = 'AssetVersion'
+	    link = finale_version['link']
+	    link_path = (':'.join([each_link['name'] for each_link in link]))
+	    log['project'] = link_path.split(':')[0].lower()
+	    path = link_path.replace(link_path.split(':')[0], link_path.split(':')[0].lower())
+	    log['sub_type'] = 'AssetVersion'
+	    log['path'] = path
+	    log['parent_id'] = finale_version['task_id']
+	    self.add_activity_log(project=log['project'], value=log['value'], ftrack_id=log['ftrack_id'],
+                                  action=log['action'], object_type=log['object_type'], details_for=log['details_for'],
+                                  sub_type=log['sub_type'], parent_id=log['parent_id'],
+                                  path=log['path'], page=log['page'])
+	except Exception as e:
+	    print("FTP activity log error : %s" %e.message)
 
     def send_log_mail(self, user_details_log):
 
@@ -4708,7 +4871,11 @@ class Activity:
         self.send_email(subject, from_addr, to_addr, cc_addr, mail_body)
 
     def reject_mail(self, details):
-
+        """
+        Function for creating task reject mail content and call send mail function inside this.
+        :param details: Details of Task
+        :return: None
+        """
         if 'users' not in details:
             print("No user found to send a reject mail")
 
@@ -4741,7 +4908,7 @@ class Activity:
                 if from_task_name in self.email_address['Email']['Review Task'][project]:
                     if task_name != from_task_name:
                         cc_addr = cc_addr + ',' + ','.join(self.email_address['Email']['Review Task'][project][from_task_name])
-                
+
 
         htmlhead = """
         Hello Artist(s),</br>Your task has been rejected with below details ... </br></br>
@@ -4785,7 +4952,11 @@ class Activity:
         self.send_email(subject, from_addr, to_addr, cc_addr, mail_body)
 
     def approve_mail(self, details):
-
+        """
+        Function for creating task approve mail content and call send mail function inside this.
+        :param details: Details of task
+        :return: None
+        """
         if 'users' not in details:
             print("No user found to send a approved mail")
 
@@ -4853,7 +5024,15 @@ class Activity:
         self.send_email(subject, from_addr, to_addr, cc_addr, mail_body)
 
     def send_email(self, subject, from_addr, to_addr, cc_addr, mail_body):
-
+        """
+        Function for sending mail.
+        :param subject: Subject of the mail
+        :param from_addr: Email address of sender
+        :param to_addr: Email address of reciver
+        :param cc_addr: Email address
+        :param mail_body: Content of mail
+        :return: None
+        """
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
         msg['From'] = from_addr
@@ -4876,6 +5055,12 @@ class Activity:
     # Update form elements
 
     def update_form_data(self, entity_name, data_list):
+        """
+        Function to update the on the basis of entity name.
+        :param entity_name: Name of entity
+        :param data_list: List of data to be update.
+        :return: Success message
+        """
 
         data_list = json.loads(data_list)
 
@@ -4900,13 +5085,18 @@ class Activity:
         return {'message': msg}
 
     def update_project(self, data_list=None):
+        """
+        Function to add and update project.
+        :param data_list: List of dictionary with new or change values.
+        :return: None
+        """
         if data_list is None:
             data_list = []
         if not data_list:
             return False
 
         self.reload_session()
-
+        log_data_list = []
         for each in data_list:
             if 'project_id' in each:
                 proj_obj = self.session.query("Project where id is '%s'" % each['project_id']).first()
@@ -4917,16 +5107,36 @@ class Activity:
 
                 proj_obj = self.session.create('Project', {
                     'name': each['project_code'],
-                    'full_name': each['project_code'],
-                    'project_schema': self.project_schemas
+                    'full_name': each['project_name'],
+                    'project_schema': self.project_schemas,
+                    'root': '/ASE/01prj/' + str(each['project_code']).upper()
                 })
+
+            # For activity logs
+            log_dict = dict()
+            log_dict['project'] = (each['project_code']).lower()
+            log_dict['action'] = 'Create Project'
+            log_dict['object_type'] = 'Project'
+            log_dict['sub_type'] = 'Project'
+            log_dict['parent_id'] = ""
+            log_dict['path'] = ""
+            log_dict['page'] = (each['page']).strip()
+            log_dict['ftrack_id'] = proj_obj['id']
+            log_dict['value'] =  each['project_name']
+            log_dict['details_for'] = 'Project'
+            log_data_list.append(log_dict)
 
             if 'start_date' in each:
                 start_date = each['start_date']
                 datetime_start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d")
                 start_date = datetime.datetime.strftime(datetime_start_date_obj, "%Y-%m-%dT%H:%M:%S")
                 proj_obj['start_date'] = start_date
-            # proj_obj['start_date'] = each['start_date']
+
+                std_dict = copy.deepcopy(log_dict)
+                std_dict['value'] = start_date
+                std_dict['details_for'] = 'Project'
+                std_dict['action'] = 'add'
+                log_data_list.append(std_dict)
 
             if 'end_date' in each:
                 end_date = each['end_date']
@@ -4935,29 +5145,66 @@ class Activity:
                 proj_obj['end_date'] = end_date
             # proj_obj['end_date'] = each['end_date']
 
+                end_dict = copy.deepcopy(log_dict)
+                end_dict['value'] = end_date
+                end_dict['details_for'] = 'Project'
+                end_dict['action'] = 'add'
+                log_data_list.append(end_dict)
             if 'resolution' in each:
                 proj_obj['custom_attributes']['resolution'] = each['resolution']
 
+                res_dict = copy.deepcopy(log_dict)
+                res_dict['value'] = each['resolution']
+                res_dict['details_for'] = 'Project'
+                res_dict['action'] = 'add'
+                log_data_list.append(res_dict)
             if 'start_frame' in each:
                 proj_obj['custom_attributes']['startFrame'] = each['start_frame']
+
+                stf_dict = copy.deepcopy(log_dict)
+                stf_dict['value'] = each['start_frame']
+                stf_dict['details_for'] = 'Project'
+                stf_dict['action'] = 'add'
+                log_data_list.append(stf_dict)
 
             if 'fps' in each:
                 proj_obj['custom_attributes']['fps'] = each['fps']
 
-        self.session.commit()
+                fps_dict = copy.deepcopy(log_dict)
+                fps_dict['value'] = each['fps']
+                fps_dict['details_for'] = 'Project'
+                fps_dict['action'] = 'add'
+                log_data_list.append(fps_dict)
+
+            self.session.commit()
+            # call logs
+            for log in log_data_list:
+                self.add_activity_log(project=log['project'], value=log['value'], ftrack_id=log['ftrack_id'],
+                                      action=log['action'], object_type=log['object_type'],
+                                      details_for=log['details_for'],
+                                      sub_type=log['sub_type'], parent_id=log['parent_id'],
+                                      path=log['path'], page=log['page'])
 
     def update_asset_build(self, data_list=None):
+        """
+        Function to add and update the asset build.
+        :param data_list: List of dictionary with new or change values.
+        :return: None
+        """
         if data_list is None:
             data_list = []
         if not data_list:
             return False
 
         self.reload_session()
-
+        log_data_list = []
         for each in data_list:
+            action = 'update'
+            log_dict = {}
             if 'asset_build_id' in each and each['asset_build_id']:
                 asset_build_obj = self.session.query("AssetBuild where id is '%s'" % each['asset_build_id']).first()
             else:
+                action = 'add'
                 if ('asset_build_name' not in each) or ('asset_build_type' not in each):
                     print("Asset Build type/name not found ...")
                     continue
@@ -4979,23 +5226,54 @@ class Activity:
                     'type': type_obj,
                 })
 
+            # For activity logs
+            log_dict['project'] = each['project_name']
+            log_dict['action'] = action
+            log_dict['object_type'] = 'Asset Build'
+            log_dict['sub_type'] = each['asset_build_type']
+            log_dict['parent_id'] = each['parent_id']
+            log_dict['path'] = each['path']
+            log_dict['page'] = (each['page']).strip()
+            log_dict['ftrack_id'] = asset_build_obj['id']
+            log_dict['value'] = each['asset_build_name']
+            log_dict['details_for'] = 'AssetBuild'
+            if action == 'add':
+                crt_dict = copy.deepcopy(log_dict)
+                crt_dict['value'] = each['asset_build_name']
+                crt_dict['details_for'] = each['entity_name']
+                log_data_list.append(crt_dict)
+                log_dict['action'] = 'update'
             if 'description' in each:
                 asset_build_obj['description'] = each['description']
 
         self.session.commit()
+        # call logs
+        for log in log_data_list:
+            self.add_activity_log(project=log['project'], value=log['value'], ftrack_id=log['ftrack_id'],
+                                  action=log['action'], object_type=log['object_type'], details_for=log['details_for'],
+                                  sub_type=log['sub_type'], parent_id=log['parent_id'],
+                                  path=log['path'], page=(log['page']).strip())
 
     def update_sequence(self, data_list=None):
+        """
+        Function to add and update the sequance.
+        :param data_list: List of dictionary with new or change values.
+        :return: None
+        """
         if data_list is None:
             data_list = []
         if not data_list:
             return False
 
         self.reload_session()
-
+        log_data_list = []
         for each in data_list:
+            action = 'update'
+            log_dict = {}
             if 'seq_id' in each:
                 seq_obj = self.session.query("Sequence where id is '%s'" % each['seq_id']).first()
             else:
+                action = 'add'
                 if 'seq_name' not in each:
                     print("Sequence name not found ...")
                     continue
@@ -5023,23 +5301,56 @@ class Activity:
                             'from': obj,
                             'to': seq_obj,
                         })
+
+            # For activity logs
+            log_dict['project'] = each['project_name']
+            log_dict['action'] = action
+            log_dict['object_type'] = 'Sequence'
+            log_dict['sub_type'] = 'Sequence'
+            log_dict['parent_id'] = each['parent_id']
+            log_dict['path'] = each['path']
+            log_dict['page'] = (each['page']).strip()
+            log_dict['ftrack_id'] = seq_obj['id']
+            log_dict['value'] = each['seq_name']
+            log_dict['details_for'] = 'Sequence'
+            if action == 'add':
+                crt_dict = copy.deepcopy(log_dict)
+                crt_dict['value'] = each['seq_name']
+                crt_dict['details_for'] = each['entity_name']
+                log_data_list.append(crt_dict)
+                log_dict['action'] = 'update'
+
             if 'description' in each:
                 seq_obj['description'] = each['description']
 
         self.session.commit()
+        # call logs
+        for log in log_data_list:
+            self.add_activity_log(project=log['project'], value=log['value'], ftrack_id=log['ftrack_id'],
+                                  action=log['action'], object_type=log['object_type'], details_for=log['details_for'],
+                                  sub_type=log['sub_type'], parent_id=log['parent_id'],
+                                  path=log['path'], page=log['page'])
 
     def update_shot(self, data_list=None):
+        """
+        Function to add and update the shot.
+        :param data_list: List of dictionary with new or change values.
+        :return: None
+        """
         if data_list is None:
             data_list = []
         if not data_list:
             return False
 
         self.reload_session()
-
+        log_data_list = []
         for each in data_list:
+            action = 'update'
+            log_dict = {}
             if 'shot_id' in each:
                 shot_obj = self.session.query("Shot where id is '%s'" % each['shot_id']).first()
             else:
+                action = 'add'
                 if 'shot_name' not in each:
                     print("Shot name not found ...")
                     continue
@@ -5069,18 +5380,55 @@ class Activity:
                             'to': shot_obj,
                         })
 
+            # For activity logs
+            log_dict['project'] = each['project_name']
+            log_dict['action'] = action
+            log_dict['object_type'] = 'Shot'
+            log_dict['sub_type'] = each['shot_create_type']
+            log_dict['parent_id'] = each['parent_id']
+            log_dict['path'] = each['path']
+            log_dict['page'] = (each['page']).strip()
+            log_dict['ftrack_id'] = shot_obj['id']
+            log_dict['value'] = each['shot_name']
+            log_dict['details_for'] = 'Shot'
+            if action == 'add':
+                crt_dict = copy.deepcopy(log_dict)
+                crt_dict['value'] = each['shot_name']
+                crt_dict['details_for'] = each['entity_name']
+                log_data_list.append(crt_dict)
+                log_dict['action'] = 'update'
+
             if 'description' in each:
                 shot_obj['description'] = each['description']
 
             if 'start_frame' in each:
                 shot_obj['custom_attributes']['fstart'] = each['start_frame']
+                stf_dict = copy.deepcopy(log_dict)
+                stf_dict['value'] = each['start_frame']
+                stf_dict['details_for'] = 'Start Frame'
+                log_data_list.append(stf_dict)
 
             if 'end_frame' in each:
                 shot_obj['custom_attributes']['fend'] = each['end_frame']
+                enf_dict = copy.deepcopy(log_dict)
+                enf_dict['value'] = each['end_frame']
+                enf_dict['details_for'] = 'End Frame'
+                log_data_list.append(enf_dict)
 
         self.session.commit()
+        # call logs
+        for log in log_data_list:
+            self.add_activity_log(project=log['project'], value=log['value'], ftrack_id=log['ftrack_id'],
+                                  action=log['action'], object_type=log['object_type'], details_for=log['details_for'],
+                                  sub_type=log['sub_type'], parent_id=log['parent_id'],
+                                  path=log['path'], page=log['page'])
 
     def update_task(self, data_list=None):
+        """
+        Function to add and update the details of task into database according to the changes has done by the user.
+        :param data_list: List of dictionary with new or updated values.
+        :return: None
+        """
         if data_list is None:
             data_list = []
 
@@ -5089,12 +5437,16 @@ class Activity:
 
         global parent_obj
         self.reload_session()
+        log_data_list = []
 
-	project_name = ''
+        print(data_list)
         for each in data_list:
+            action = 'update'
+            log_dict = {}
             if 'task_id' in each and each['task_id']:
                 task_obj = self.session.query("Task where id is '%s'" % each['task_id']).first()
                 task_id = each['task_id']
+
             else:
                 task = self.session.query(
                     "Task where name is '%s' and parent_id is '%s'" % (each['task_name'], each['parent_id'])).first()
@@ -5104,6 +5456,7 @@ class Activity:
                     task_obj = self.session.query("Task where id is '%s'" % each['task_id']).first()
                     task_id = each['task_id']
                 else:
+                    action = 'add'
                     if 'task_name' not in each:
                         print("Task name not found ...")
                         continue
@@ -5116,7 +5469,7 @@ class Activity:
                     name = each['task_name']
                     q = '%s where id is "%s"' % (parent_object, each['parent_id'])
                     parent_obj = self.session.query(q).first()
-                    # pprint(parent_obj)
+
                     task_type = name
                     if name in self.type_name:
                         task_type = self.type_name[name]
@@ -5137,51 +5490,93 @@ class Activity:
                     })
 
                     task_id = task_obj['id']
+            collection_name = self.mongo_database[each['project_name'] + "_tasks"]
 
-#	    project_name = 'ice' or task_obj['project']['name'].lower()
-#            link = task_obj['link']
-#            path = (':'.join([each_link['name'] for each_link in link]))
+            log_dict['project'] = each['project_name']
+            log_dict['action'] = action
+            log_dict['object_type'] = 'Task'
+            log_dict['sub_type'] = each['parent_object_type']
+            log_dict['parent_id'] = each ['parent_id']
+            log_dict['path'] = each['path']
+            log_dict['page'] = (each['page']).strip()
+            log_dict['ftrack_id'] =  task_id#task_obj['id']
+            log_dict['value'] = ''
+            log_dict['details_for'] = ''
+            if action == 'create':
+                crt_dict = copy.deepcopy(log_dict)
+                crt_dict['value'] = each['task_name']
+                crt_dict['details_for'] = 'Task'
+                log_data_list.append(crt_dict)
+                log_dict['action'] = 'update'
 
             if 'description' in each:
                 task_obj['description'] = each['description']
+                dec_dict = copy.deepcopy(log_dict)
+                dec_dict['value'] = each['description']
+                dec_dict['details_for'] = 'Description'
+                log_data_list.append(dec_dict)
 
             if 'task_status' in each:
                 task_status = each['task_status']
                 status_obj = self.session.query('Status where name is "%s"' % task_status).first()
                 task_obj['status'] = status_obj
+                sts_dict = copy.deepcopy(log_dict)
+                sts_dict['value'] = each['task_status']
+                sts_dict['details_for'] = 'Status'
+                log_data_list.append(sts_dict)
 
             if 'start_date' in each and each['start_date']:
                 start_date = each['start_date']
                 start_date_datetime_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d")
                 start_date = datetime.datetime.strftime(start_date_datetime_obj, "%Y-%m-%dT%H:%M:%S")
                 task_obj['start_date'] = start_date
-            # task_obj['start_date'] = each['start_date']
+                std_dict = copy.deepcopy(log_dict)
+                std_dict['value'] = each['start_date']
+                std_dict['details_for'] = 'Start Date'
+                log_data_list.append(std_dict)
 
             if 'end_date' in each and each['end_date']:
                 end_date = each['end_date']
                 end_date_datetime_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d")
                 end_date = datetime.datetime.strftime(end_date_datetime_obj, "%Y-%m-%dT%H:%M:%S")
                 task_obj['end_date'] = end_date
+                etd_dict = copy.deepcopy(log_dict)
+                etd_dict['value'] = each['end_date']
+                etd_dict['details_for'] = 'End Date'
+                log_data_list.append(etd_dict)
 
-            if 'startframe' in each and each['startframe'] and 'endframe' in each and each['endframe']:
-                # update shot
-                data_dict = dict()
-                data_dict['shot_id'] = each['parent_id']
-                data_dict['start_frame'] = each['startframe']
-                data_dict['end_frame'] = each['endframe']
-                shot_data_list = [data_dict]
-                # self.update_shot(shot_data_list)
-                shot_obj = self.session.query("Shot where id is '%s'" % each['parent_id']).first()
-                shot_obj['custom_attributes']['fstart'] = each['startframe']
-                shot_obj['custom_attributes']['fend'] = each['endframe']
+            if 'startframe' in each or 'endframe' in each:
+                try:
+                    shot_obj = self.session.query("Shot where id is '%s'" % each['parent_id']).first()
+                    if 'startframe' in each:
+                        shot_obj['custom_attributes']['fstart'] = each['startframe']
+                        stf_dict = copy.deepcopy(log_dict)
+                        stf_dict['value'] = each['startframe']
+                        stf_dict['details_for'] = 'Start Frame'
+                        log_data_list.append(stf_dict)
+                    if 'endframe' in each:
+                        shot_obj['custom_attributes']['fend'] = each['endframe']
+                        enf_dict = copy.deepcopy(log_dict)
+                        enf_dict['value'] = each['endframe']
+                        enf_dict['details_for'] = 'End Frame'
+                        log_data_list.append(enf_dict)
+                except :
+                    print('Error while updating frames ...')
 
             if 'bid' in each and each['bid']:
                 task_obj['bid'] = each['bid']
+                bid_dict = copy.deepcopy(log_dict)
+                bid_dict['value'] = each['bid']
+                bid_dict['details_for'] = 'Bid'
+                log_data_list.append(bid_dict)
 
             if 'priority' in each and each['priority']:
                 pri_obj = self.session.query('Priority where name is "%s"' % each['priority']).first()
                 task_obj['priority'] = pri_obj
-
+                prt_dict = copy.deepcopy(log_dict)
+                prt_dict['value'] = each['priority']
+                prt_dict['details_for'] = 'Complexity'
+                log_data_list.append(prt_dict)
             if not task_obj['project_id']:
                 project_id = parent_obj['project_id']
             else:
@@ -5205,6 +5600,7 @@ class Activity:
                     added_users.append(a_user)
 
             # for delete user
+            collection_name = self.mongo_database[each['project_name'] + "_tasks"]
             deleted_users = list()
             for d_user in org_users_list:
                 if d_user != '---' and d_user not in changed_users_list:
@@ -5214,14 +5610,30 @@ class Activity:
                 obj_user = ase_ftrack.add_user_in_project(self.session, user, project_id, True)
 
                 # obj_user = self.session.query('User where username is "%s"' % user).one()
-                obj_app = self.session.create('Appointment', {
-                    'context': task_obj,
-                    'resource': obj_user,
-                    'type': 'assignment'
-                })
+                obj_app = self.session.query(
+                    'Appointment where context_id is "%s" and resource.username is "%s"' % (
+                        task_id, user)).first()
 
-		# Log assigned users
-#		self.add_activity_log(project=project_name,value=user, ftrack_id=obj_app['id'], action='add', object_type='user', details_for='User', sub_type='user', parent_id=task_id, path=path)
+                if obj_app:
+                    current_assignee_user_list = [{'user_name': user, "email_id": user + "@intra.madassemblage.com"}]
+                    collection_name.update_one({"ftrack_id": task_id},
+                                               {"$addToSet": {"current_assignees":
+                                                                  {"$each": current_assignee_user_list}
+                                                              }
+                                                })
+                else:
+                    self.session.create('Appointment', {
+                        'context': task_obj,
+                        'resource': obj_user,
+                        'type': 'assignment'
+                    })
+
+		add_usr_dict = copy.deepcopy(log_dict)
+                add_usr_dict['value'] = user
+                add_usr_dict['details_for'] = 'User'
+                add_usr_dict['action'] = 'add'
+                add_usr_dict['ftrack_id'] = task_obj['id']
+                log_data_list.append(add_usr_dict)
 
 
             deleted_users = list()
@@ -5236,20 +5648,35 @@ class Activity:
                             task_id, del_user)).first()
                     if obj_app:
                         self.session.delete(obj_app)
-			self.session.commit()
-			# Log assigned users
-#			self.add_activity_log(project=project_name,value=del_user, ftrack_id=obj_app['id'], action='remove', object_type='user', details_for='User', sub_type='user', parent_id=task_id, path=path)
+                        self.session.commit()
+                    else:
+                        delete_users_list = {'user_name': del_user, "email_id": del_user + "@intra.madassemblage.com"}
+                        collection_name.update_one({"ftrack_id": task_id},
+                                                   {"$pull": {"current_assignees": delete_users_list}})
+
+		    del_usr_dict = copy.deepcopy(log_dict)
+		    del_usr_dict['value'] = del_user
+                    del_usr_dict['details_for'] = 'User'
+                    del_usr_dict['action'] = 'delete'
+                    del_usr_dict['ftrack_id'] = task_obj['id']
+                    log_data_list.append(del_usr_dict)
 
         self.session.commit()
         time.sleep(3)
+        # call logs
+        for log in log_data_list:
+            self.add_activity_log(project=log['project'], value=log['value'], ftrack_id=log['ftrack_id'],
+                                  action=log['action'], object_type=log['object_type'], details_for=log['details_for'],
+                                  sub_type=log['sub_type'], parent_id=log['parent_id'],
+                                  path=log['path'], page=log['page'])
 
     '''
-        Author:- Kunal Jamdade
-        Following code creates project form,
-        shot form and sequence form
-        and then renders it to template file
-
-    '''
+            Author:- Kunal Jamdade
+            Following code creates project form,
+            shot form and sequence form
+            and then renders it to template file
+    
+        '''
 
     def display_project_thumbnail_manner(self):
         db = self.mongo_database
@@ -5794,6 +6221,11 @@ class Activity:
             return False
 
     def update_sequence_details(self, prj_name):
+        """
+        Function to update details of sequence.
+        :param prj_name: Project name
+        :return: List of all the sequnece
+        """
         db = self.mongo_database
         fetch_prj_ids = db.create_project_document.find(
             {
@@ -5818,7 +6250,17 @@ class Activity:
             sequence_list = [ele for ele in result]
         return sequence_list
 
-    def add_asset(self, task_id, selected_asset, asset_name, old_asset_ids):
+    def add_asset(self, task_id, selected_asset, asset_name, old_asset_ids, page, parent_path=''):
+        """
+        Function to add new asset to the database.
+        :param task_id: Task id
+        :param selected_asset: List of selected new assets
+        :param asset_name: Asset type
+        :param old_asset_ids: List of old selected assets
+        :param page: Current activity page
+        :param parent_path: Path of the parent asset
+        :return: None
+        """
         asset_name = asset_name.replace(' ', '')
         task_object = self.session.query(asset_name + ' where id is "%s"' % task_id).first()
         if selected_asset == '':
@@ -5832,30 +6274,79 @@ class Activity:
             old_selected_list = str(old_asset_ids).split(",")
 
         # For create new  links
+        log_data_list = []
+        asset_list = list()
+        project_name = ''
         if len(selected_list) >= 1 and selected_list != '':
+            action = 'add'
             for asset_id in selected_list:
+                log_dict = {}
+                obj_assets = self.session.query('AssetBuild where id is "%s"' % asset_id).first()
+                project_name = obj_assets['project']['name']
                 if asset_id not in old_selected_list:
-                    obj_assets = self.session.query('AssetBuild where id is "%s"' % asset_id).first()
+                    # obj_assets = self.session.query('AssetBuild where id is "%s"' % asset_id).first()
 
                     self.session.create('TypedContextLink', {
                         'from': obj_assets,
                         'to': task_object
                     })
 
+                    # For activity logs
+                    log_dict['project'] = obj_assets['project']['name']
+                    log_dict['action'] = action
+                    log_dict['object_type'] = asset_name
+                    log_dict['sub_type'] = 'Asset Build'
+                    log_dict['parent_id'] = obj_assets['parent_id']
+                    log_dict['path'] = obj_assets['project']['name'] + ":" + parent_path.replace("_", ":")
+                    log_dict['page'] = page.strip()
+                    log_dict['ftrack_id'] = obj_assets['id']
+                    log_dict['value'] = obj_assets['name']
+                    log_dict['details_for'] = 'Links'
+                    log_data_list.append(log_dict)
+
+                # Fore save in database
+                asset_list.append(asset_id)
+            collection_name = self.mongo_database[project_name + "_tasks"]
+            collection_name.update_one({"ftrack_id": task_id},
+                                       {"$set": {"links": asset_list}
+                                        })
         # For remove older links
         if len(old_selected_list) >= 1:
+            action = 'delete'
             for asset_id in old_selected_list:
+                log_dict1 = {}
+                # For activity logs
+                del_asset = self.session.query('AssetBuild where id is "%s"' % asset_id).first()
+                log_dict1['project'] = del_asset['project']['name']
+                log_dict1['action'] = action
+                log_dict1['object_type'] = asset_name
+                log_dict1['sub_type'] = 'Asset Build'
+                log_dict1['parent_id'] = del_asset['parent_id']
+                log_dict1['path'] = del_asset['project']['name'] + ":" + parent_path.replace("_", ":")
+                log_dict1['page'] = page.strip()
+                log_dict1['ftrack_id'] = del_asset['id']
+                log_dict1['value'] = del_asset['name']
+                log_dict1['details_for'] = 'Links'
                 if len(selected_list) > 0:
                     if asset_id not in selected_list:
                         del_asset_link = self.session.query(
                             'TypedContextLink where from_id is "%s" and to_id is "%s"' % (asset_id, task_id)).first()
                         self.session.delete(del_asset_link)
+                        log_data_list.append(log_dict1)
+
                 else:
                     del_asset_link = self.session.query(
                         'TypedContextLink where from_id is "%s" and to_id is "%s"' % (asset_id, task_id)).first()
                     self.session.delete(del_asset_link)
+                    log_data_list.append(log_dict1)
 
         self.session.commit()
+        # call logs
+        for log in log_data_list:
+            self.add_activity_log(project=log['project'], value=log['value'], ftrack_id=log['ftrack_id'],
+                                  action=log['action'], object_type=log['object_type'], details_for=log['details_for'],
+                                  sub_type=log['sub_type'], parent_id=log['parent_id'],
+                                  path=log['path'], page=log['page'])
 
     # delete note
     def delete_note(self, note_id):
@@ -5873,7 +6364,7 @@ class Activity:
     # load task for create entity
     def load_task(self, selected_object, selected_asset_type):
         """
-        Gets list of task
+        Function to get list of task
         :param selcted_object: Object name
         :param selcted_asset_type: Asset type
         :return: list of taks
@@ -5890,6 +6381,14 @@ class Activity:
     # ---- for load table data---- #
 
     def load_asset_name(self, selected_project, selected_object, selected_asset_type, selected_task):
+        """
+        Function to get assets name.
+        :param selected_project: Project name
+        :param selected_object: Object name
+        :param selected_asset_type: Selected asset type
+        :param selected_task: Seolected task name
+        :return:
+        """
         collection = self.mongo_database['%s_tasks' % selected_project]
 
         time.sleep(3)
@@ -5916,8 +6415,15 @@ class Activity:
 
     # load entity tasks
     def load_entity_data(self, parent_ids, project_name, selected_object, selected_task):
-        print("inside load_entity_task-----------------------------------------")
-        print(parent_ids, project_name, selected_object, selected_task)
+        """
+        Function to get data regarding to a particular task.
+        :param parent_ids: Task parent id
+        :param project_name: Project name
+        :param selected_object: Selected object type
+        :param selected_task: Selected task
+        :return: List of dictionary of the task data
+        """
+        print("//-------------- inside load_entity_task --------------------------//")
         parent_ids = parent_ids.split(',')
         priority_dict = {'Urgent': 'A', 'High': 'B', 'Medium': 'C', 'Low': 'D', 'None': 'None'}
         task_data_list = list()
@@ -5927,24 +6433,19 @@ class Activity:
 
         obj_count = collection.find({'parent_id': {'$in': parent_ids}, 'object_type': "Task", 'name': selected_task})
 
-        # obj_count = collection.find(query)
-        # print("obj_count len: ", len(obj_count))
-        # pprint(parent_ids)
         now = datetime.datetime.now()
         for obj in obj_count:
-            # print("inside for obj------------------------- :")
-            # pprint(obj)
             task_data_dict = dict()
 
             task_name = ('_').join(obj['path'].split(':')[1:-1])
             task_data_dict['name'] = task_name
             task_data_dict['current_assignees'] = "---"
-            task_data_dict['status'] = "---"
-            task_data_dict['bid'] = "---"
-            task_data_dict['complexity'] = "---"
+            task_data_dict['status'] = "Ready to start"
+            task_data_dict['bid'] = "0"
+            task_data_dict['complexity'] = "D"
             # now.strftime("%Y-%m-%d %H:%M")
             task_data_dict['startdate'] = now.strftime("%Y-%m-%d")
-            task_data_dict['enddate'] = ""
+            task_data_dict['enddate'] = now.strftime("%Y-%m-%d")
             task_data_dict['description'] = "---"
             task_data_dict['startframe'] = "101"
             task_data_dict['endframe'] = "101"
@@ -5961,7 +6462,7 @@ class Activity:
                 for user in obj['current_assignees']:
                     user_list.append(user['user_name'])
 
-                task_data_dict['current_assignees'] = user_list
+                task_data_dict['current_assignees'] = sorted(user_list)
             if 'ftrack_status' in obj:
                 task_data_dict['status'] = obj['ftrack_status']
                 status_lbl = (obj['ftrack_status']).lower()
@@ -5997,7 +6498,6 @@ class Activity:
                 default_dict = dict()
                 task_name = ''
                 if selected_object == 'Shot':
-
                     obj_name_count = collection.find_one({'ftrack_id': id, 'object_type': 'Shot'})
                     task_name = ('_').join(obj_name_count['path'].split(':')[1:3])
                     default_dict['startframe'] = "101"
@@ -6023,13 +6523,12 @@ class Activity:
                     default_dict['bid'] = "0"
                     default_dict['complexity'] = "D"
                     default_dict['startdate'] = now.strftime("%Y-%m-%d")
-                    default_dict['enddate'] = ""
+                    default_dict['enddate'] = now.strftime("%Y-%m-%d")
                     default_dict['description'] = obj_name_count['description']
                     default_dict['parent_id'] = id
                     default_dict['parent_object_type'] = selected_object
                     task_data_list.append(default_dict)
-        # print("final list=====================================")
-        # print(len(task_data_list))
+
         return task_data_list
 
     @staticmethod
@@ -6042,13 +6541,12 @@ class Activity:
         range_list.append(i)
 
     def save_entity_data(self, data_list):
-        print("------------------------ save data ------------------------------------")
+        print("//---------------------- save data --------------------------------//")
         self.update_form_data(entity_name="Task", data_list=data_list)
         task_data_list = []
         return task_data_list
 
     def asset_build_create(self, entity_name, data_list):
-        # pprint(data_list)
         self.update_form_data(entity_name, data_list)
         print("asset_build_create success.......")
 
@@ -6075,16 +6573,15 @@ class Activity:
         if not username:
             return HttpResponseRedirect("/login")
 
+#	self.get_user_columns(username)
         if not self.user_role or self.user_role != 'Supervisor':
             return HttpResponseRedirect("/login/")
 
         template_name = 'sequence_delivery.html'
 
-	self.get_user_columns(username)
-
         seq_dict = {}
         projects = self.get_projects()
-        self.get_user_details()
+#        self.get_user_details()
         seq_dict['emp_code'] = 'blank'
         if username in self.employee_details:
             seq_dict['emp_code'] = self.employee_details[username]['emp_code']
@@ -6137,7 +6634,7 @@ class Activity:
 
         data = collection_name.find(query_dict)
 
-        proj_data = collection_name.find_one({ "name": project, "object_type": "Project"}, {'fps': 1})
+        proj_data = collection_name.find_one({"name": project, "object_type": "Project"}, {'fps': 1})
         try:
             project_fps = int(proj_data['fps'])
         except KeyError as ke:
@@ -6260,9 +6757,7 @@ class Activity:
                     total_sequence_duration[sequence_name][task_name]['CA']['shot_details'].append(
                         {'shot_name': shot_name, 'total': shot_duration})
 
-                    summary_dict[task_name]['CA'] += shot_duration #round(summary_dict[task_name]['CA'] +
-                                                                        # total_sequence_time, 2)
-
+                    summary_dict[task_name]['CA'] += shot_duration
                 if ftrack_status == 'In progress':
                     total_sequence_duration[sequence_name][task_name]['WIP']['total_secs'] += shot_duration
                     total_sequence_duration[sequence_name][task_name]['WIP']['total_minutes'] = \
@@ -6314,7 +6809,6 @@ class Activity:
                 pprint(ke.message)
 
     def published_version_detail_view(self, request):
-
         if not request.user.username:
             return HttpResponseRedirect("/login")
 
@@ -6325,13 +6819,26 @@ class Activity:
 
         return render(request, template_name, {})
 
-    def get_note_history(self, from_name, project, last_row):
+    def get_note_history(self, from_name, project, last_row, page=''):
+        """
+        Function to get the history of notes.
+        :param from_name: Path of current task
+        :param project: Project name
+        :param last_row: Last row index for getting data on index basis
+        :param page: Current page name
+        :return: List of dictionary of notes data
+
+        """
         print("------------- get_note_history-----------------")
         start_row = int(last_row) - 15
         last_row = int(last_row) - 1
         from_name = from_name.replace(from_name.split(':')[0], from_name.split(':')[0].lower())
         model_class = getModel(str(project) + '_notes')
-        notes_obj = model_class.objects.order_by('-added_on').filter(Q(from_name__iexact=from_name) | Q(to_name__iexact=from_name))[start_row:last_row]
+        if page.strip() == 'Task Entity':
+            notes_obj = model_class.objects.order_by('-added_on').filter(Q(from_name__icontains=from_name) | Q(to_name__icontains=from_name))[start_row:last_row]
+        else:
+            notes_obj = model_class.objects.order_by('-added_on').filter(Q(from_name__iexact=from_name) | Q(to_name__iexact=from_name))[start_row:last_row]
+
         print("notes_obj: ", len(notes_obj))
         data_list = list()
         for obj in notes_obj:
@@ -6350,33 +6857,79 @@ class Activity:
 
         return data_list
 
-    def add_activity_log(self,project='ice',value='', ftrack_id='', action='add', object_type='', details_for='', sub_type='', parent_id='', path=''):
+    def get_activity_log_details(self, from_name, project, last_row, task='', page='', parent_id=''):
+        """
+        Function to get the activity logs detail from database !
+        :param from_name: Path of current task
+        :param project: Project name
+        :param last_row: Last row index for getting data on index basis
+        :param task: Task name
+        :param page: Current page name
+        :param parent_id: Parent id of Task
+        :return: List of dictionary of activity logs data
+        """
+        print("------------- get_activity_log_details -----------------")
+        start_row = int(last_row) - 25
+        last_row = int(last_row) - 1
+        from_name = from_name.replace(from_name.split(':')[0], from_name.split(':')[0].lower())
+        model_class = getModel(str(project) + '_activity_log')
+        from_name = from_name.replace("/", ":")
+        q = Q(path=from_name) | Q(parent_id=parent_id)
+        if task:
+            from_name = from_name + ':' + task
+            q = Q(path=from_name, parent_id=parent_id)
+        act_log_obj = model_class.objects.order_by('-acitivity_date').filter(q)[start_row:last_row]
+        data_list = list()
+        for obj in act_log_obj:
+            data_dict = dict()
+            data_dict['details_for'] = obj.details_for
+            data_dict['activity_by'] = obj.activity_by
+            data_dict['action'] = obj.action
+            data_dict['value'] = obj.value
+            data_dict['activity_date'] = str(obj.acitivity_date).split('.')[0]
+            data_dict['path'] = obj.path
 
-	print("In activity log")
-	db_name = str(project) + '_activity_log' 
-	db_obj = getModel(db_name)
-	model_obj = db_obj.objects.create(activity_by=self.username)
-	model_obj.acitivity_date = datetime.datetime.now()
-	model_obj.value = value
-	model_obj.ftrack_id = ftrack_id
-	model_obj.action = action
-	model_obj.object_type = object_type
-	model_obj.details_for = details_for
-	model_obj.sub_type = sub_type
-	model_obj.parent_id = parent_id
-	model_obj.path = path
-	model_obj.save()
+            data_list.append(data_dict)
 
+        return data_list
 
+    def add_activity_log(self, project='', value='', ftrack_id='', action='add', object_type='', details_for='',
+                         sub_type='', parent_id='', path='', page=''):
+        """
+        Function for add user activity details in database !
+        :param project: Project name
+        :param value: Value to be changed
+        :param ftrack_id: Task id or parent id
+        :param action: Action performed by user
+        :param object_type: Object type of task
+        :param details_for: Detail for change value
+        :param sub_type: Sub type of Task
+        :param parent_id: Parent id of Task
+        :param path: Path of Task
+        :param page: Current page name
+        :return: None
+        """
+        db_name = str(project) + '_activity_log'
+        db_obj = getModel(db_name)
+        model_obj = db_obj.objects.create(activity_by=self.username, page=page)
+        date_now = datetime.datetime.now()
+        model_obj.acitivity_date = date_now
+        model_obj.value = value
+        model_obj.ftrack_id = ftrack_id
+        model_obj.action = action
+        model_obj.object_type = object_type
+        model_obj.details_for = details_for
+        model_obj.sub_type = sub_type
+        model_obj.parent_id = parent_id
+        model_obj.path = path
+        model_obj.save()
+        print(self.username, str(date_now), project, value, ftrack_id, action, object_type, details_for, sub_type, parent_id, path, page)
 
+        # ATOM help documentation code
 
+    def help_document(self, request):
+        user_name = request.user.username
+        if not user_name:
+            return HttpResponseRedirect("/login/")
 
-
-
-
-
-
-
-
-
-
+        return render(request, 'help_documentation.html', {})

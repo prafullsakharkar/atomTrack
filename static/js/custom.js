@@ -958,16 +958,9 @@ function reload_tasks(reload){
 	id = parent_ids[0]
 	p_name = $("#selectShot option[value='"+id+"']").text();
 	parent_object_name = 'Shot';
+	
 	if (obj_name == 'Shot Asset Build'){
-	    for (i in shot_ids){
-		id = shot_ids[i];
-		object = 'Shot Asset Build';
-		p_name = $("#selectShot option[value='"+id+"']").text();
-		var array = [];
-		array[0] = id;
-		load_tasks(array, '', p_name, 0, object, '', project_name);
-	    }
-	    return null;
+		parent_object_name = 'Shot Asset Build';
 	}
     }else if(seq_ids){
         pparent_ids = [proj_id]
@@ -1070,7 +1063,6 @@ function add_rows(mycol,parent_id,mycolusers,task_id,task_parent_ids,details){
     var obj_name = $("#selectObject").val();
     var table = $('#tbl_task tbody');
     row = $(table[0].insertRow(-1));
-//    console_log(details);
 
     $('#tbl_task th').each(function(index) {
         var th_name = $(this).text();
@@ -1114,12 +1106,15 @@ function add_rows(mycol,parent_id,mycolusers,task_id,task_parent_ids,details){
                 show = "style='display:none'";
             }else{
                 show = "";
+	    // Comment for not to change status/user from task status
+	    /*
                 var header = this.innerHTML;
                 col_arr = $('#user_columns').val().split(',');
                 if (col_arr.indexOf(header) > -1){
                     on_click_status = "ondblclick='editCell(this)'";
                     on_click_user = "ondblclick='editUserCell(this)'";
                 }
+	    */
             }
 
             var stat_display = ''
@@ -1419,9 +1414,7 @@ function show_task_summary(){
 	    }
 	}
     });
-//    console_log(task_hash);
 
-    
     $('#tbl_task th').each(function(index) {
 	if(index==0){
 	    return;
@@ -1755,12 +1748,13 @@ $("#save_ver_changes").click(function(){
 
 });
 function save_changes(data_array,object_name) {
+    var page = $('#task_menu1').find('li.active').first('a span').text()
     var proj_id = $("#selectProject").val();
     data = JSON.stringify(data_array);
     $.ajax({
         type:"POST",
         url:"/callajax/",
-        data: { 'object_name': object_name, 'data_list': data, 'proj_id': proj_id},
+        data: { 'object_name': object_name, 'data_list': data, 'proj_id': proj_id, page},
         beforeSend: function(){
         },
         success: function(json){
@@ -1829,6 +1823,22 @@ $("#search_value").keyup(function(){
             $(this).show();
         });
 });
+
+$("#search_activity").keyup(function(){
+    _this = this;
+   if ($(this).val() === ''){
+        $(this).css({"border-color": "#333"})
+    }else{
+        $(this).css({"border-color": "#5897fb"})
+    }
+    $.each($("#tbl_activity tbody tr"), function(idx) {
+        if($(this).text().toLowerCase().indexOf($(_this).val().toLowerCase()) === -1)
+            $(this).hide();
+        else
+            $(this).show();
+        });
+});
+
 function demoFromHTML() {
     update()
 }
@@ -1846,6 +1856,14 @@ $('#div_user_task_details').on('scroll', function(){
    this.querySelector("thead").style.transform = translate;
 });
 $('#div_task_details').on('scroll', function(){
+   var translate = "translate(0,"+this.scrollTop+"px)";
+   this.querySelector("thead").style.transform = translate;
+});
+$('#div_task_enitity_details').on('scroll', function(){
+   var translate = "translate(0,"+this.scrollTop+"px)";
+   this.querySelector("thead").style.transform = translate;
+});
+$('#version_details').on('scroll', function(){
    var translate = "translate(0,"+this.scrollTop+"px)";
    this.querySelector("thead").style.transform = translate;
 });
@@ -1879,7 +1897,10 @@ $("#div_dash_outsource_asset_build_details").on('scroll', function(){
    var translate = "translate(0,"+this.scrollTop+"px)";
    this.querySelector("thead").style.transform = translate;
 });
-
+$('#activity_logs_details').on('scroll', function(){
+   var translate = "translate(0,"+this.scrollTop+"px)";
+   this.querySelector("thead").style.transform = translate;
+});
 
 function update() {
             var doc = new jsPDF();
@@ -3110,7 +3131,6 @@ function show_model(context) {
     parent_object_type = $(context).closest('tr').attr('data-parent-object-type');
     project_id = $(context).closest('tr').attr('data-project-id');
 
-
     obj_name = $('#selectObject').val();
 
     if (obj_name){
@@ -3136,7 +3156,6 @@ function show_model(context) {
     }
 
     last_row = 15;
-
     load_task_details(task_id,obj_name,last_row,task_assignee);
 
     $('#version_note_details').html('');
@@ -3182,11 +3201,9 @@ $('#selectTask').change(function(){
     var path = $('#from-id').text();
     path = path.split('/')
     var task_name = ''
-    if(path.length == 3){
-        task = $('#selectTask option:selected').val();
-        if(task){
-            task_name = $('#selectTask option:selected').text();
-        }
+    task = $('#selectTask option:selected').val();
+    if(task){
+        task_name = $('#selectTask option:selected').text();
     }
     else{
         task_name = path[3]
@@ -3194,8 +3211,7 @@ $('#selectTask').change(function(){
     }
     project = path[0].toLowerCase()
     path = path.join(':')
-    console.log("project, path.toLowerCase(), task_name")
-    load_asset_versions(task_id,obj_name,last_row,note_task, project, path.toLowerCase(), task_name);
+    load_asset_versions(task_id,obj_name,last_row,task, project, path, task_name);
 
 });
 
@@ -3258,10 +3274,11 @@ $('#version_details').on('scroll', function() {
     else{
         task_name = path[3]
         path = path.splice(0, 3)
+	task = task_id
     }
     project = path[0].toLowerCase()
     path = path.join(':')
-    load_asset_versions(task_id,obj_name,last_row,task, project, path.toLowerCase(), task_name);
+    load_asset_versions(task_id,obj_name,last_row,task, project, path, task_name);
    }
 });
 
@@ -3293,6 +3310,15 @@ $('#version_note_details_history').on('scroll', function() {
     }
 });
 
+$('#activity_logs_details').on('scroll', function() {
+    if($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight) {
+       last_row += 25;
+        var from = $('#from-id').text().replace(/\s\/\s/g, ':');
+        var task = $('#selectActivityTask option:selected').val()
+        get_activity_details(from, last_row, task)
+    }
+});
+
 
 //------------- tabs change calls --------------------------//
 //
@@ -3310,7 +3336,15 @@ $('#my_not').on('click', function() {
 
     // tab-2
 $('#my_lnk').on('click', function() {
-    task_id = $('#data-modal-object-id').val();
+    var page = $('#task_menu1').find('li.active').first('a span').text()
+    page = page.trim()
+    var task_id = ''
+    if(page == 'Task Entity'){
+        task_id = $('#data-modal-object-id').val();
+    }
+    else{
+        task_id = $('#data-modal-object-id').attr('data-modal-parent-id');
+    }
     obj_name = $('#myModal').attr("obj_name");
     last_row = 15;
     $('#link_details').html('');
@@ -3322,7 +3356,6 @@ $('#my_lnk').on('click', function() {
  $('#my_vsn').on('click', function() {
     task_id = $('#data-modal-object-id').val();
     obj_name = $('#myModal').attr("obj_name");
-    task = $('#myModal').attr("task");
     last_row = 15;
     $('#tbl_versions tbody').html('');
     $('#gallery_versions tbody').html('');
@@ -3331,19 +3364,18 @@ $('#my_lnk').on('click', function() {
     var path = $('#from-id').text();
     path = path.split('/')
     var task_name = ''
-    if(path.length == 3){
-        task = $('#selectTask option:selected').val();
-        if(task){
-            task_name = $('#selectTask option:selected').text();
-        }
+    task = $('#selectTask option:selected').val();
+    if(task){
+         task_name = $('#selectTask option:selected').text();
     }
     else{
         task_name = path[3]
         path = path.splice(0, 3)
+	task = task_id
     }
     project = path[0].toLowerCase()
-    path = path.join(':')
-    load_asset_versions(task_id,obj_name,last_row,task, project, path.toLowerCase(), task_name);
+    path = path.join(':').replace(/\s+/g, "")
+    load_asset_versions(task_id,obj_name,last_row,task, project, path, task_name);
 });
 
  // tab-4
@@ -3390,18 +3422,54 @@ $('#my_vsn_not_htry').on('click', function() {
     get_version_note_details_history(from, last_row)
 });
 
-function get_version_note_details_history(from, last_row){
-    console.log("hirtory last_row: " + last_row)
-    $("#task_version_notes_history_loader").show();
+ // tab-6
+$('#my_activity').on('click', function() {
+    var from = $('#from-id').text().replace(/\s\/\s/g, ':');
+    last_row = 25;
+    $('#tbl_activity tbody').html('');
+    $select_val = $('#selectEntityTask').html()
+    $('#selectActivityTask').html($select_val)
+    $('#selectActivityTask').trigger("chosen:updated");
+    $('#selectActivityTask').trigger("liszt:updated");
+    get_activity_details(from, last_row)
+
+});
+
+function get_activity_details(from, last_row, task=''){
+    var page = $('#task_menu1').find('li.active').first('a span').text()
+    var parent_id = $('#data-modal-object-id').val()
+    page = page.trim()
+    $("#my_activity_loader").show();
     $.ajax({
 	type: "POST",
 	url: "/callajax/",
-	data: {"object_name": "Note History", "from": from, 'last_row': last_row},
+	data: {"object_name": "Activity Log", "from": from, 'last_row': last_row, "task": task, "page": page, "parent_id": parent_id},
 	beforeSend: function(){
 
 	},
 	success: function(json){
-	    console.log("---------- success ------------")
+	     $.each(json, function (idx, obj){
+                add_activity_logs(idx, obj);
+            });
+	$("#my_activity_loader").hide();
+	},
+	error: function(error){
+	    console.log("Error:"+error);
+	}
+    });
+}
+
+function get_version_note_details_history(from, last_row){
+    var page = $('#task_menu1').find('li.active').first('a span').text()
+    $("#task_version_notes_history_loader").show();
+    $.ajax({
+	type: "POST",
+	url: "/callajax/",
+	data: {"object_name": "Note History", "from": from, 'last_row': last_row, "page": page},
+	beforeSend: function(){
+
+	},
+	success: function(json){
 	     //$('#version_note_details_history').html('');
 	     $.each(json, function (idx, obj){
                 modal_body = add_note_details_history(idx, obj);
@@ -3499,7 +3567,8 @@ function get_asset_list(proj_id, prj_name, asset_ids){
 }
 
 //-------- add asset ------------------- //
-function add_asset(task_id, obj_name, asset_name, old_asset_ids, page=''){
+function add_asset(task_id, obj_name, asset_name, old_asset_ids, parent_path=''){
+    var page = $('#task_menu1').find('li.active').first('a span').text()
     $("#linktask_details_loader").show();
     if (obj_name){
 	if (obj_name == 'Shot Asset Build'){
@@ -3519,7 +3588,7 @@ function add_asset(task_id, obj_name, asset_name, old_asset_ids, page=''){
     $.ajax({
 	type: "POST",
 	url:"/callajax/",
-	data: { 'object_name': 'Link Asset' , 'task_id': task_id, 'selected_asset': selected_asset.join(), 'asset_name': asset_name, 'old_asset_ids': old_asset_ids},
+	data: { 'object_name': 'Link Asset' , 'task_id': task_id, 'selected_asset': selected_asset.join(), 'asset_name': asset_name, 'old_asset_ids': old_asset_ids, "page": page, 'parent_path': parent_path},
 	success: function(json){
 	    $("#linktask_details_loader").hide();
 	    // Reload task links
@@ -3599,26 +3668,28 @@ function load_task_details(task_id,obj_name,last_row,task_assignee){
 }
 
 function add_task_details(idx, obj){
-    var path = obj.link_path
-    var task_parent_path = path.substring(0, path.lastIndexOf('/'));
+    var task_parent_path = ''
+    //var task_parent_path = path.substring(0, path.lastIndexOf('/'));
+    if(obj.link_path){
+     task_parent_path = obj.link_path.substring(0, obj.link_path.lastIndexOf('/'));
+    }
+    // <h3>'+obj.name+'</h3><label>'+obj.object_type+' ('+obj.type_name+')</label></br>
+    html = '<input type="hidden" id="data-modal-object-id" data-modal-parent-id="'+obj.parent_id+'" task_assignee="'+task_assignee+'" task_parent_path="'+task_parent_path+'" value="'+obj.object_id+'" /><br><h4 id="from-id">'+obj.link_path+'</h4>';
+    var status_label = ''
+    var status_span = ''
+    var priority_span = ''
+    if(obj.status){
 
-    html = '<input type="hidden" id="data-modal-object-id" data-modal-parent-id="'+obj.parent_id+'" task_assignee="'+task_assignee+'" task_parent_path="'+task_parent_path+'" value="'+obj.object_id+'" /><h3>'+obj.name+'</h3><label>'+obj.object_type+' ('+obj.type_name+')</label></br><small id="from-id">'+obj.link_path+'</small>';
 
     status_label = obj.status.replace(/ /g,'_').toLowerCase();
     priority_label = obj.priority.replace(/ /g,'_');
 
     status_span = '<span class="label label-'+status_label+'">'+obj.status+'</span>'
     priority_span = '<span class="label label-'+priority_label+'">'+obj.priority+'</span>'
-
+    }
     table = ' \
 <div class="col-md-12">\
     <div class="col-md-4">'+html+'</div>\
-    <div class="col-md-4"><br>\
-        <table>\
-            <tr><td><label>Status</label></td><td>'+status_span+'</td></tr>\
-            <tr><td><label>Priority</label></td><td>'+priority_span+'</td></tr>\
-        </table>\
-    </div>\
 </div>\
 ';
     $('#modal_header').html(table);
@@ -3650,7 +3721,6 @@ function add_task_details(idx, obj){
 function load_task_notes(task_id, obj_name, last_row, note_task){
 
     note_category = $('#selectNoteCategory').val();
-
     $("#task_notes_loader").show();
     $.ajax({
 	type: "POST",
@@ -3721,10 +3791,11 @@ function create_a_note(task_id){
 }
 
 function create_new_note(task_id, note_text, note_category, note_for, $div_element, $textarea_id, note_task, attach_files, obj_name){
+    var page = page || $('#task_menu1').find('li.active').first('a span').text();
     $.ajax({
         type:"POST",
         url:"/callajax/",
-        data: { 'object_name': 'Create Note', 'task_id': task_id, 'note_text': note_text, 'note_category': note_category, 'note_for': note_for, 'note_task': note_task, "attach_files": attach_files},
+        data: { 'object_name': 'Create Note', 'task_id': task_id, 'note_text': note_text, 'note_category': note_category, 'note_for': note_for, 'note_task': note_task, "attach_files": attach_files, "page": page},
         beforeSend: function(){
         },
         success: function(json){
@@ -3962,8 +4033,7 @@ function add_note_details_history(idx, obj){
     note_text = obj.note_text;
     style = 'style="width:60%"';
     label_status = note_status.replace(/ /g,"_").toLowerCase();
-    console.log(label_status)
-     modal_body = '\
+    modal_body = '\
 	<div class="box row" id="" >\
 	    <span class="label label-info" >'+note_department+'</span>\
 	    <span class="label label-'+label_status+'" '+style+'>'+note_status+'</span> \
@@ -3977,15 +4047,62 @@ function add_note_details_history(idx, obj){
 }
 
 
+// ----------------- add activity logs -------------//
+function add_activity_logs(idx, obj){
+    details_for = obj.details_for;
+    activity_date = obj.activity_date;
+    activity_by = obj.activity_by;
+    action = obj.action;
+    path = obj.path;
+    value = obj.value;
+
+    var table = $('#tbl_activity tbody');
+
+    row = $(table[0].insertRow(-1));
+    row.attr('id',details_for)
+
+    enable_dblclick = ''
+
+    row_data = '\
+	  <td>'+path+'</td> \
+	  <td class="center">'+activity_by+'</td> \
+	  <td class="center">'+action+'</td> \
+	  <td class="center">'+details_for+'</td> \
+	  <td><span class="label label-default" style="overflow:auto">'+value+'</span></td>\
+	  <td class="center">'+activity_date+'</td> \
+	'
+	row.append(row_data);
+    $(row).click(function(event){
+        if(event.ctrlKey === true) {
+            $(this).toggleClass("selected")
+        }
+    });
+
+}
+
+$("#selectActivityTask").change(function(param){
+    var task = $(this).val()
+
+    console.log("this: ", task)
+    var from = $('#from-id').text().replace(/\s\/\s/g, ':');
+    last_row = 25;
+    $('#tbl_activity tbody').html('');
+    get_activity_details(from, last_row, task)
+ });
+
 //----------
 function load_task_links(task_id,obj_name,last_row){
+    project_name = $('#selectEntityProject option:selected').text()
+    if(!project_name){
+        project_name = $('#selectArtistProject option:selected').text()
+    }
     $("#task_link_loader").show();
     body_row_array = []
     asset_ids_array = []
     $.ajax({
 	type: "POST",
 	url:"/callajax/",
-	data: { 'task_id': task_id , 'type_name': obj_name, 'object_name': 'Show Link Details' , 'last_row' : last_row},
+	data: { 'task_id': task_id , 'type_name': obj_name, 'object_name': 'Show Tab Link Details' , 'last_row' : last_row, 'project_name': project_name},
 	beforeSend: function(){
 	    $('#link_details').html(" ");
 	    },
@@ -4007,16 +4124,24 @@ function load_task_links(task_id,obj_name,last_row){
 }
 
 function add_link_details(idx, obj){
+    not_div = '';
+    $.each(obj.notes, function (idx, ob){
+                modal_body = add_note_details_history(idx, ob);
+                console.log(modal_body)
+               not_div = not_div +  modal_body
+            });
+
     link = '<span class="label label-None" style="width:100%">'+obj.name+'</label>';
     body_row = '\
 	<div class="panel panel-default" id="link_category-'+idx+'">\
             <div class="panel-heading">\
                 <a data-toggle="collapse" data-parent="#link_accordion" href="#link_collapse1-'+idx+'" style="text-decoration: none;">'+link+'</a>\
             </div>\
-	    <div id="link_collapse1-'+idx+'" class="panel-collapse collapse">\
+	    <div id="link_collapse1-'+idx+'" class="panel-collapse collapse">'+not_div+'\
 	    </div>\
 	</div>\
     ';
+
     return body_row;
 }
 
@@ -4118,7 +4243,7 @@ $('#download_task_status').click(function(){
 });
 
 function insert_db_note(note_text, note_category, object_id, change_status, users, task_path, version){
-
+    var page = $('#task_menu1').find('li.active').first('a span').text()
     var from = $('#from-id').text();
     var to = task_path;
 
@@ -4131,7 +4256,7 @@ function insert_db_note(note_text, note_category, object_id, change_status, user
     $.ajax({
 	type: "POST",
 	url: "/callajax/",
-	data: {"object_name": "DB Note", "note_text": note_text, "note_category": note_category, "task_id": object_id, "users": users, "task_path": task_path, "change_status": change_status, "version":version, "from": from, "to": to},
+	data: {"object_name": "DB Note", "note_text": note_text, "note_category": note_category, "task_id": object_id, "users": users, "task_path": task_path, "change_status": change_status, "version":version, "from": from, "to": to, 'page': page},
 	success: function(json){
 	},
 	error: function(error){
@@ -4141,10 +4266,11 @@ function insert_db_note(note_text, note_category, object_id, change_status, user
 
 }
 function add_task_note(note, note_category, object_id, note_for, attach_files){
+    var page = $('#task_menu1').find('li.active').first('a span').text()
     $.ajax({
 	type: "POST",
 	url: "/callajax/",
-	data: {"object_name": "Create Note", "note_text": note, "note_category": note_category, "task_id": object_id, "note_for": note_for, "attach_files": attach_files},
+	data: {"object_name": "Create Note", "note_text": note, "note_category": note_category, "task_id": object_id, "note_for": note_for, "attach_files": attach_files, "page": page},
 	success: function(json){
 	    noty({
                 text: 'Note added successfully ...',
@@ -4160,11 +4286,11 @@ function add_task_note(note, note_category, object_id, note_for, attach_files){
 }
 
 function object_status_change(new_status, old_status, object_id, status_for){
-
+    var page = $('#task_menu1').find('li.active').first('a span').text()
     $.ajax({
 	type: "POST",
 	url: "/callajax/",
-	data: {"object_name": "Change Status", "new_status": new_status, "old_status": old_status, "object_id": object_id, "status_for": status_for},
+	data: {"object_name": "Change Status", "new_status": new_status, "old_status": old_status, "object_id": object_id, "status_for": status_for, 'page': page},
 	success: function(json){
 	    noty({
                 text: 'Status has been changed ...',
@@ -4231,6 +4357,8 @@ function approve_task(param){
 
     $td_task_path = $tr.find('td[data-td=task_path]');
     var task_path = $td_task_path.text().trim();
+    
+    var task_name = $(param).closest('tr').find('td:eq(1)').find('strong').text().trim();
 
     $td_version = $tr.find('td[data-td=version]');
     var version = $td_version.text();
@@ -4261,9 +4389,20 @@ function approve_task(param){
 	    change_status_label = 'final_publish';
 	}
     }else if (my_status == 'Pending Internal Review'){
-	change_status = 'Ready to Publish';
-	change_status_label = 'ready_to_publish';
-	version_id = '';
+        /* 
+         If task is Lighting then change status
+         to Internal Approved else ready to publish
+        */
+	if(task_name == "Lighting"){
+            change_status = 'Internal Approved'
+            change_status_label = 'internal_approved';
+        }
+        else{
+            change_status = 'Ready to Publish';
+            change_status_label = 'ready_to_publish';
+            version_id = '';
+        }
+	//version_id = '';
     }else if (my_status == 'Outsource'){
 	change_status = 'Outsource Approved';
 	change_status_label = 'outsource_approved';
@@ -4323,7 +4462,7 @@ function approve_task(param){
                 add_task_note(note_text, note_category, version_id, 'AssetVersion', attach_files);
             }
 
-            insert_db_note(note_text, note_category, object_id, change_status, users, task_path, version);
+           insert_db_note(note_text, note_category, object_id, change_status, users, task_path, version);
 
             $td_status.html('<span class="label label-'+change_status_label+'">'+change_status+'</span>');
             $td_status.attr('data-org-val',change_status);
@@ -4469,20 +4608,14 @@ $('#selectMonthProject').change(function(){
 
 });
 
-function create_table_row(duration, msg){
-
-    $("#tbl_asset_build").html('');
-
+function create_table_row(duration){
 
     months = []
     for ( i=0 ; i<duration; i++){
 	month = moment().subtract(i, 'month').format('MMM-YYYY');
 	months.push(month)
     }
-    if(msg == '')
-        thead = '<thead style="transform: translate(0px, 0px);"><tr><th rowspan="2"><h4>TASK</h4></th><th colspan="2">Asset Build</th>';
-    else
-        thead = '<thead style="transform: translate(0px, 0px);"><tr><th rowspan="2"><h4>SEQ</h4></th><th colspan="2">'+msg+'</th>';
+    thead = '<thead style="transform: translate(0px, 0px);"><tr><th rowspan="2"><h4></h4></th><th colspan="2"></th>';
     th_row1 = '';
     th_row2 = '<th>Type</th><th>Done</th>';
 
@@ -4525,9 +4658,9 @@ function month_wise_reports(){
 
     duration = $("#selectMonthDuration").val();
 
-    asset_months = create_table_row(duration, "Shot Wise Data");
+    asset_months = create_table_row(duration);
 
-    shot_months = create_table_row(duration, "Shot Wise Data");
+    shot_months = create_table_row(duration);
 
     json_months = JSON.stringify(months)
 
@@ -4541,20 +4674,22 @@ function month_wise_reports(){
 	url: "/callajax/",
 	data : {'object_name': 'Month Wise Reports', 'project': project, 'start_date': start, 'end_date': end, 'parent_object_type': parent_object_type, 'months': json_months},
 	beforeSend: function(){
+            $('#panel_big').plainOverlay('show');
         },
 	success: function(json){
 	    $.each(json,function(idx,obj){
 
 		if(obj.asset_build){
 		    var asset_build_data = obj.asset_build;
-		    asset_build_monthly_reports(asset_build_data, months);
+		    asset_build_monthly_reports(asset_build_data, months, 'Asset Build');
 		}
 		if(obj.shot){
 		    var shot_build_data = obj.shot;
-		    shot_build_monthly_reports(shot_build_data, months);
+		    asset_build_monthly_reports(shot_build_data, months, 'Shot');
 		    return false;
 		}
 	    });
+            $('#panel_big').plainOverlay('hide');
 	},
 	error: function(error){
 	    console.log("Error:"+error);
@@ -4563,202 +4698,91 @@ function month_wise_reports(){
     });
 }
 
+function asset_build_monthly_reports(data, months, tab){
 
-function shot_build_monthly_reports(data, months){
-
-    $.each(data, function(task,task_data){
-
-	task_name = '<td rowspan="5"><h3>'+task+'</h3></td>';
-	layout_data = '';
-	Animation_data = '';
-	lighting_data = '';
-	shave_hair = '';
-	set_dressing = ''
-	total_data = '';
-
-	if (task_data && task_data['Layout']){
-	    layout_data = '<td>Layout</td><td>'+task_data['Layout']['Percent']+'%</td>';
-	}else{
-	    layout_data = '<td>Layout</td><td>0%</td>';
-	}
-	if (task_data['Animation']){
-	    Animation_data = '<td>Animation</td><td>'+task_data['Animation']['Percent']+'%</td>';
-	}else{
-	    Animation_data = '<td>Animation</td><td>0%</td>';
-	}
-	if (task_data['Lighting']){
-	    lighting_data = '<td>Lighting</td><td>'+task_data['Lighting']['Percent']+'%</td>';
-	}else{
-	    lighting_data = '<td>Lighting</td><td>0%</td>';
-	}
-	if (task_data['Shave Hair']){
-	    shave_hair = '<td>Shave Hair</td><td>'+task_data['Shave Hair']['Percent']+'%</td>';
-	}else{
-	    shave_hair = '<td>Shave Hair</td><td>0%</td>';
-	}
-	if (task_data['Set Dressing']){
-	    set_dressing = '<td>Set Dressing</td><td>'+task_data['Set Dressing']['Percent']+'%</td>';
-	}else{
-	    set_dressing = '<td>Set Dressing</td><td>0%</td>';
-	}
-	if (task_data['Total']){
-	    total_data = '<td><strong style="color: #58fffc;">Total</strong></td><td><strong style="color: #58fffc;">'+task_data['Total']+'</strong></td><td><strong style="color: #58fffc;">'+task_data['Percent']+'%</strong></td>';
-	}
-	$.each($("#tbl_shot_build tr:eq(0) th"), function(idx) {
-	    if (idx <= 1)
-		return;
-
-	    head = $(this).text();
-	    tasks = '';
-	    if (task_data[head] && task_data[head]['Task']){
-		tasks = task_data[head]['Task'];
-	    }
-	    if (task_data[head] && task_data[head]['Count']){
-		total_data = total_data + '<td onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+tasks+'\')"><strong style="color: #58fffc;">'+task_data[head]['Count']+'</strong></td>';
-	    }else{
-		total_data = total_data + '<td><strong style="color: #58fffc;">0</strong></td>';
-	    }
-	    if (task_data[head] && task_data[head]['WIP']){
-		task_count_month_wise = task_data[head]['WIP']['Task'];
-		total_data = total_data + '<td onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_count_month_wise+'\')"><strong style="color: #58fffc;">'+task_data[head]['WIP']['Count']+'</strong></td>';
-	    }else{
-		total_data = total_data + '<td><strong style="color: #58fffc;">0</strong></td>';
-	    }
-	    if (task_data[head] && task_data[head]['Internal']){
-		task_count_month_wise = task_data[head]['Internal']['Task'];
-		total_data = total_data + '<td onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_count_month_wise+'\')"><strong style="color: #58fffc;">'+task_data[head]['Internal']['Count']+'</strong></td>';
-	    }else{
-		total_data = total_data + '<td><strong style="color: #58fffc;">0</strong></td>';
-	    }
-	    if (task_data[head] && task_data[head]['Review']){
-		task_count_month_wise = task_data[head]['Review']['Task'];
-		total_data = total_data + '<td onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_count_month_wise+'\')"><strong style="color: #58fffc;">'+task_data[head]['Review']['Count']+'</strong></td>';
-	    }else{
-		total_data = total_data + '<td><strong style="color: #58fffc;">0</strong></td>';
-	    }
-	    if (task_data[head] && task_data[head]['Approved']){
-        task_count_month_wise = task_data[head]['Approved']['Task'];
-		total_data = total_data + '<td onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_count_month_wise+'\')"><strong style="color: #58fffc;">'+task_data[head]['Approved']['Count']+'</strong></td>';
-	    }else{
-		total_data = total_data + '<td><strong style="color: #58fffc;">0</strong></td>';
-	    }
-
-
-	    if (task_data['Layout'] && task_data['Layout'][head]){
-		layout_data = layout_data + '\
-		<td style="background-color: #333333;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Layout'][head]['Total']['Task']+'\')"><strong style="color: #58fffc;">'+task_data['Layout'][head]['Total']['Count']+'</strong></td>\
-		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Layout'][head]['WIP']['Task']+'\')"><strong>'+task_data['Layout'][head]['WIP']['Count']+'</strong></td>\
-		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Layout'][head]['Internal']['Task']+'\')"><strong>'+task_data['Layout'][head]['Internal']['Count']+'</strong></td>\
-		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Layout'][head]['Review']['Task']+'\')"><strong>'+task_data['Layout'][head]['Review']['Count']+'</strong></td>\
-		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Layout'][head]['Approved']['Task']+'\')"><strong>'+task_data['Layout'][head]['Approved']['Count']+'</strong></td>\
-		';
-	    }else{
-		layout_data = layout_data + '<td style="background-color: #333333;"><strong style="color: #58fffc;">0</strong></td><td>0</td><td>0</td><td>0</td><td>0</td>';
-	    }
-
-	    if (task_data['Animation'] && task_data['Animation'][head]){
-		Animation_data = Animation_data + '\
-		<td style="background-color: #333333;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Animation'][head]['Total']['Task']+'\')"><strong style="color: #58fffc;">'+task_data['Animation'][head]['Total']['Count']+'</strong></td>\
-		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Animation'][head]['WIP']['Task']+'\')"><strong>'+task_data['Animation'][head]['WIP']['Count']+'</strong></td>\
-		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Animation'][head]['Internal']['Task']+'\')"><strong>'+task_data['Animation'][head]['Internal']['Count']+'</strong></td>\
-		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Animation'][head]['Review']['Task']+'\')"><strong>'+task_data['Animation'][head]['Review']['Count']+'</strong></td>\
-		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Animation'][head]['Approved']['Task']+'\')"><strong>'+task_data['Animation'][head]['Approved']['Count']+'</strong></td>\
-		';
-	    }else{
-		Animation_data = Animation_data + '<td style="background-color: #333333;"><strong style="color: #58fffc;">0</strong></td><td>0</td><td>0</td><td>0</td><td>0</td>';
-	    }
-
-	    if (task_data['Lighting'] && task_data['Lighting'][head]){
-		lighting_data = lighting_data + '\
-		<td style="background-color: #333333;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Lighting'][head]['Total']['Task']+'\')"><strong style="color: #58fffc;">'+task_data['Lighting'][head]['Total']['Count']+'</strong></td>\
-		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Lighting'][head]['WIP']['Task']+'\')"><strong>'+task_data['Lighting'][head]['WIP']['Count']+'</strong></td>\
-		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Lighting'][head]['Internal']['Task']+'\')"><strong>'+task_data['Lighting'][head]['Internal']['Count']+'</strong></td>\
-		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Lighting'][head]['Review']['Task']+'\')"><strong>'+task_data['Lighting'][head]['Review']['Count']+'</strong></td>\
-		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Lighting'][head]['Approved']['Task']+'\')"><strong>'+task_data['Lighting'][head]['Approved']['Count']+'</strong></td>\
-		';
-	    }else{
-		lighting_data = lighting_data + '<td style="background-color: #333333;"><strong style="color: #58fffc;">0</strong></td><td>0</td><td>0</td><td>0</td><td>0</td>';
-	    }
-	    if (task_data['Shave Hair'] && task_data['Shave Hair'][head]){
-		shave_hair = shave_hair + '\
-		<td style="background-color: #333333;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Shave Hair'][head]['Total']['Task']+'\')"><strong style="color: #58fffc;">'+task_data['Shave Hair'][head]['Total']['Count']+'</strong></td>\
-		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Shave Hair'][head]['WIP']['Task']+'\')"><strong>'+task_data['Shave Hair'][head]['WIP']['Count']+'</strong></td>\
-		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Shave Hair'][head]['Internal']['Task']+'\')"><strong>'+task_data['Shave Hair'][head]['Internal']['Count']+'</strong></td>\
-		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Shave Hair'][head]['Review']['Task']+'\')"><strong>'+task_data['Shave Hair'][head]['Review']['Count']+'</strong></td>\
-		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Shave Hair'][head]['Approved']['Task']+'\')"><strong>'+task_data['Shave Hair'][head]['Approved']['Count']+'</strong></td>\
-		';
-	    }else{
-		shave_hair = shave_hair + '<td style="background-color: #333333;"><strong style="color: #58fffc;">0</strong></td><td>0</td><td>0</td><td>0</td><td>0</td>';
-	    }
-	    if (task_data['Set Dressing'] && task_data['Set Dressing'][head]){
-		set_dressing = set_dressing + '\
-		<td style="background-color: #333333;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Set Dressing'][head]['Total']['Task']+'\')"><strong style="color: #58fffc;">'+task_data['Set Dressing'][head]['Total']['Count']+'</strong></td>\
-		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Set Dressing'][head]['WIP']['Task']+'\')"><strong>'+task_data['Set Dressing'][head]['WIP']['Count']+'</strong></td>\
-		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Set Dressing'][head]['Internal']['Task']+'\')"><strong>'+task_data['Set Dressing'][head]['Internal']['Count']+'</strong></td>\
-		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Set Dressing'][head]['Review']['Task']+'\')"><strong>'+task_data['Set Dressing'][head]['Review']['Count']+'</strong></td>\
-		<td style="color: #00ff1e;" onclick="show_month_dialog(\''+task+'\',\''+head+'\',\''+task_data['Set Dressing'][head]['Approved']['Task']+'\')"><strong>'+task_data['Set Dressing'][head]['Approved']['Count']+'</strong></td>\
-		';
-	    }
-	    else{
-		set_dressing = set_dressing + '<td style="background-color: #333333;"><strong style="color: #58fffc;">0</strong></td><td>0</td><td>0</td><td>0</td><td>0</td>';
-	    }
-
-	});
-	tr_layout = '<tr>'+task_name+layout_data+'</tr>';
-	tr_animation = '<tr>'+Animation_data+'</tr>';
-	tr_lighting = '<tr>'+lighting_data+'</tr>';
-	tr_shave = '<tr>'+shave_hair+'</tr>';
-	tr_dressing = '<tr>'+set_dressing+'</tr>';
-	tr_total = '<tr style="background-color: #333333;">'+total_data+'</tr>';
-	$("#tbl_shot_build").append(tr_layout+tr_animation+tr_lighting+tr_shave+tr_dressing+tr_total);
-
-    });
-
-}
-
-function asset_build_monthly_reports(data, months){
-
+    table = 'tbl_asset_build';
     type_array = ['Character','Prop','Set','Total'];
+    rowspan = '4';
+    if(tab == 'Shot'){
+	type_array = ['Layout','Animation','Lighting', 'Total'];
+	table = 'tbl_shot_build';
+	rowspan = '4';
+    }
+    font_color = '"color: #00FFDB;"';
     status_array = ['Total','WIP','Internal','Review','Approved'];
+    month_color = {
+		    'Jan':'"background-color: #2b2c2d;"',
+		    'Feb':'"background-color: #333333;"',
+		    'Mar':'"background-color: #2b2c2d;"',
+		    'Apr':'"background-color: #333333;"',
+		    'May':'"background-color: #2b2c2d;"',
+		    'Jun':'"background-color: #333333;"',
+		    'Jul':'"background-color: #2b2c2d;"',
+		    'Aug':'"background-color: #333333;"',
+		    'Sep':'"background-color: #2b2c2d;"',
+		    'Oct':'"background-color: #333333;"',
+		    'Nov':'"background-color: #2b2c2d;"',
+		    'Dec':'"background-color: #333333;"',
+		    };
 
     $.each(data, function(task,task_data){
 
-	task_row = '<td rowspan="4"><h3>'+task+'</h3></td>';
+	task_row = '<td style="background-color: #2b2c2d;" rowspan="'+rowspan+'"><h3>'+task+'</h3></td>';
 	$.each(type_array, function( index, value ) { // ['Character','Prop','Set','Total']
-	    if (task_data && task_data[value]){
-		task_row = task_row + '<td>value</td><td>'+task_data[value]['Percent']+'%</td>';
+	    if (value == 'Total'){
+		task_row = task_row + '<td style="background-color: #333333;">'+task_data[value]+'</td><td style="background-color: #333333;">'+task_data['Percent']+'%</td>';
 	    }else{
-		task_row = task_row + '<td>value</td><td>0%</td>';
+		if (task_data && task_data[value]){
+		    task_row = task_row + '<td style="background-color: #2b2c2d;" nowrap>'+value+'</td><td style="background-color: #2b2c2d;">'+task_data[value]['Percent']+'%</td>';
+		}else{
+		    task_row = task_row + '<td style="background-color: #2b2c2d;" nowrap>'+value+'</td><td style="background-color: #2b2c2d;">0%</td>';
+		}
 	    }
 	    $.each($("#tbl_asset_build tr:eq(0) th"), function(idx) {
 		if (idx <= 1)
 		    return;
 
 		head = $(this).text(); // Jun-2018 (month)
+		month_name = head.split('-')[0];
+		bg_color = month_color[month_name];
 		$.each(status_array, function( index, stat_value ) { // ['Total','WIP','Internal','Review','Approved']
 
-		    if (stat_value == 'Total'){
+		    var tasks = '';
+		    var count = 0;
+		    var on_click = '';
+
+		    if (value == 'Total'){
 			if (task_data[head] && task_data[head][stat_value]){
-			    total_click = "show_month_dialog('+task+','+head+','+task_data[head][stat_value]['Task']+')";
-			    total_count = task_data[head][stat_value]['Count'];
-			    task_row = task_row + '<td onclick="'+total_click+'"><strong>'+total_count+'</strong></td>';
-			}else{
-			    task_row = task_row + '<td><strong>0</strong></td>';
+			    tasks = task_data[head][stat_value]["Task"];
+			    count = task_data[head][stat_value]['Count'];
+			    font_color = '"color: #00FF00;"';
 			}
 		    }else{
 			if (task_data[value] && task_data[value][head]){
-			    on_click = "show_month_dialog('+task+','+head+','+task_data[value][head][stat_value]['Task']+')";
+			    tasks = task_data[value][head][stat_value]["Task"];
 			    count = task_data[value][head][stat_value]['Count'];
-			    task_row = task_row + '<td onclick="'+on_click+'"><strong>'+count+'</strong></td>';
-			}else{
-			    task_row = task_row + '<td><strong>0</strong></td>';
+			    font_color = '"color: #00FFDB;"';
 			}
 		    }
+
+		    if (count != 0){
+			on_click = 'onclick=\"show_month_dialog(\''+task+'\',\''+head+'\',\''+tasks+'\')\"';
+		    }else{
+			count = '---';
+		    }
+
+		    task_row = task_row + '<td style='+bg_color+' '+on_click+'><strong style='+font_color+'>'+count+'</strong></td>';
 
 		});
 	    });
 
-	    $("#tbl_asset_build").append('<tr>'+task_row+'</tr>');
+	    if(task == 'Gross'){
+		task_row = task_row.replace(/td/g,'th');
+		$("#"+table+" thead").append('<tr>'+task_row+'</tr>');
+	    }else{
+		$("#"+table).append('<tr>'+task_row+'</tr>');
+	    }
+
 	    task_row = '';
 	});
     });
@@ -5712,7 +5736,10 @@ function artist_action(param){
 }
 
 function fn_artist_task_action(param,action,note_text){
-
+    var page = $('#task_menu1').find('li.active').first('a span').text()
+    var parent_id = $(param).closest('tr').attr('data-task-parent-id')
+    var path = $(param).closest('tr').find("td:eq(2)").text()
+    path = path.replace("[", "").replace("]", "")
     $tr = $(param).closest('tr');
 
     project = $tr.attr('data-project');
@@ -5721,7 +5748,7 @@ function fn_artist_task_action(param,action,note_text){
     $.ajax({
 	type: "POST",
 	url: "/callajax/",
-	data : {'object_name': 'Artist Action', 'project': project, 'task_id': task_id, 'action': action, 'note_text': note_text},
+	data : {'object_name': 'Artist Action', 'project': project, 'task_id': task_id, 'action': action, 'note_text': note_text, 'page': page, "parent_id": parent_id, 'path': path},
 	beforeSend: function(){
         },
 	success: function(json){
@@ -6533,6 +6560,8 @@ $('#submit_details').click(function(){
     data_array['start_frame'] = start_frame;
     data_array['resolution'] = resolution;
     data_array['project_folder'] = project_folder;
+    var page = $('#task_menu1').find('li.active').first('a span').text()
+    data_array['page'] = page
 
     var data_list = [];
     data_list.push(data_array);
@@ -6548,7 +6577,6 @@ $('#submit_details').click(function(){
 });// end of create project details function
 
 function update_form_data(entity_name,data_list, object){
-
     object_name = 'Update Form Data';
     data_list = JSON.stringify(data_list);
     $('#entity_loader').show();
@@ -6758,7 +6786,7 @@ $("#id_sequence_name").keyup(function(){
      }
 
     var prj_name = $("#id_sequence_parent_object_type").val().trim();
-//    console.log(prj_name);
+    // call
     $.ajax({
         type: "POST",
         url:"/callajax/",
@@ -8981,7 +9009,6 @@ function get_task(selected_object, selected_type){
 
 // For load asset task name
 function load_asset_task_name(selectedValue, asst_name){
-    console.log("selectedValue: " + selectedValue)
     var selected_project = $('#selectEntityProject option:selected').text();
     var selected_object = $('#selectEntityObject').val();
     var selected_asset_type = $('#selectEntityAssetType').val();
@@ -9115,15 +9142,13 @@ function add_entity_rows(json, selected_object){
     $('#example thead th:nth-child(9)').hide();
 
     }
-    //console.log("json \n:" + json)
+
     $.each(json, function (idx, obj) {
-	        //console.log("obj length:" + obj.length)
 	        if(idx == 0){
 	            tr_count = $('#example tfoot tr').length;
-	            //console.log("tr_count : " + tr_count)
 	            idx = tr_count
 	        }
-	        html = html + '<tr id="'+idx+'" org-data="" task-id="'+obj.ftrack_id+'" current_users="'+obj.current_assignees+'" parent_id="'+obj.parent_id+'"parent_object_type="'+obj.parent_object_type+'" onclick="RowClick(this,false,event)"><td>'+obj.name+'</td>'
+	        html = html + '<tr id="'+idx+'" org-data="" task-id="'+obj.ftrack_id+'" current_users="'+obj.current_assignees+'" parent_id="'+obj.parent_id+'"parent_object_type="'+obj.parent_object_type+'" onclick="RowClick(this,false,event)"><td><a href="#" id="parent_object" onclick="show_model_entity(this)">'+obj.name+'</a></td>'
             html = html + '<td ondblclick="editEntityCell(this)" option-id="users_options" data-org-val=""><label class="label label-default">'+obj.current_assignees+'</label></td>'
             html = html + '<td ondblclick="editEntityCell(this)" option-id="status_options" data-org-val=""><span class="label label-'+obj.status_label+'">'+obj.status+'</span></td>'
             html = html + '<td ondblclick="editEntityCell(this)" option-id="bids_options" data-org-val=""><span class="label label-default">'+obj.bid+'</span></td>'
@@ -9135,7 +9160,7 @@ function add_entity_rows(json, selected_object){
                    html = html + '<td ondblclick="editEntityCell(this)" option-id="stframe_options" data-org-val=""><span class="label label-default">'+obj.startframe+'</span></td>'
                    html = html + '<td ondblclick="editEntityCell(this)" option-id="edframe_options" data-org-val=""><span class="label label-default">'+obj.endframe+'</span></td>'
             }
-            html = html + '<td><button class="btn btn-inverse btn-default btn-sm" data-toggle="dropdown" id="incoming" onclick="show_entity_link_model(this)" >Create Asset Link</button></td>'
+            html = html + '<td><button class="btn btn-inverse btn-default btn-xs" data-toggle="dropdown" id="incoming" onclick="show_entity_link_model(this)" >Link Asset</button></td>'
 
             html = html + '<td><button class="btn btn-inverse btn-default btn-sm" onclick="single_reset('+idx+')" style="display: none;" id="td_'+idx+'"><i class="glyphicon glyphicon-hand-left icon-white"></i>&nbsp;&nbsp;Undo</button></td>'
             html = html + '</tr>'
@@ -9241,6 +9266,7 @@ function editEntityCell(context, option){
             }
             OriginalContent = OriginalContent.split(',')
         }
+        org = OriginalContent
         $select.val(OriginalContent).trigger("liszt:updated");
         $select.trigger('focusout');
 
@@ -9339,22 +9365,17 @@ function addDate(param){
 // For edit columns of table rows
 function select_change(param){
     var $tr_element = $(param).closest('tr');
-   // var trid = $tr_element.attr('id');
-    var trid = $(param).closest('tr').attr('id');
-    //var td_index = $(param).parent().index();
+    var trid = $(param).parent().closest('tr').attr('id');
     var td_index = $(param).closest('td').index();
-    //var td_index = $(param).closest('td').index();
-
     var html = ""
     $(param).closest('td').removeClass('selected_td');
     var trs = ''
     trs = $('#example tfoot').attr('data-selected-tr');
-
     var trs_array = []
     trs_array = trs.split(",");
 
     var ind = trs_array.indexOf(trid);
-     // if for set status label color class
+    // if for set status label color class
     if(td_index == 2){
         status = $(param).val();
         status_label = status.toLowerCase().replace(/\s/g, "_");
@@ -9372,7 +9393,7 @@ function select_change(param){
         $(param).closest('span').show()
     }
     else{
-        param_val = $(param).val()
+        param_val = $(param).val();
         if(param_val == null){
             param_val = '---'
         }
@@ -9435,11 +9456,8 @@ function select_change(param){
          $('#td_'+trid).show();
     }else{
         if(trs_array.indexOf(trid) == -1 && trs_array.length > 0){
-//            console.log("trid: " + trid)
             trs_array.push(trid)
-//            console.log("elaw trs_array: " + trs_array)
             trs_array.splice(0,1)
-
          }
         tr_ids = trid
         $('#save').val(trs_array);
@@ -9549,7 +9567,8 @@ $("#save").on('click', function(context) {
         s = 0
         e = 0
         for(var i = 0; i < data_list.length; i++){
-            var bid = data_list[i]['bid']
+            //var bid = data_list[i]['bid']
+            var bid = parseFloat($('#'+data_list[i]['id']).find("td:eq(3)").text())*(10*60*60)
             if(bid == 0 || bid == null){
                 // col1=$('#'+ids_list[i]).find("td:eq(0)").text();
                 b = 1
@@ -9557,7 +9576,7 @@ $("#save").on('click', function(context) {
                 $(td).addClass('selected_td')
 
             }
-            if($('#selectEntityObject').val() == 'Shot'){
+          /*  if($('#selectEntityObject').val() == 'Shot'){
                 var stf = data_list[i]['startframe']
                 var edf = data_list[i]['endframe']
                 if(stf == 0 || stf == null){
@@ -9572,8 +9591,9 @@ $("#save").on('click', function(context) {
                     td = $('#'+ids_list[i]).find("td:eq(8)").find('span');
                     $(td).addClass('selected_td')
                 }
-            }
+            }*/
         }
+
         if(b == 1 || s == 1 || e == 1 || b == '---' )
         {
             alert("Please select required fields......!")
@@ -9600,47 +9620,69 @@ $("#save").on('click', function(context) {
 
 // For create data list from table columns
 function create_data_list(ids_list){
+    var page = $('#task_menu1').find('li.active').first('a span').text()
     var priority_dict = {"A":'Urgent', "B":'High', "C":'Medium', "D":'Low'}
     var child_task_name = $('#selectEntityTask').val();
     var project_id = $('#selectEntityProject').val();
+    var project_name = $('#selectEntityProject option:selected').text();
     var object_type = $('#selectEntityObject').val();
+    var asset_type = $('#selectEntityAssetType').val();
     var data_list = []
     for(var i = 0; i < ids_list.length; i++){
+        //-----------------
+        var org_data = $('#'+ids_list[i]).attr('org-data');
+        var $org_data_tr = '<tr>' + org_data + '<>/tr'
+
         var data_dict = {}
-        var col1 = col2 = col3 = ol4 = col5 = col6 = col7= ""
+        var col1 = col2 = col3 = col4 = col5 = col6 = col7= ""
         var current_users_list = $('#'+ids_list[i]).attr('current_users');
         var parent_id = $('#'+ids_list[i]).attr('parent_id');
         var parent_object_type = $('#'+ids_list[i]).attr('parent_object_type');
         var ftrack_id = $('#'+ids_list[i]).attr('task-id');
         // name
-        var col1=$('#'+ids_list[i]).find("td:eq(0)").text();
+        col1 = $('#'+ids_list[i]).find("td:eq(0)").text();
         //user
         col2 = $('#'+ids_list[i]).find("td:eq(1)").text();
-        //current_users_list = col2
         // status
         col3 = $('#'+ids_list[i]).find("td:eq(2)").text();
         // bid
-        col4 = parseFloat($('#'+ids_list[i]).find("td:eq(3)").text())*(10*60*60);
+        col4 = $('#'+ids_list[i]).find("td:eq(3)").text()
         // complexity
-        priority = $('#'+ids_list[i]).find("td:eq(4)").text();
-        col5 = priority_dict[priority]
+        col5 = $('#'+ids_list[i]).find("td:eq(4)").text();
         // start date
         col6 = $('#'+ids_list[i]).find("td:eq(5)").text();
         // description
         col7 = $('#'+ids_list[i]).find("td:eq(6)").text();
 
-        // create data list
-        data_dict['parent_name'] = col1
+        //---------------------------------
         data_dict['task_id'] = ftrack_id
-        data_dict['assignee'] = col2
-        data_dict['task_status'] = col3
-        data_dict['bid'] = col4
-        data_dict['priority'] = col5
-        data_dict['start_date'] = col6
-        b = $('#'+ids_list[i]).find("td:eq(3)").text()
-        ed = assign_end_date_bid_days_start_date(b, col6)
-        data_dict['end_date'] = ed
-        data_dict['description'] = col7
+        org_col3 = $($org_data_tr).find("td:eq(3)").text()
+        //if(col4 != '0'){}
+        if(col2 != $($org_data_tr).find("td:eq(1)").text()){
+            data_dict['assignee'] = col2
+            data_dict['current_users'] = current_users_list
+
+            }
+        if(col3 != $($org_data_tr).find("td:eq(2)").text() || org_col3 == '0'){
+            data_dict['task_status'] = col3
+            }
+        if(col4 != $($org_data_tr).find("td:eq(3)").text() ){
+            data_dict['bid'] = parseFloat(col4)*(10*60*60);
+            }
+        if(col5 != $($org_data_tr).find("td:eq(4)").text() || org_col3 == '0'){
+            data_dict['priority'] = priority_dict[col5]
+            }
+        if(col6 != $($org_data_tr).find("td:eq(5)").text() || org_col3 == '0' || col4 != $($org_data_tr).find("td:eq(3)").text()){
+            data_dict['start_date'] = col6
+            b = $('#'+ids_list[i]).find("td:eq(3)").text()
+            ed = assign_end_date_bid_days_start_date(b, col6)
+            data_dict['end_date'] = ed
+
+            }
+        if(col7 != $($org_data_tr).find("td:eq(6)").text() || $($org_data_tr).find("td:eq(1)").text() == '0'){
+            data_dict['description'] = col7
+            }
+
         if(object_type == 'Shot'){
             // start frame
             var str_frame = $('#'+ids_list[i]).find("td:eq(7)").text();
@@ -9648,24 +9690,29 @@ function create_data_list(ids_list){
             // End Frame
             var enf_frame = $('#'+ids_list[i]).find("td:eq(8)").text();
             col9 = enf_frame
-
-            data_dict['startframe'] = col8
-            data_dict['endframe'] = col9
+            if(col8 != $($org_data_tr).find("td:eq(7)").text() || org_col3 == '0'){
+                data_dict['startframe'] = col8
+                }
+            if(col9 != $($org_data_tr).find("td:eq(8)").text() || org_col3 == '0'){
+                data_dict['endframe'] = col9
+                }
         }
-
         data_dict['id'] = ids_list[i]
-        data_dict['current_users'] = current_users_list
         data_dict['parent_id'] = parent_id
         data_dict['task_name'] = child_task_name
         data_dict['parent_object_type'] = parent_object_type
         data_dict['project_id'] = project_id
-
+        data_dict['project_name'] = project_name
+        data_dict['page'] = page
+        var path = project_name + ':' + col1.replace('_', ':') + ':' +child_task_name
+        data_dict['path'] = path
         data_list.push(data_dict);
 
-        //$('#'+ids_list[i]).attr('org-data', "")
+
     }
     return data_list
 }
+
 
 
 // Save edit table rows data
@@ -9711,7 +9758,7 @@ function save_data(data_list, ids_list){
                 $('#example thead th:nth-child(8)').hide();
                 $('#example thead th:nth-child(9)').hide();
             }
-            $.each(ids_list, function (idx, id) {
+            /*$.each(ids_list, function (idx, id) {
                 for(i=0; i< data_list.length; i++){
                     html = '';
                     if(id == data_list[i]['id']){
@@ -9742,7 +9789,7 @@ function save_data(data_list, ids_list){
                         $('#'+id).attr('current_users', data_list[i]['assignee'])
                     }
                 }
-            });
+            });*/
             $('#panel_big').plainOverlay('hide');
             $('#entity_loader').hide();
         },
@@ -9799,6 +9846,8 @@ $('#addAsset').on('click', function(){
         alert("Please enter asset name.");
         return null;
     }
+    var page = $('#task_menu1').find('li.active').first('a span').text()
+    var project_name = $('#selectEntityProject option:selected').text();
     var asset_description = $('#asset_description').val();
     var parent_object = "Project"
     var asset_build_type = $('#selectEntityAssetType').val();
@@ -9808,10 +9857,15 @@ $('#addAsset').on('click', function(){
     var data_list = []
 
     data_dict['asset_build_name'] = asset_name
+    data_dict['entity_name'] = entity_name
     data_dict['description'] = asset_description
     data_dict['parent_object'] = parent_object
     data_dict['asset_build_type'] = asset_build_type
     data_dict['parent_id'] = parent_id
+    data_dict['project_name'] = project_name
+    data_dict['page'] = page
+    var path = project_name + ':' + asset_name
+    data_dict['path'] = path
     data_list.push(data_dict)
     data_str_list = JSON.stringify(data_list);
     //call
@@ -10320,7 +10374,7 @@ $("#selectEndShotRange").change(function(){
        if(shot_start_range == shot_end_range){
             var data_shots = $("#selectSequenceRange option:selected").attr('data-shots')
             var data_shots_array = data_shots.split(",");
-            var type = ['a', 'b', 'c', 'd']
+            var type = "abcdefghijklmnopqrstuvwxyz".split("");
             $("#selectShotType").empty();
             $("#selectShotType").append('<option value="">Type</option>');
             for(i=0; i< type.length; i++){
@@ -10344,7 +10398,10 @@ $("#selectEndShotRange").change(function(){
 
 // create short
 $("#createShot").click(function(){
+    var page = $('#task_menu1').find('li.active').first('a span').text()
     var project_id = $('#selectEntityProject').val();
+    var project_name = $('#selectEntityProject option:selected').text();
+    var selected_task = $('#selectEntityTask').val();
     var entity_name = 'Shot'
     var parent_object = 'Sequence'
     var shot_start_range = $('#selectShotRange option:selected').val();
@@ -10352,7 +10409,9 @@ $("#createShot").click(function(){
     var shot_type = $('#shot_type option:selected').val();
     var shot_name = ''
     var parent_id = $("#selectSequenceRange").val();
+    var parent_name = $("#selectSequenceRange option:selected").text();
     var description = 'new  created'
+    var shot_create_type = 'Dynamic Shot'
     var creat_array = []
     var skip_array = []
     if(!shot_start_range){
@@ -10375,6 +10434,7 @@ $("#createShot").click(function(){
     ed_index = seq_array.indexOf(shot_end_range);
     //-----
     if(shot_start_range == shot_end_range){
+            shot_create_type = 'Static Short'
             s = shot_start_range
             if(shot_type)
             {
@@ -10416,7 +10476,6 @@ $("#createShot").click(function(){
     });
     if(!shot_end_range){
         shot_end_range = shot_start_range;
-        console.log("shot_end_range : " + shot_end_range)
     }
     sel_st_index = ssr_array.indexOf(shot_start_range);
     sel_en_index = ssr_array.indexOf(shot_end_range);
@@ -10430,20 +10489,26 @@ $("#createShot").click(function(){
             shot_name = creat_array[i];
         }
         data_dict['shot_name'] = shot_name
+        data_dict['shot_create_type'] = shot_create_type
+        data_dict['entity_name'] = entity_name
         data_dict['parent_id'] = parent_id
         data_dict['parent_object'] = parent_object
         data_dict['description'] = description
         data_dict['project_id'] = project_id
-
+        data_dict['project_name'] = project_name
+        data_dict['page'] = page
+        var path = project_name + ':' + parent_name + ':' + shot_name
+        data_dict['path'] = path
         data_list.push(data_dict)
     }
-
     update_form_data(entity_name, data_list, 'Shot');
 });
 
 //create   Sequence
 $("#createSequence").click(function(){
+    var page = $('#task_menu1').find('li.active').first('a span').text()
     var project_id = $('#selectEntityProject').val();
+    var project_name = $('#selectEntityProject option:selected').text();
     var entity_name = 'Sequence'
     var parent_object = 'Project'
     var shot_start_range = $('#selectShotRange option:selected').val();
@@ -10496,8 +10561,6 @@ $("#createSequence").click(function(){
                 //alert("Sequence between range " +shot_start_range+ " to " + shot_end_range +" already created!")
                 //return null
                 skip_array.push(seq_array[i])
-                console.log("Sequence between range " +shot_start_range+ " to " + shot_end_range +" already created!")
-
             }
             else{
                 creat_array.push(seq_array[i])
@@ -10527,11 +10590,15 @@ $("#createSequence").click(function(){
             shot_name = creat_array[i];
         }
         data_dict['seq_name'] = shot_name
+        data_dict['entity_name'] = entity_name
         data_dict['parent_id'] = parent_id
         data_dict['parent_object'] = parent_object
         data_dict['description'] = description
         data_dict['project_id'] = project_id
-
+        data_dict['project_name'] = project_name
+        data_dict['page'] = page
+        var path = project_name + ':' + shot_name
+        data_dict['path'] = path
         data_list.push(data_dict)
     }
     update_form_data(entity_name, data_list, 'Sequence');
@@ -10551,7 +10618,6 @@ function RowClick(currenttr, lock, event) {
         var tr_array = []
         if(selected_tr){
             tr_array = selected_tr.split(",");
-            console.log("tr_array: " + tr_array)
         }
         var index = tr_array.indexOf(cur_id);
         var tr_ids = $('#save').val();
@@ -10603,7 +10669,10 @@ $("#addAssetFromCSV").click(function(){
 
 // For  add asset csv file from show_task_entity page
 $('#add_asset_build_csv').click(function(){
+    var page = $('#task_menu1').find('li.active').first('a span').text()
+    var project_name = $('#selectEntityProject option:selected').text();
     var asset_build_type = $('#selectEntityAssetType').val();
+	var entity_name = "AssetBuild"
 	var desc = 'New Asset Created'
 	var parent_id = $('#selectEntityProject').val();
 
@@ -10612,11 +10681,15 @@ $('#add_asset_build_csv').click(function(){
 	td_array = {};
 	var asset_build_name = $(this).find('td:eq(0)').text().trim();
 	td_array['parent_id'] = parent_id;
+	td_array['entity_name'] = entity_name
 	td_array['parent_object'] = "Project"
 	td_array['asset_build_name'] = asset_build_name;
 	td_array['asset_build_type'] = asset_build_type;
 	td_array['description'] = desc;
-
+    td_array['project_name'] = project_name
+    td_array['page'] = page
+    var path = project_name + ':' + asset_name
+    td_array['path'] = path
     data_list.push(td_array);
     });
     if (data_list.length > 0)
@@ -10633,6 +10706,7 @@ function show_entity_link_model(param){
     //
     var asset_ids = [];
     var parent_id = $(param).closest('tr').attr('parent_id');
+    var parent_path = $(param).closest('tr').find("td:eq(0)").text();
     var selected_object = $('#selectEntityObject').val();
     $('#entity_loader').show();
     //call
@@ -10656,6 +10730,7 @@ function show_entity_link_model(param){
         $('#save_asset').attr('old-ids', "")
         $('#save_asset').attr('old-ids', asset_ids)
         $('#save_asset').attr('task-id', parent_id)
+        $('#save_asset').attr('parent_path', parent_path)
     },
     error: function(error){
         console.log("Error:\n" + error);
@@ -10668,11 +10743,13 @@ function add_entity_asset_link(param){
     var task_id = $('#save_asset').attr('task-id');
     var obj_name = $('#selectEntityObject').val();
     var asset_name = $('#selectEntityObject').val();
+    var parent_path = $(param).attr('parent_path')
+    var tr_id = $(param)
     var old_asset_ids = ""
     if($('#save_asset').attr('old-ids')){
         old_asset_ids = ($('#save_asset').attr('old-ids')).split(",");
     }
-    add_asset(task_id, obj_name, asset_name, old_asset_ids)
+    add_asset(task_id, obj_name, asset_name, old_asset_ids, parent_path)
 };
 
 // For add asset asset link from tast_status page
@@ -10719,7 +10796,6 @@ $("#select_x_range").change(function(){
     var task_name = 'sc'
     var $select_elem = $('#selectShotRange');
     var x_range = $(this).val();
-    console.log("x_range: " + x_range)
     //get range
     get_ranges(project_name, task_name, $select_elem, sequence_range='', x_range)
 });
@@ -10747,9 +10823,8 @@ function sequence_delivery_details(){
     dur_arr = duration.split(':');
 
     first = dur_arr[0];
-    console.log(first);
     last = dur_arr[1];
-    console.log(last);
+    // call
     $.ajax({
         type: "POST",
         url: "/callajax/",
@@ -10918,6 +10993,76 @@ function console_log(obj){
     console.log(str_data);
 }
 
+//---------------------------------------------------------------------------//
+function show_model_entity(context) {
+    reset_model_drop_down();
+    task_parent_id = $(context).closest('tr').attr('parent_id');
+    task_id = task_parent_id //$(context).closest('tr').attr('task-id');
+    task_assignee = $(context).closest('tr').attr('current_users');
+    parent_object_type = $(context).closest('tr').attr('data-parent-object-type');
+    project_id = $("#selectEntityProject option:selected").val();
+
+    obj_name = $('#selectEntityObject').val();
+
+    if (obj_name){
+	if (obj_name == 'Shot Asset Build'){
+	    obj_name = 'Asset Build';
+	}
+    }else{
+	obj_name = 'Task';
+    }
+
+    task = '';
+    if ($('#selectEntityTask').val()){
+	task = $('#selectEntityTask').val();
+    }
+
+    note_task = '';
+    if ($('#selectNoteTask').val()){
+	note_task = $('#selectNoteTask').val();
+    }
+    ver_note_task = '';
+    if ($('#selectVersionTask').val()){
+	ver_note_task = $('#selectVersionTask').val();
+    }
+
+    last_row = 15;
+
+    load_task_details(task_id,obj_name,last_row,task_assignee);
+
+    $('#version_note_details').html('');
+
+    $('#note_details').html('');
+
+    // default Task Note Tab
+    load_task_notes(task_parent_id, obj_name, last_row, note_task);
+
+    load_choosen_data($('#div_selectVersionTask'),$('#selectVersionTask'), "Select Task", task_parent_id);
+    load_choosen_data($('#div_selectNoteTask'),$('#selectNoteTask'), "Select Task", task_id);
+    load_choosen_data($('#div_selectTask'),$('#selectTask'), "Select Task", task_id);
+
+    // user_reject_asset
+    $('#user_reject_asset').attr('data-task-parent-id',task_parent_id);
+    $('#user_reject_asset').attr('data-project-id',project_id);
+    if (parent_object_type == 'Shot'){
+	$('#div_user_reject_asset').css({'display':'block'});
+	$('#user_reject_asset').attr('checked',false);
+	$('#selectVersionAssetType').attr('data-project-id',project_id);
+    }else{
+	$('#div_user_reject_asset').css({'display':'none'});
+    }
+
+
+    $('#btn_note_create').attr('data-task-id',task_id);
+
+    $('#myModal').attr("obj_name", obj_name);
+    $('#myModal').attr("task", task);
+    $('#myModal').attr("note_task", note_task);
+    $('#myModal').attr("ver_note_task", ver_note_task);
+
+    $('#myModal').modal('show');
+};
+//---------------------------------------------------------------------------//
 // Reload page here
 window.onload = function() {
     if ($('#dashboard_page').attr('class') == 'active'){

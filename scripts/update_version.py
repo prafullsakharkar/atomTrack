@@ -5,7 +5,7 @@ from pprint import pprint
 
 session = ase_session.Session()
 
-project = 'sw9'
+project = 'ice'
 
 client = pymongo.MongoClient('192.168.1.19', 27017)
 
@@ -14,11 +14,15 @@ collection = mongo_db['%s_versions' % project]
 bulk = collection.initialize_ordered_bulk_op()
 
 obj_vers = session.query('AssetVersion where task.project.name is "%s"' % project)
+i = 0
 for ver in obj_vers:
+    i += 1
     data = dict()
     verid = ver['id']
     search_key = { 'ftrack_id' : verid }
-    print("VERSION : %s" %verid)
+    print("%s : VERSION : %s" %(i,verid))
+    if i < 80000:
+	continue
     try:
         pub_date = ver['date']
         published_on = datetime.datetime.strptime(pub_date.strftime('%F %T'), '%Y-%m-%d %H:%M:%S')
@@ -57,5 +61,9 @@ for ver in obj_vers:
         print("WRONG:%s" %verid)
 
     bulk.find(search_key).upsert().update_one({'$set': data})
+    if i % 100 == 0:
+	bulk.execute()
+	bulk = collection.initialize_ordered_bulk_op()
+	print("%s : executing bulk" %i)
 
 bulk.execute()

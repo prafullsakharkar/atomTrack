@@ -440,13 +440,11 @@ class AtomTrackEvent():
         data['task_path'] = path.replace(data['name'],data['task_name'])
         data['asset_type'] = obj_version['asset']['type']['name']
         data['asset_name'] = obj_version['asset']['name']
+        data['task_id'] = obj_version['task_id']
 
         action = entity.get('action')
         if action == 'remove':
             return data
-
-        if entity.get('taskid'):
-            data['task_id'] = entity.get('taskid')
 
         if entity.get('parentId'):
             data['parent_id'] = entity.get('parentId')

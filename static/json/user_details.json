@@ -22,7 +22,7 @@
     ]
   },
   "muttangouda.b": {
-    "role": "Co-ordinator",
+    "role": "Lead",
     "columns": [
       "Lighting"
     ],
@@ -33,35 +33,24 @@
       "VFX"
     ]
   },
-  "mahendra.upadhyay": {
-    "role": "Co-ordinator",
+  "swapnil.naik": {
+    "role": "Lead",
     "columns": [
-      "Lighting",
-      "Render",
-      "CFX",
-      "FX",
-      "Cloth",
-      "Shot Finaling",
-      "Shave Hair",
-      "PreLighting"
+      "Lighting"
     ],
-    "group": "Production",
-    "name": "mahendra.upadhyay",
+    "group": "Sup",
+    "name": "swapnil.naik",
     "departments": [
       "Lighting"
     ]
   },
-  "vibhor.tyagi": {
-    "role": "Co-ordinator",
+  "ramakant.singh": {
+    "role": "Lead",
     "columns": [
-      "Lighting",
-      "Render",
-      "CFX",
-      "FX",
-      "PreLighting"
+      "Lighting"
     ],
-    "group": "Production",
-    "name": "vibhor.tyagi",
+    "group": "Sup",
+    "name": "ramakant.singh",
     "departments": [
       "Lighting"
     ]
@@ -106,18 +95,7 @@
       "SHF",
       "Fur"
     ]
-  },
-  "nishant.khanna": {
-    "role": "Co-ordinator",
-    "columns": [
-      "FX"
-    ],
-    "group": "Sup",
-    "name": "nishant.khanna",
-    "departments": [
-      "FX"
-    ]
-  },
+  },  
   "vijay.nathawat": {
     "role": "Supervisor",
     "columns": [
@@ -170,8 +148,6 @@
       "Proxy Set",
       "Set Dressing",
       "Rigging",
-      "Shave Hair",
-      "Shot Finaling",
       "Texturing"
     ],
     "group": "Sup",
@@ -516,6 +492,21 @@
       "Animation"
     ]
   },
+  "sudhanshu.gill": {
+    "role": "Co-ordinator",
+    "columns": [
+      "Layout",
+      "Anim Tech Check",
+      "Shave Hair",
+      "Shot Finaling",
+      "Cloth"
+    ],
+    "group": "Production",
+    "name": "sudhanshu.gill",
+    "departments": [
+      "Animation"
+    ]
+  },
   "hardik.trivedi": {
     "role": "Co-ordinator",
     "columns": [
@@ -527,6 +518,17 @@
     ],
     "group": "Production",
     "name": "hardik.trivedi",
+    "departments": [
+      "Animation"
+    ]
+  },
+  "hardik.gediya": {
+    "role": "Co-ordinator",
+    "columns": [
+      "FX"    
+    ],
+    "group": "Production",
+    "name": "hardik.gediya",
     "departments": [
       "Animation"
     ]
@@ -642,6 +644,48 @@
       "FX"
     ]
   },
+  "arun.kc": {
+    "role": "Supervisor",
+    "columns": [
+      "Animation",
+      "Animation Stereo",
+      "Anim Tech Check",
+      "Anim Texture",
+      "Blend Shape",
+      "Blocking",
+      "Foliage",
+      "CFX",
+      "Previz",
+      "Cloth",
+      "Final Animation Stereo",
+      "Fur Shape",
+      "FX",
+      "Layout",
+      "Layout Rig",
+      "Layout Stereo",
+      "Lighting",
+      "Modeling",
+      "Matte Painting",
+      "PreLighting",
+      "Proxy Set",
+      "Render",
+      "Rigging",
+      "Set Dressing",
+      "Shave Hair",
+      "Shot Finaling",
+      "Sim Modeling",
+      "Stereo Comp",
+      "Stereo Render",
+      "Rig Test",
+      "Texturing"
+    ],
+    "group": "Sup",
+    "name": "arun.kc",
+    "departments": [
+      "Lighting",
+      "FX"
+    ]
+  },
   "nitin.kashyap": {
     "role": "Co-ordinator",
     "columns": [
@@ -724,43 +768,18 @@
       "FX"
     ]
   },
-  "sultan.bal": {
+  "meheraz.shaikh": {
     "role": "Co-ordinator",
     "columns": [
       "Animation",
-      "Animation Stereo",
       "Anim Tech Check",
-      "Anim Texture",
-      "Blend Shape",
       "Blocking",
-      "CFX",
-      "Cloth",
-      "Final Animation Stereo",
-      "Fur Shape",
-      "FX",
-      "Layout",
-      "Layout Rig",
-      "Layout Stereo",
-      "Lighting",
-      "Modeling",
-      "PreLighting",
-      "Proxy Set",
-      "Render",
-      "Rigging",
-      "Set Dressing",
-      "Shave Hair",
-      "Shot Finaling",
-      "Sim Modeling",
-      "Stereo Comp",
-      "Stereo Render",
-      "Rig Test",
-      "Texturing"
+      "Layout"    
     ],
     "group": "Sup",
-    "name": "sultan.bal",
+    "name": "meheraz.shaikh",
     "departments": [
-      "Lighting",
-      "FX"
+      "Animation"
     ]
   },
   "vaibhav.shah": {

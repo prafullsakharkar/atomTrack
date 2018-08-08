@@ -7,6 +7,7 @@ def auth_view(request):
 	password = request.POST.get('password')
 	user = auth.authenticate(username=username, password=password)
 	if user is not None:
+		request.session.set_expiry(28800)
 		auth.login(request, user)
 		return HttpResponseRedirect('/role_login/')
 	else:

@@ -6,13 +6,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1f87f359-dcfb-4e9e-84dc-5703e096035f" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/atom/classActivity.py" beforeDir="false" afterPath="$PROJECT_DIR$/atom/classActivity.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/atom/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/atom/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/atom/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/atom/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/atom_events/atom_ftrack_event.py" beforeDir="false" afterPath="$PROJECT_DIR$/atom_events/atom_ftrack_event.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/db.sqlite3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/update_version.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/update_version.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/css/custom.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/custom.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/static/js/custom.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/custom.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/js/custom_new.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/static/json/email.json" beforeDir="false" afterPath="$PROJECT_DIR$/static/json/email.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/static/json/user_details.json" beforeDir="false" afterPath="$PROJECT_DIR$/static/json/user_details.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/footer.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/footer.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/artist_tasks.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/artist_tasks.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/header.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/header.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/left_side_menu.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/left_side_menu.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/month_wise_reports.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/month_wise_reports.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/show_task_entities.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/show_task_entities.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/task_status.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/task_status.html" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -26,17 +37,7 @@
     <favorites_list name="atomTrack" />
   </component>
   <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="update_version.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/scripts/update_version.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="68">
-              <caret line="7" column="14" selection-start-line="7" selection-start-column="14" selection-end-line="7" selection-end-column="14" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -47,7 +48,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>update_on</find>
       <find>assignWidgets</find>
       <find>start_clicked</find>
       <find>get_artist_tasks</find>
@@ -77,6 +77,7 @@
       <find>summary_display</find>
       <find>artist_pro</find>
       <find>select_change</find>
+      <find>get_task_detail_mongo</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -114,10 +115,10 @@
         <option value="$PROJECT_DIR$/templates/upload_ftp.html" />
         <option value="$PROJECT_DIR$/atom_events/atom_ftrack_event.py" />
         <option value="$PROJECT_DIR$/templates/sequence_delivery.html" />
-        <option value="$PROJECT_DIR$/atom/classActivity.py" />
         <option value="$PROJECT_DIR$/static/js/custom.js" />
         <option value="$PROJECT_DIR$/templates/task_status.html" />
         <option value="$PROJECT_DIR$/scripts/update_version.py" />
+        <option value="$PROJECT_DIR$/atom/classActivity.py" />
       </list>
     </option>
   </component>
@@ -136,7 +137,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -147,22 +147,18 @@
             <path>
               <item name="atomTrack" type="b2602c69:ProjectViewProjectNode" />
               <item name="atomTrack" type="462c0819:PsiDirectoryNode" />
-              <item name="scripts" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="atomTrack" type="b2602c69:ProjectViewProjectNode" />
-              <item name="atomTrack" type="462c0819:PsiDirectoryNode" />
               <item name="static" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/manage.py" />
     <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
   </component>
   <component name="RecentsManager">
@@ -183,7 +179,25 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.update_version">
+  <component name="RunManager">
+    <configuration name="ATOM" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="atomTrack" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/manage.py" />
+      <option name="PARAMETERS" value="runserver 8888" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="projftrack" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -202,42 +216,6 @@
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
-    <configuration name="classActivity" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="atomTrack" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/atom" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/atom/classActivity.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-    </configuration>
-    <configuration name="update_version" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="atomTrack" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/update_version.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-    </configuration>
     <configuration default="true" type="Tox" factoryName="Tox">
       <module name="projftrack" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -249,7 +227,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
     </configuration>
     <configuration default="true" type="tests" factoryName="Doctests">
-      <module name="gen8TMS" />
+      <module name="projftrack" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -266,7 +244,7 @@
       <option name="USE_PATTERN" value="false" />
     </configuration>
     <configuration default="true" type="tests" factoryName="Nosetests">
-      <module name="gen8TMS" />
+      <module name="projftrack" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -280,7 +258,7 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
     </configuration>
     <configuration default="true" type="tests" factoryName="Twisted Trial">
-      <module name="gen8TMS" />
+      <module name="projftrack" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -293,7 +271,7 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
     </configuration>
     <configuration default="true" type="tests" factoryName="Unittests">
-      <module name="gen8TMS" />
+      <module name="projftrack" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -306,7 +284,7 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
     </configuration>
     <configuration default="true" type="tests" factoryName="Doctests">
-      <module name="projftrack" />
+      <module name="gen8TMS" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -323,7 +301,7 @@
       <option name="USE_PATTERN" value="false" />
     </configuration>
     <configuration default="true" type="tests" factoryName="Nosetests">
-      <module name="projftrack" />
+      <module name="gen8TMS" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -337,7 +315,7 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
     </configuration>
     <configuration default="true" type="tests" factoryName="Twisted Trial">
-      <module name="projftrack" />
+      <module name="gen8TMS" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -350,7 +328,7 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
     </configuration>
     <configuration default="true" type="tests" factoryName="Unittests">
-      <module name="projftrack" />
+      <module name="gen8TMS" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
@@ -376,14 +354,9 @@
       <option name="_new_target" value="&quot;&quot;" />
       <option name="_new_targetType" value="&quot;PATH&quot;" />
     </configuration>
-    <list>
-      <item itemvalue="Python.classActivity" />
-      <item itemvalue="Python.update_version" />
-    </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.update_version" />
-        <item itemvalue="Python.classActivity" />
+        <item itemvalue="Python.ATOM" />
       </list>
     </recent_temporary>
   </component>
@@ -555,18 +528,17 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="1918" y="25" width="1924" height="1059" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49624062" visible="true" weight="0.12796208" />
       <window_info anchor="bottom" id="TODO" order="6" sideWeight="0.49394417" weight="0.32760474" />
       <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.50605583" side_tool="true" weight="0.32760474" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.32975295" />
       <window_info anchor="bottom" id="Version Control" order="7" sideWeight="0.49394417" weight="0.32583067" />
       <window_info anchor="bottom" id="Python Console" order="7" weight="0.32867885" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.32975295" />
       <window_info id="Structure" order="1" sideWeight="0.5037594" side_tool="true" weight="0.12796208" />
       <window_info anchor="bottom" id="Terminal" order="7" weight="0.3290461" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.39957035" />
       <window_info id="Favorites" order="2" sideWeight="0.50375134" side_tool="true" weight="0.16166404" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.39957035" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -914,13 +886,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/atom/classActivity.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102952">
-          <caret line="6089" column="20" selection-start-line="6089" selection-start-column="20" selection-end-line="6089" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/templates/task_status.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="613">
@@ -930,8 +895,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/scripts/update_version.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
+        <state relative-caret-position="17">
           <caret line="7" column="14" selection-start-line="7" selection-start-column="14" selection-end-line="7" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/atom/classActivity.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="184">
+          <caret line="1049" column="60" lean-forward="true" selection-start-line="1049" selection-start-column="60" selection-end-line="1049" selection-end-column="60" />
         </state>
       </provider>
     </entry>

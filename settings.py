@@ -59,7 +59,7 @@ SECRET_KEY = '7tp!_4)k6ev_1&=%pyc@%()0kp5h&-ynvas-!y49oq-(9!n4t)'
 DEBUG = True
 DEVMODE = False
 
-ALLOWED_HOSTS = ['192.168.1.20', '127.0.0.1', '192.168.1.109', '192.168.1.19', 'atom.intra.madassemblage.com',
+ALLOWED_HOSTS = ['192.168.1.20', '127.0.0.1', '192.168.1.109', 'atom.intra.madassemblage.com', '192.168.1.97', '192.168.1.99',
                  'atom', '10.11.7.240']
 
 try:
@@ -69,15 +69,15 @@ try:
 except ValueError:
     ip_address = '127.0.0.1'
 
-if ip_address not in ['192.168.1.20', '192.168.1.19']:
+if ip_address not in ['192.168.1.97']:
     DEVMODE = True
 
-MONGO_SERVER = '192.168.1.19'
+MONGO_SERVER = '192.168.1.99'
 MONGO_DB = 'userDailyBackupTask'
 FTRACK_URL = 'http://192.168.1.98' 
 
 if DEVMODE:
-    MONGO_SERVER = '192.168.1.128'
+    MONGO_SERVER = '192.168.1.97'
     FTRACK_URL = 'http://192.168.1.99' 
 
 mongoengine.connect(db=MONGO_DB,host=MONGO_SERVER,connect=False)

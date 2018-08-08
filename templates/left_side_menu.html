@@ -70,23 +70,21 @@
                         </li>
                     </ul>
                 </li>
+                {% elif data.user_role == 'Lead' %}
+                <li id="review_tasks" class="{% if request.path == '/review/' %}active{% endif %}">
+                    <a class="ajax-link" href="/review"><i class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;
+                        <span> Review Tasks</span>
+                    </a>
+                </li>
                 {% endif %}
-                <!--<li class="{% if request.path == '/help_documentation/' %}active{% endif %}"
+                <li class="{% if request.path == '/help_documentation/' %}active{% endif %}"
                     id="help_document">
                     <a class="ajax-link"
                        href="/help_documentation"><i
                             class="glyphicon glyphicon-new-window"></i>&nbsp;&nbsp;
-                        <span> Help Documentation</span>
+                        <span> Help </span>
                     </a>
                 </li>
-                <li class="{% if request.path == '/publi_ver_detail_view/' %}active{% endif %}"
-                    id="published_versions_details">
-                    <a class="ajax-link"
-                       href="/publi_ver_detail_view"><i
-                            class="glyphicon glyphicon-new-window"></i>&nbsp;&nbsp;
-                        <span> Published Version Details</span>
-                    </a>
-                </li>-->
             </ul>
         </div>
     </div>

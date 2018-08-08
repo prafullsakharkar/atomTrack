@@ -21,4 +21,5 @@ urlpatterns = [
     url(r'^artist_prod/', act.artist_productivity, name='artist_productivity'),
     url(r'^month_wise/', act.month_wise_reports, name='month_wise_reports'),
     url(r'^sequence_delivery/', act.sequence_delivery, name='sequence_delivery'),
+    url(r'^help_documentation/', act.help_document, name='help_documentation'),
 ]
