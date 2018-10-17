@@ -55,24 +55,10 @@
               <div class="controls">
                 <label class="control-label">Projects : &nbsp;</label>
                 <select id="selectProject" data-rel="chosen" style="width: 122px;">
-                  <option value="">Select Project</option>
+                  <option value="">-- Select --</option>
                   {% for proj,id in data.projects.items %}
                   <option value="{{id}}">{{proj}}</option>
                   {% endfor %}
-                </select>
-              </div>
-              <div class="controls" id="status_options" style="display:none">
-
-                <select id="selectStatus" data-rel="chosen" data-placeholder="Select one...">
-
-                  {% for status in statuses %}
-                  {% if status.name in disabled_status %}
-                  <option value="{{status.name}}" disabled>{{status.name}}</option>
-                  {% else %}
-                  <option value="{{status.name}}">{{status.name}}</option>
-                  {% endif %}
-                  {% endfor %}
-
                 </select>
               </div>
               <div class="controls" id="users_options" style="display:none">
@@ -90,12 +76,11 @@
               <div class="controls">
                 <label class="control-label" for="selectObject">Objects : &nbsp;</label>
                 <select id="selectObject" data-rel="chosen">
-                  <option value="">Select Object</option>
-                  {% for obj_name in task_temp_data %}
-                  {% if obj_name == 'Sequence' or obj_name == 'Asset Build' or obj_name == 'Shot' or obj_name == 'Shot Asset Build' %}
-                  <option value="{{obj_name}}">{{obj_name}}</option>
-                  {% endif %}
-                  {% endfor %}
+                  <option value="">-- Select --</option>
+                  <option value="Asset Build">Asset Build</option>
+                  <option value="Sequence">Sequence</option>
+                  <option value="Shot">Shot</option>
+                  <option value="Shot Asset Build">Shot Asset Build</option>
                 </select>
               </div>
             </div>
@@ -104,7 +89,7 @@
                 <label class="control-label" for="selectType" id="type_name">Types :
                   &nbsp;&nbsp;</label>
                 <select id="selectType" data-rel="chosen">
-                  <option value="">Select Type</option>
+                  <option value="">-- Select --</option>
                 </select>
               </div>
             </div>
@@ -113,7 +98,7 @@
                 <label class="control-label" for="selectAsset" id="asset_name">&nbsp;Asset Build
                   : </label>
                 <select id="selectAsset" data-rel="chosen" multiple style="width:70%">
-                  <option value="">Select Asset Build</option>
+                  <option value="">-- Select --</option>
                 </select>
                 <label class="control-label">
                   <input type="checkbox" id="all_assets" value="select_all">&nbsp;All
@@ -159,8 +144,7 @@
                      data-qtip="Type to filter on task name or description"
                      placeholder="Type to filter..." class="x-form-field x-form-text x-form-empty-field"
                      autocomplete="off" type="text">
-              <button title="Reload Tasks" class="btn btn-inverse btn-default btn-sm" id="refresh"
-                      onclick="reload_tasks(1)">
+              <button title="Reload Tasks" class="btn btn-inverse btn-default btn-sm" id="refresh" onclick="reload_tasks(1)">
                 <i class="glyphicon glyphicon-refresh icon-white"></i></button>
               <!--                            <button title="Download" class="btn btn-inverse btn-default btn-sm" id="dwn_task_status" onClick ="$('#tbl_task').tableExport({filename: 'super-secret-data',type:'excel',escape:'false'});"> -->
               <button title="Download" class="btn btn-inverse btn-default btn-sm" id="dwn_task_status">
@@ -302,6 +286,12 @@
                             History
                           </a>
                         </li>
+			<li role="presentation">
+                    <a href="#my_activity_logs" aria-controls="my_activity_logs" role="tab"
+                       data-toggle="tab" id="my_activity">
+                      Activity
+                    </a>
+                  </li>
                         </ul>
 
                         <!-- Tab panes -->
@@ -309,29 +299,20 @@
                           <div role="tabpanel" class="tab-pane active" id="my_notes">
                             <div class="box">
 
-                              <span>&nbsp;Tasks</span>
                               <div class="controls">
+                              <span>&nbsp;Tasks :</span>
                                 <select id="selectNoteTask" data-rel="chosen"
                                         style="width: 140px;">
-
-                                  <!--<option value="">None</option>
-                                  {% for task in data.all_tasks %}
-                                  <option value="{{ task }}">{{ task }}</option>
-                                  {% endfor %}-->
 
                                 </select>
                                 &nbsp;&nbsp;
                                 <span>Category : </span>
                                 <select id="selectNoteCategory" data-rel="chosen"
-                                        data-placeholder="Select one..."
-                                        style="width:130px !important;"
-                                        onchange="toggle_parent_note(this)">
-                                  <option value="">All</option>
+                                        style="width:130px !important;">
+                                  <option value="">-- All --</option>
                                   <option value="None">None</option>
                                   <option value="Internal">Internal</option>
-                                  <option value="Client feedback">Client
-                                    feedback
-                                  </option>
+                                  <option value="Client feedback">Client feedback </option>
                                   <option value="Client">Client</option>
                                 </select>
                               </div>
@@ -371,18 +352,6 @@
                           <div role="tabpanel" class="tab-pane" id="my_links">
                             <div id="task_link_loader" style="text-align: center;"><img
                               src="/static/img/loading.gif"></div>
-                            <br>
-                            &nbsp;&nbsp;<div class="btn-group left theme-container animated tada">
-                            <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" id="incoming"
-                                    onclick="show_link_model(this)">
-                              <span class="hidden-sm hidden-xs">
-                                Create Asset Link</span>
-                            </button>
-                            <!--<ul class="dropdown-menu">
-                              <li><a href="#" id="incoming" onclick="show_link_model(this)"> Incoming </a></li>
-                              <li><a href="#" id="outgoing" onclick="show_link_model(this)"> Outgoing </a></li>
-                            </ul>-->
-                          </div>
                             <div class="box"
                                  style="overflow:auto; overflow-y:auto; height:624px;"
                                  id="link_details" asset_ids=""></div>
@@ -394,28 +363,13 @@
                                 <span>&nbsp;Tasks</span>
                                 <select id="selectTask" data-rel="chosen"
                                         style="width: 140px;">
-                                  <option value="">All</option>
-                                  {% for task in data.all_tasks %}
-                                  <option value="{{ task }}">{{ task }}</option>
-                                  {% endfor %}
                                 </select>&nbsp;&nbsp;
                                 <span>Asset Types : </span>
                                 <select id="selectAssetTypes" data-rel="chosen"
                                         data-placeholder="Select one..."
-                                        style="width:130px !important;"
-                                        onchange="toggle_asset_type(this)">
-                                  <option value="">All</option>
-                                  {% for type in asset_types %}
-                                  <option value="{{type}}">{{type}}</option>
-                                  {% endfor %}
-                                </select>
+                                        style="width:130px !important;">
+				</select>
                                 <div style="float: right;">
-                                  <input data-errorqtip="" aria-invalid="false"
-                                         id="search_version"
-                                         data-qtip="Type to filter on task name or description"
-                                         placeholder="Type to filter..."
-                                         class="x-form-field x-form-text x-form-empty-field"
-                                         autocomplete="off" type="text">&nbsp;
                                   <button class="btn btn-inverse btn-default btn-sm" id="save_ver_changes"
                                           title="Save Changes">
                                     <i class="glyphicon glyphicon-floppy-save icon-white"></i></button>&nbsp;
@@ -426,59 +380,48 @@
                             </div>
                             <div id="version_loader" style="text-align: center;"><img
                               src="/static/img/loading.gif"></div>
-                            <div class="box"
-                                 style="overflow:auto; overflow-y:auto; height:572px; overflow-x:auto; width:855px; white-space: nowrap;"
-                                 id="version_details">
-                              <table class="table table-striped" id="tbl_versions">
-                                <thead>
-                                <tr>
-                                  <th onclick="sortOrder(this)"><i
-                                    class="glyphicon glyphicon-sort-by-alphabet"></i>&nbsp;
-                                    Name
-                                  </th>
-                                  <th>Type</th>
-                                  <th>Status</th>
-                                  <th>Published On</th>
-                                  <th>Published by</th>
-                                  <th>Description</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                              </table>
-                            </div>
+			     <div class="box" id="div_version_details">
+              <div class="box-content">
+              <table class="table table-hover table-bordered" id="tbl_versions">
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                                <th>Status</th>
+                                <th>Published On</th>
+                                <th>Published by</th>
+                                <th>Description</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+              </table>
+              </div>
+            </div>
                           </div>
 
                           <div role="tabpanel" class="tab-pane" id="my_version_notes">
                             <div class="box">
                               <div class="controls">
                                 <select id="selectVersionTask" data-rel="chosen"
-                                        style="width: 140px;"
-                                        onchange="show_asset_type(this)">
-                                  <option value="">Select Task</option>
-                                  {% for task in data.all_tasks %}
-                                  <option value="{{ task }}">{{ task }}</option>
-                                  {% endfor %}
+                                        style="width: 140px;">
+                                  <option value="">-- Select --</option>
                                 </select>&nbsp;&nbsp;
                                 <select id="selectVersionTaskAssetTypes"
                                         data-rel="chosen"
-                                        style="width: 140px;"
-                                        onchange="show_versions(this)">
-                                  <option value="">Select Asset Type</option>
-                                  <!--{% for type in asset_types %}-->
-                                  <!--<option value="{{type}}">{{type}}</option>-->
-                                  <!--{% endfor %}-->
+                                        style="width: 140px;">
+                                  <option value="">-- Asset Type --</option>
                                 </select>&nbsp;&nbsp;
                                 <select id="selectTaskVersion" data-rel="chosen"
                                         style="width: 240px;">
-                                  <option value="">Select Version</option>
+                                  <option value="">-- Version --</option>
                                 </select>&nbsp;&nbsp;
                                 <span>Category :</span>&nbsp;&nbsp;
                                 <select id="selectVersionNoteCategory" data-rel="chosen"
                                         data-placeholder="Select one..."
-                                        style="width:130px !important;"
-                                        onchange="toggle_parent_note(this)">
-                                  <option value="">All</option>
+                                        style="width:130px !important;">
+                                  <option value="">-- All --</option>
                                   <option value="None">None</option>
                                   <option value="Internal">Internal</option>
                                   <option value="Client feedback">Client
@@ -533,6 +476,43 @@
                                id="version_note_details_history" data-user-id="{{user_id}}"></div>
                         </div>
                         <!--------------------- end ---------------------------->
+			<div role="tabpanel" class="tab-pane" id="my_activity_logs">
+
+		    <!-- Activity Start -->
+		    <div role="tabpanel" class="tab-pane" id="my_activity_logs">
+                    <div id="my_activity_loader" style="text-align: center; display: none;">
+                      <img src="/static/img/loading.gif"></div>
+                    <div class="box">
+                      <div class="controls" id="div_selectActivityTask" style="float: right;">
+                        <span>&nbsp;Tasks</span>
+                        <select id="selectActivityTask" data-rel="chosen"
+                                style="width: 140px;">
+                          <option value="">All</option>
+                        </select>
+                      </div>
+
+                    <div class="box-content">
+                      <div class="box-conetnt" id="activity_logs_details">
+                        <table class="table table-striped" id="tbl_activity">
+                          <thead>
+                          <tr>
+                            <th>Path</th>
+                            <th>Activity By</th>
+                            <th>Action</th>
+                            <th>Details For</th>
+                            <th>Value</th>
+                            <th>Activity Date</th>
+                          </tr>
+                          </thead>
+                          <tbody>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+
+              </div>
+		<!-- Activity End -->
 
                         </div>
                       </div>

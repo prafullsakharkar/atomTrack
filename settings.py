@@ -77,7 +77,7 @@ MONGO_DB = 'userDailyBackupTask'
 FTRACK_URL = 'http://192.168.1.98' 
 
 if DEVMODE:
-    MONGO_SERVER = '192.168.1.97'
+    MONGO_SERVER = '192.168.1.128'
     FTRACK_URL = 'http://192.168.1.99' 
 
 mongoengine.connect(db=MONGO_DB,host=MONGO_SERVER,connect=False)

@@ -5,9 +5,19 @@
                 <li class="nav-header"><img class="dashboard-avatar" alt=""
                                             src="http://192.168.1.18/Employees/{{emp_code}}.jpg"></li>
                 <li class="nav-header">Main</li>
+                <li class="{% if request.path == '/create/' %}active{% endif %}" id="create_project_page">
+                    <a class="ajax-link" href="/create"><i class="glyphicon glyphicon-new-window"></i>&nbsp;&nbsp;
+                        <span> Create Entities</span>
+                    </a>
+                </li>
                 <li id="artist_tasks" class="{% if request.path == '/tasks/' %}active{% endif %}">
                     <a class="ajax-link" href="/tasks"><i class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;
                         <span> To Do List</span>
+                    </a>
+                </li>
+                <li class="{% if request.path == '/task_entity/' %}active{% endif %}" id="task_entity">
+                    <a class="ajax-link" href="/task_entity"><i class="glyphicon glyphicon-new-window"></i>&nbsp;&nbsp;
+                        <span> Task Entity</span>
                     </a>
                 </li>
                 <li class="{% if request.path == '/status/' %}active{% endif %}">
@@ -24,16 +34,6 @@
                 <li class="{% if request.path == '/ftp/' %}active{% endif %}">
                     <a class="ajax-link" href="/ftp"><i class="glyphicon glyphicon-cloud-upload"></i>&nbsp;&nbsp;
                         <span> FTP Upload</span>
-                    </a>
-                </li>
-                <li class="{% if request.path == '/create/' %}active{% endif %}" id="create_project_page">
-                    <a class="ajax-link" href="/create"><i class="glyphicon glyphicon-new-window"></i>&nbsp;&nbsp;
-                        <span> Create Entities</span>
-                    </a>
-                </li>
-                <li class="{% if request.path == '/task_entity/' %}active{% endif %}" id="task_entity">
-                    <a class="ajax-link" href="/task_entity"><i class="glyphicon glyphicon-new-window"></i>&nbsp;&nbsp;
-                        <span> Task Entity</span>
                     </a>
                 </li>
                 <li class="accordion">

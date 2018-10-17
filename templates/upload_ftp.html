@@ -35,8 +35,8 @@
             <div class="col-at-1">
               <div class="controls">
                 <label class="control-label">Projects : &nbsp;</label>
-                <select id="selectProject" data-rel="chosen" style="width: 122px;">
-                  <option value="">Select Project</option>
+                <select id="selectProject" data-rel="chosen" style="width: 130px;">
+                  <option value="">-- Select --</option>
                   {% for proj,id in data.projects.items %}
                   <option value="{{id}}">{{proj}}</option>
                   {% endfor %}
@@ -47,26 +47,22 @@
             <div class="col-at-1" id="div_status_name" style="display: block;">
               <div class="controls">
                 <label class="control-label" for="selectFtpStatus">Upload For : &nbsp;&nbsp;</label>
-                <select id="selectFtpStatus" data-rel="chosen" data-placeholder="Select one...">
-                  <option value="">Select Status</option>
-                  <option value="Internal">Internal</option>
+                <select id="selectFtpStatus" data-rel="chosen" data-placeholder="Select one..." style="width:130px">
+                  <option value="">-- Select --</option>
                   <option value="Client">Client</option>
-                  <option value="Outsource">Outsource</option>
                   <option value="Review">Review</option>
                   <option value="DI">DI</option>
+                  <option value="Outsource">Outsource</option>
                 </select>
               </div>
             </div>
             <div class="col-at-1">
               <div class="controls">
                 <label class="control-label" for="selectFtpObject">Objects : &nbsp;</label>
-                <select id="selectFtpObject" data-rel="chosen" style="width:110px">
-                  <option value="">Select Object</option>
-                  {% for obj_name in task_temp_data %}
-                  {% if obj_name == 'Asset Build' or obj_name == 'Shot' %}
-                  <option value="{{obj_name}}">{{obj_name}}</option>
-                  {% endif%}
-                  {% endfor %}
+                <select id="selectFtpObject" data-rel="chosen" style="width:130px">
+                  <option value="">-- Select --</option>
+                  <option value="Asset Build">Asset Build</option>
+                  <option value="Shot">Shot</option>
                 </select>
               </div>
             </div>
@@ -74,8 +70,8 @@
               <div class="controls">
                 <label class="control-label" for="selectFtpType">Types :
                   &nbsp;&nbsp;</label><br>
-                <select id="selectFtpType" data-rel="chosen">
-                  <option value="">Select Type</option>
+                <select id="selectFtpType" data-rel="chosen" style="width:130px">
+                  <option value="">-- Select --</option>
                 </select>
               </div>
             </div>
@@ -93,14 +89,9 @@
               <div class="controls">
                 <label class="control-label" for="selectAssetFtpDepartment">Department :
                   &nbsp;&nbsp;</label>
-                <select id="selectAssetFtpDepartment" data-rel="chosen"
+                <select id="selectAssetFtpDepartment" data-rel="chosen" style="width:130px"
                         data-placeholder="Select one...">
-                  <option value="">Select Department</option>
-                  <!--
-                                              {% for dept in data.ftp_departments %}
-                                                  <option value="{{dept.name}}">{{dept.name}}</option>
-                                              {% endfor %}
-                  -->
+                  <option value="">-- Select --</option>
                   {% for obj_name,task_name in task_temp_data.items %}
                   {% if obj_name == 'All Asset Build' %}
                   {% for key,value in task_name.items %}
@@ -121,8 +112,8 @@
               <div class="controls">
                 <label class="control-label" for="selectShotFtpDepartment">Department :
                   &nbsp;&nbsp;</label>
-                <select id="selectShotFtpDepartment" data-rel="chosen" data-placeholder="Select one...">
-                  <option value="">Select Department</option>
+                <select id="selectShotFtpDepartment" data-rel="chosen" data-placeholder="Select one..." style="width:130px">
+                  <option value="">-- Select --</option>
                   {% for obj_name,task_name in task_temp_data.items %}
                   {% if obj_name == 'All Shot' %}
                   {% for key,value in task_name.items %}
@@ -227,10 +218,10 @@
                 <label class="control-label" for="selectFtpVersionSide">Camera Side :
                   &nbsp;&nbsp;</label>
                 <select id="selectFtpVersionSide" data-rel="chosen" data-placeholder="Select one...">
-                  <option value="">Select Side</option>
-                  {% for side in data.ftp_vesion_side %}
-                  <option value="{{side.name}}">{{side.name}}</option>
-                  {% endfor %}
+                  <option value="">-- Select --</option>
+                  <option value="left">left</option>
+                  <option value="left">right</option>
+                  <option value="left">both</option>
                 </select>
               </div>
             </div>
@@ -269,17 +260,11 @@
               <th id="check_box" style="width:30px;"><input type="checkbox" id="allftpcb"
                                                             name="allftpcb"/>
               </th>
-              <th onclick="sortOrder(this)"><i
-                class="glyphicon glyphicon-sort-by-alphabet"></i>&nbsp;
-                Name
-              </th>
-
-              <th>Version</th>
-              <th>Upload version</th>
+              <th>Name</th>
+              <th>Published Version</th>
+              <th>Upload Version</th>
               <th>Status</th>
-              <th>Assignee</th>
-              <!--<th>Source Files</th>-->
-              <!--<th>Camera Angle</th>-->
+              <th>Published by</th>
             </tr>
             </thead>
             <tbody>

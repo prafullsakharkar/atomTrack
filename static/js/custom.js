@@ -48,30 +48,75 @@ $("#selectObject").change(function(){
 
 });
 
+function reset_object(){
+
+    $('#all_assets').attr('checked',false);
+    $('#all_shots').attr('checked',false);
+    $('#all_sequences').attr('checked',false);
+
+    $("#selectSequence").empty();
+    $("#selectSequence").trigger("chosen:updated");
+    $("#selectSequence").trigger("liszt:updated");
+    $("#div_sequence_name").css({'display':'none'});
+
+    $("#selectType").empty();
+    $("#selectType").trigger("chosen:updated");
+    $("#selectType").trigger("liszt:updated");
+    $("#div_type_name").css({'display':'none'});
+
+    $("#selectShot").empty();
+    $("#selectShot").trigger("chosen:updated");
+    $("#selectShot").trigger("liszt:updated");
+    $("#div_shot_name").css({'display':'none'});
+
+    $("#selectAsset").empty();
+    $("#selectAsset").trigger("chosen:updated");
+    $("#selectAsset").trigger("liszt:updated");
+    $("#div_asset_name").css({'display':'none'});
+
+    remove_rows('#tbl_task');
+}
+
+// FTP Upload Start here ---->
+
+$('#selectFtpStatus').change(function(){
+    upload_notes()
+});
+
+function upload_notes(){
+
+    if ($('#selectFtpStatus').val() == 'Internal'){
+          $('#upload_tips').html('<span style="font-weight:bold; font-size:21px;text-decoration:underline">Status Convention to be followed-</span></br> Task status : Pending Internal Review , Version Status : Ready to review');
+    }else if ($('#selectFtpAssetName').val() == 'final' && $('#selectFtpStatus').val() == 'Client') {
+        $('#upload_tips').html('<span style="font-weight:bold; font-size:21px;text-decoration:underline">Status Convention to be followed-</span></br> Task status : Client Approved , Version Status : Client Approved');
+    }else if ($('#selectFtpStatus').val() == 'Review'){
+        $('#upload_tips').html('<span style="font-weight:bold; font-size:21px;text-decoration:underline">Status Convention to be followed-</span></br>Task status , Version Status : Client Approved');
+    }else if ($('#selectFtpStatus').val() == 'Outsource'){
+        $('#upload_tips').html('<span style="font-weight:bold; font-size:21px;text-decoration:underline">Status Convention to be followed-</span></br>Task status , Version Status : Outsource Approved');
+    }else if ($('#selectFtpStatus').val() == 'DI'){
+        $('#upload_tips').html('<span style="font-weight:bold; font-size:21px;text-decoration:underline">Status Convention to be followed-</span></br>Task status , Version Status : Review Approved');
+    }else {
+        $('#upload_tips').html('<span style="font-weight:bold; font-size:21px;text-decoration:underline">Status Convention to be followed-</span></br>Task status , Version Status : Internal Approved');
+    }
+}
+
 $("#selectFtpObject").change(function(){
 
-    var proj_id = $('#selectProject').val();
-    if (!proj_id){
+    var project = $('#selectProject').val();
+    if (!project){
         error_message("Please select valid project !!")
         return null
     }
 
-    reset_ftp_object()
+    reset_ftp_object();
 
     var obj_name = $("#selectFtpObject").val();
     if (obj_name == 'Shot'){
-        load_obj_name('FtpSequence','');
 	$("#div_shot_department_name").css({'display':'block'});
 	$("#div_asset_department_name").css({'display':'none'});
 	$("#selectShotFtpDepartment_chosen").css({"width":"89%"});
 	$('#selectShotFtpDepartment').val('').trigger("liszt:updated").trigger("chosen:updated");
-    } else if (obj_name == 'Sequence'){
-        load_obj_name('FtpSequence','');
-	$("#div_sequence_department_name").css({'display':'block'});
-	$("#div_shot_department_name").css({'display':'none'});
-	$("#div_asset_department_name").css({'display':'none'});
-	$("#selectSequenceFtpDepartment_chosen").css({"width":"89%"});
-	$('#selectSequenceFtpDepartment').val('').trigger("liszt:updated").trigger("chosen:updated");
+	load_obj_name('FtpSequence','');
     }else if (obj_name == 'Asset Build'){
 	$select_elem = $("#selectFtpType");
         load_types($select_elem);
@@ -88,27 +133,363 @@ $("#selectFtpObject").change(function(){
 
 });
 
-$("#selectClientObject").change(function(){
+function reset_ftp_object(){
 
-    var proj_id = $('#selectProject').val();
-    if (!proj_id){
+    $('#all_assets').attr('checked',false);
+    $('#all_shots').attr('checked',false);
+
+    $("#selectFtpSequence").empty();
+    $("#selectFtpSequence").trigger("chosen:updated");
+    $("#selectFtpSequence").trigger("liszt:updated");
+    $("#div_sequence_name").css({'display':'none'});
+
+    $("#selectFtpShot").empty();
+    $("#selectFtpShot").trigger("chosen:updated");
+    $("#selectFtpShot").trigger("liszt:updated");
+    $("#div_shot_name").css({'display':'none'});
+
+    $("#selectFtpType").empty();
+    $("#selectFtpType").trigger("chosen:updated");
+    $("#selectFtpType").trigger("liszt:updated");
+    $("#div_type_name").css({'display':'none'});
+
+    $("#selectFtpAsset").empty();
+    $("#selectFtpAsset").trigger("chosen:updated");
+    $("#selectFtpAsset").trigger("liszt:updated");
+    $("#div_asset_build_name").css({'display':'none'});
+
+    remove_rows('#tbl_task');
+}
+
+$('#selectFtpSequence').on('change', function(evt, params) {
+
+    var task_name = $("#selectShotFtpDepartment").val();
+    if (!task_name){
+        error_message("Please select valid Department !!")
+        return null
+    }
+
+    var deselectedValue = params.deselected;
+    var selectedValue = params.selected;
+
+    if (selectedValue){
+        refresh_shots();
+    }else if (deselectedValue){
+        de_seq = $("#selectFtpSequence option[value='"+deselectedValue+"']").text();
+        $("#selectFtpShot option:contains('"+de_seq+"')").remove();
+        $("#selectFtpShot").trigger("chosen:updated");
+        $("#selectFtpShot").trigger("liszt:updated");
+        $("#tbl_ftp_version tr:contains("+ de_seq +")").remove();
+    }
+});
+
+$('#selectShotFtpDepartment').change(function(){
+    task_name = $(this).val();
+    if (task_name == 'Lighting'){
+	$('#div_side_name').css({'display':'block'});
+	$("#selectFtpVersionSide_chosen").css({"width":"89%"})
+    }else{
+	$('#div_side_name').css({'display':'none'});
+    }
+
+    $('#selectFtpVersionSide').val('').trigger("liszt:updated").trigger("chosen:updated");
+    refresh_shots();
+    load_ftp_asset_type();
+});
+
+$('#refresh_shot').click(function(){
+    refresh_shots();
+});
+
+function refresh_shots(){
+
+    selected_seqs = $('#selectFtpSequence').val();
+
+    if (selected_seqs){
+	load_ftp_shots(selected_seqs);
+    }
+}
+
+function load_ftp_shots(selected_seqs) {
+
+    obj_name = 'Ftp Shot';
+    var project = $('#selectProject').val();
+    if (!project){
         error_message("Please select valid project !!")
         return null
     }
 
-    reset_client_object()
-
-    var obj_name = $("#selectClientObject").val();
-    if (obj_name == 'Sequence'){
-        load_obj_name('ClientSequence','');
-    }else if (obj_name == 'Asset Build'){
-	$select_elem = $("#selectClientType");
-        load_types($select_elem)
-    }else{
+    var dept = $('#selectShotFtpDepartment').val();
+    if (!dept){
+        error_message("Please select valid department !!")
         return null
     }
 
+    var upload_for = $('#selectFtpStatus').val();
+    if (!upload_for){
+        error_message("Please select valid upload_for !!")
+        return null
+    }
+
+    data_array = JSON.stringify(selected_seqs);
+
+    $select_elem = $("#selectFtpShot");
+    $div_name = $("#div_shot_name");
+
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'project': project ,'object_name': obj_name , 'parent_ids' : data_array, 'task_name': dept, 'upload_for': upload_for},
+        beforeSend: function(){
+	    $select_elem.empty();
+            $div_name.css({'display':'block'});
+        },
+        success: function(json){
+            $.each(json, function (idx, obj) {
+		opt_id = obj.id;
+		opt_text = obj.name;
+		opt_task_id = obj.task_id;
+		$select_elem.append('<option value="'+opt_id+'" data-task-id="'+opt_task_id+'">' + opt_text + '</option>');
+            });
+            $select_elem.trigger("chosen:updated");
+            $select_elem.trigger("liszt:updated");
+            $select_elem.data("chosen").destroy().chosen();
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
+}
+
+$('#selectAssetFtpDepartment').change(function(){
+    task_name = $(this).val();
+    if (task_name == 'Lighting'){
+	$('#div_side_name').css({'display':'block'});
+	$("#selectFtpVersionSide_chosen").css({"width":"89%"})
+    }else{
+	$('#div_side_name').css({'display':'none'});
+    }
+
+    $('#selectFtpVersionSide').val('').trigger("liszt:updated").trigger("chosen:updated");
+    refresh_asset_builds();
+    load_ftp_asset_type();
 });
+
+$('#refresh_asset_build').click(function(){
+    refresh_asset_builds();
+});
+
+$("#selectFtpType").change(function(){
+    select_type = $("#selectFtpType").val();
+    if (!select_type){
+        error_message("Please select valid asset type !!!");
+        return null;
+    }
+    refresh_asset_builds();
+});
+
+function refresh_asset_builds(){
+
+    selected_type = $('#selectFtpType').val();
+
+    if (selected_type){
+	load_ftp_asset_builds(selected_type);
+    }
+}
+
+function load_ftp_asset_builds(selected_type) {
+
+    obj_name = 'Ftp Asset Build';
+    var project = $('#selectProject').val();
+    if (!project){
+        error_message("Please select valid project !!")
+        return null
+    }
+
+    var dept = $('#selectAssetFtpDepartment').val();
+    if (!dept){
+        error_message("Please select valid department !!")
+        return null
+    }
+
+    var upload_for = $('#selectFtpStatus').val();
+    if (!upload_for){
+        error_message("Please select valid upload_for !!")
+        return null
+    }
+
+    $select_elem = $("#selectFtpAsset");
+    $div_name = $("#div_asset_build_name");
+
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'project': project ,'object_name': obj_name , 'asset_build_type' : selected_type, 'task_name': dept, 'upload_for': upload_for},
+        beforeSend: function(){
+	    $select_elem.empty();
+            $div_name.css({'display':'block'});
+        },
+        success: function(json){
+            $.each(json, function (idx, obj) {
+		opt_id = obj.id;
+		opt_text = obj.name;
+		opt_task_id = obj.task_id;
+		$select_elem.append('<option value="'+opt_id+'" data-task-id="'+opt_task_id+'">' + opt_text + '</option>');
+            });
+            $select_elem.trigger("chosen:updated");
+            $select_elem.trigger("liszt:updated");
+            $select_elem.data("chosen").destroy().chosen();
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
+}
+
+$('#selectFtpAssetType').change(function(){
+    obj = $('#selectFtpObject').val();
+    var select = '';
+    if (obj == 'Shot'){
+	select = 'selectFtpShot';
+    }else if (obj == 'Asset Build'){
+	select = 'selectFtpAsset';
+    }
+
+    $('#selectFtpAssetName').val('').trigger("liszt:updated").trigger("chosen:updated");
+
+    values = $('#'+select).val();
+    if (!values){
+	$('#selectFtpAssetType').val('').trigger("liszt:updated").trigger("chosen:updated");
+	error_message("Please select "+obj);
+	return null;
+    }
+
+    load_ftp_components();
+
+    task_ids = [];
+    for (i in values){
+	parent_id = values[i];
+	task_id = $("#"+select+" option[value='"+parent_id+"']").attr('data-task-id');
+	task_ids.push(task_id);
+    }
+
+    load_ftp_asset_name(task_ids);
+
+});
+
+function load_ftp_asset_type(){
+
+    parent_object = $('#selectFtpObject').val();
+
+    task_name = ''
+    if(parent_object=='Shot'){
+	task_name = $('#selectShotFtpDepartment').val();
+    }else{
+	task_name = $('#selectAssetFtpDepartment').val();
+    }
+
+    var $select_elem = $('#selectFtpAssetType');
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'parent_object' : parent_object, 'task_name': task_name, 'object_name': 'Ftp Asset Type'},
+        beforeSend: function(){
+	    $select_elem.empty();
+	    $select_elem.append('<option value="">-- Select --</option>');
+        },
+        success: function(json){
+            $.each(json, function (idx, obj) {
+		$select_elem.append('<option value="'+obj.name+'">' + obj.name + '</option>');
+            });
+            $select_elem.trigger("chosen:updated");
+            $select_elem.trigger("liszt:updated");
+            $select_elem.data("chosen").destroy().chosen();
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
+}
+
+function load_ftp_asset_name(task_ids) {
+
+    asset_type = $('#selectFtpAssetType').val();
+    if(!asset_type){
+	error_message("Please select valid asset type !!!");
+	return null;
+    }
+
+    project = $('#selectProject').val();
+
+    task_ids = JSON.stringify(task_ids);
+    var $select_elem = $('#selectFtpAssetName');
+
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'object_name': 'Ftp Asset Name', 'asset_type': asset_type, 'task_ids': task_ids, 'project': project},
+        beforeSend: function(){
+	    $select_elem.empty();
+	    $select_elem.append('<option value="">Select one ...</option>');
+        },
+        success: function(json){
+            $.each(json, function (idx, obj) {
+		$select_elem.append('<option value="'+obj.name+'">' + obj.name + '</option>');
+            });
+            $select_elem.trigger("chosen:updated");
+            $select_elem.trigger("liszt:updated");
+            $select_elem.data("chosen").destroy().chosen();
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
+}
+function load_ftp_components() {
+
+    asset_type = $('#selectFtpAssetType').val();
+    if(!asset_type){
+	error_message("Please select valid asset type !!!");
+	return null;
+    }
+
+    parent_object = $('#selectFtpObject').val();
+
+    task_name = ''
+    if(parent_object=='Shot'){
+	task_name = $('#selectShotFtpDepartment').val();
+    }else{
+	task_name = $('#selectAssetFtpDepartment').val();
+    }
+
+    var $select_elem = $('#selectFtpExt');
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'parent_object' : parent_object, 'task_name': task_name, 'object_name': 'Ftp Component', 'asset_type': asset_type},
+        beforeSend: function(){
+	    $select_elem.empty();
+	    $select_elem.append('<option value="">Select one ...</option>');
+        },
+        success: function(json){
+            $.each(json, function (idx, obj) {
+		$select_elem.append('<option value="'+obj.name+'">' + obj.name + '</option>');
+            });
+            $select_elem.trigger("chosen:updated");
+            $select_elem.trigger("liszt:updated");
+            $select_elem.data("chosen").destroy().chosen();
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
+}
+
 
 // Asset build type
 (function () {
@@ -145,24 +526,6 @@ $("#selectClientObject").change(function(){
     previous = this.value;
     });
 })();
-
-$("#selectFtpType").change(function(){
-    select_type = $("#selectFtpType").val();
-    if (!select_type){
-	error_message("Please select valid asset type !!!");
-	return null;
-    }
-    load_obj_name('FtpAsset','');
-});
-
-$("#selectClientType").change(function(){
-    select_type = $("#selectClientType").val();
-    if (!select_type){
-	error_message("Please select valid asset type !!!");
-	return null;
-    }
-    load_obj_name('ClientAsset','');
-});
 
 // Asset Build
 $("#selectAsset").on('change', function(evt, params) {
@@ -204,18 +567,8 @@ $("#all_assets").click(function(){
 
 $('#selectFtpAsset').on('change', function(evt, params) {
 
-    $('#selectFtpAssetType').val('').trigger("liszt:updated").trigger("chosen:updated");
-    var proj_id = $('#selectProject').val();
-    if (!proj_id){
-        error_message("Please select valid project !!");
-        return null;
-    }
     var deselectedValue = params.deselected;
     var selectedValue = params.selected;
-
-    if (selectedValue){
-	load_ftp_asset_type(selectedValue);
-    }
 
     if (deselectedValue){
         var asset_name = $("#selectFtpAsset option[value='"+deselectedValue+"']").text();
@@ -230,75 +583,11 @@ $("#all_ftp_assets").click(function(){
         $('#selectFtpAsset option').prop('selected', false);
     }
     $('#selectFtpAsset').trigger('chosen:updated');
-
-    assets = $('#selectFtpAsset').val();
-    if (assets){
-	parent_id = assets[0];
-	load_ftp_asset_type(parent_id);
-    }else{
-	error_message("Please select atleast 1 asset build !!!");
-	return null;
-    }
-});
-$('#selectFtpAssetType').on('change', function(evt, params) {
-    var selectedValue = params.selected;
-
-    $('#selectFtpAssetName').val('').trigger("liszt:updated").trigger("chosen:updated");
-
-    obj = $('#selectFtpObject').val();
-    parent_id = ''
-    values = ''
-    if (obj == 'Shot'){
-	values = $('#selectFtpShot').val();
-    }else if (obj == 'Asset Build'){
-	values = $('#selectFtpAsset').val();
-    }
-
-    if (values){
-	parent_id = values[0];
-    }else{
-	error_message("Please select "+obj);
-	return null;
-    }
-
-    load_ftp_asset_name(parent_id);
-
-});
-
-$('#selectAssetFtpDepartment').change(function(){
-    if ($(this).val() == 'Lighting'){
-	$('#div_side_name').css({'display':'block'});
-	$("#selectFtpVersionSide_chosen").css({"width":"89%"})
-    }else{
-	$('#div_side_name').css({'display':'none'});
-    }
-
-    $('#selectFtpVersionSide').val('').trigger("liszt:updated").trigger("chosen:updated");
-    refresh_asset_builds();
-});
-
-$('#refresh_asset_build').click(function(){
-
-    refresh_asset_builds();
-//    setTimeout(5000);
-//    error_message("Prafull");
-});
-
-$('#selectClientAsset').on('change', function(evt, params) {
-
-    var selectedValue = params.selected;
-
-    if (selectedValue){
-	name = $('#selectClientAsset option[value="'+selectedValue+'"]').text();
-	load_client_version(name);
-    }
-
 });
 
 // sequence box
 $('#selectSequence').on('change', function(evt, params) {
 
-//    remove_rows("#tbl_task");
     $('#all_shots').attr('checked',false);
     var obj_name = $("#selectObject").val();
     if (!obj_name){
@@ -342,42 +631,55 @@ $("#all_sequences").click(function(){
     }
 
 });
-$('#selectFtpSequence').on('change', function(evt, params) {
+function reload_tasks(reload){
 
-    var task_name = $("#selectShotFtpDepartment").val();
-    if (!task_name){
-        error_message("Please select valid Department !!")
-        return null
+    reload = reload || 0;
+
+    var proj_id = $('#selectProject').val();
+    var asset_ids = $('#selectAsset').val();
+    var shot_ids = $('#selectShot').val();
+    var seq_ids = $('#selectSequence').val();
+    var type_name = $('#selectType').val();
+    var obj_name = $('#selectObject').val();
+
+    remove_rows("#tbl_task");
+    var parent_name  = ''
+    var parent_ids = ''
+    var p_name = ''
+    var parent_object_type = '';
+    var project_name = $('#selectProject option:selected').text().trim();
+
+    if (asset_ids){
+        pparent_ids = [proj_id]
+	parent_ids = asset_ids
+	id = parent_ids[0]
+	p_name = $("#selectAsset option[value='"+id+"']").text();
+	parent_object_name = 'Asset Build';
+	parent_object_type = type_name;
+    }else if(shot_ids){
+        pparent_ids = seq_ids;
+	parent_ids = shot_ids;
+	id = parent_ids[0]
+	p_name = $("#selectShot option[value='"+id+"']").text();
+	parent_object_name = 'Shot';
+
+	if (obj_name == 'Shot Asset Build'){
+		parent_object_name = 'Shot Asset Build';
+	}
+    }else if(seq_ids){
+        pparent_ids = [proj_id]
+	parent_ids = seq_ids;
+	id = parent_ids[0]
+	p_name = $("#selectSequence option[value='"+id+"']").text();
+	parent_object_name = 'Sequence';
     }
-
-    var deselectedValue = params.deselected;
-    var selectedValue = params.selected;
-
-    if (selectedValue){
-        var obj_name = 'FtpShot';
-        load_obj_name(obj_name,selectedValue);
-    }else if (deselectedValue){
-        de_seq = $("#selectFtpSequence option[value='"+deselectedValue+"']").text();
-        $("#selectFtpShot option:contains('"+de_seq+"')").remove();
-        $("#selectFtpShot").trigger("chosen:updated");
-        $("#selectFtpShot").trigger("liszt:updated");
-        $("#tbl_ftp_version tr:contains("+ de_seq +")").remove();
+    if (parent_ids.length == 1) {
+	parent_name = p_name
     }
-});
+    load_tasks(parent_ids, pparent_ids,parent_name,reload,parent_object_name,parent_object_type, project_name);
 
-$('#selectClientSequence').on('change', function(evt, params) {
+}
 
-    var seq_id = $("#selectClientSequence").val();
-    if (!seq_id){
-        error_message("Please select valid Sequence !!")
-        return null
-    }
-
-    if (seq_id){
-        var obj_name = 'ClientShot';
-        load_obj_name(obj_name,seq_id);
-    }
-});
 
 // Shot
 $('#selectShot').on('change', function(evt, params) {
@@ -406,6 +708,7 @@ $('#selectShot').on('change', function(evt, params) {
     }
 });
 
+
 $("#all_shots").click(function(){
     if (this.checked){
         $('#selectShot option').prop('selected', true);
@@ -419,20 +722,243 @@ $("#all_shots").click(function(){
 
 });
 
+function load_tasks(parent_ids, pparent_ids,parent_name,reload,
+                    parent_object_name,parent_object_type, project_name
+                    ) {
+
+    var task;
+    parent_name = parent_name || '';
+    reload = reload || 0;
+    parent_object_name = parent_object_name || '';
+    parent_object_type = parent_object_type || '';
+
+    task = 'Task';
+/*
+    if (parent_ids.length == 1 || reload == 1){
+        task = 'Task';
+    }else{
+        task = 'Tasks';
+    }
+*/
+
+    data_ids = JSON.stringify(parent_ids);
+    pparent_ids = JSON.stringify(pparent_ids);
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'parent_ids': data_ids ,'object_name': task, 'pparent_ids' : pparent_ids ,
+        'parent_object_name': parent_object_name, 'parent_object_type': parent_object_type,
+        'project': project_name
+        },
+        beforeSend: function(){
+            $('#panel_big').plainOverlay('show');
+        },
+        success: function(json){
+            $("#div_task_details").css({'display':'block'});
+            for (parent_id in json){
+                var mycol = [];
+                var mycolusers = [];
+                var task_id = [];
+                var task_parent_ids = [];
+		var details = {};
+		var parent_type = ''
+                $.each(json[parent_id], function (idx, obj) {
+		    if (!mycol[0]){
+			mycol[0] = obj.parent_name;
+			parent_type = obj.parent_type;
+		    }
+                    $('#tbl_task th').each(function(index) {
+                        var task_name = this.innerHTML;
+                        if (obj.name == task_name){
+                            task_id[index] = obj.id;
+                            mycol[index] = obj.status;
+                            mycolusers[index] = obj.users;
+                            task_parent_ids[index] = obj.parent_id;
+			    if (!details[index]){
+				details[index] = {};
+			    }
+			    details[index]['bid'] = obj.bid;
+			    details[index]['seconds'] = obj.seconds;
+			    details[index]['client_status'] = obj.client_status;
+                        }
+                    });
+                });
+	    if (parent_name && parent_name != mycol[0]){
+		mycol[0] = parent_name + ' <br>' + mycol[0] + ' <br><small style="color:aqua">(' + parent_type + ')<small>';
+	    }
+            add_rows(mycol,parent_id,mycolusers,task_id,task_parent_ids,details);
+            }
+
+	    show_graphs();
+	    var status_hash = get_status_hash();
+	    show_status_count(status_hash);
+	    show_display();
+
+            $('#panel_big').plainOverlay('hide');
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
+}
+
+function create_row(obj){
+
+    obj = obj || {};
+    new_row = [];
+    $('#tbl_task th').each(function(index) {
+	if (!index){
+	    return;
+	}
+	var task_name = this.innerHTML;
+	
+	task_status = '---';
+	users = '---';
+	status_label = 'label-default';
+        if (obj.task_name == task_name){
+	    task_status = obj.task_status;
+	    users = obj.users;
+	    status_label = 'label-' + task_status.replace(/ /g,"_").toLowerCase();
+        }
+
+	display = 'block';
+	th_id = $(this).attr("class");
+        if ($('#' + th_id).is(":not(:checked)")){
+	    display = 'none';
+        }
+
+	status_cell = task_status;
+	user_cell = users;
+	if (display == 'block'){
+	    new_row.push(status_cell);
+	    new_row.push(user_cell);
+	}
+    });
+
+    return new_row;
+}
+
+function add_rows(mycol,parent_id,mycolusers,task_id,task_parent_ids,details){
+
+    var details = details || {};
+    var obj_name = $("#selectObject").val();
+    var project = $("#selectProject").val();
+    var table = $('#tbl_task tbody');
+
+    parent_object_type = obj_name;
+    if (obj_name == 'Shot Asset Build')
+	parent_object_type = 'Asset Build';
+
+    row = $('<tr data-project="'+project+'" org-data="" task-id="'+parent_id+'" data-task-parent-id="'+parent_id+'" parent_object_type="'+parent_object_type+'"/>');
+    table.prepend(row);
+
+    $('#tbl_task th').each(function(index) {
+        var th_name = $(this).text();
+        var t_status = '---';
+        var stat_lbl = 'label-default';
+        var t_stat_user = '---';
+        var stat_usr_lbl = 'label-default';
+        var taskid = ''
+
+	var bid = 0;
+	var seconds = 0;
+	var client_status = '---';
+	if (details[index]){
+	    bid = details[index]['bid'];
+	    seconds = details[index]['seconds'];
+	    client_status = details[index]['client_status'];
+	}
+
+	if (task_parent_ids[index]){
+	    parent_id = task_parent_ids[index];
+	}
+        if(mycol[index]){
+            t_status = mycol[index];
+            label = mycol[index].replace(/ /g,"_").toLowerCase();
+            stat_lbl = 'label-'+label;
+        }
+
+        if(mycolusers[index]){
+            t_stat_user = mycolusers[index];
+            stat_usr_lbl = 'label-default';
+        }
+
+        if(task_id[index]){
+            taskid = task_id[index];
+        }
+
+        on_click_status = "";
+        on_click_user = "";
+        if (index > 0){
+            if($(this).css('display') == 'none'){
+                show = "style='display:none'";
+            }else{
+                show = "";
+	    // Comment for not to change status/user from task status
+	    /*
+                var header = this.innerHTML;
+                col_arr = $('#user_columns').val().split(',');
+                if (col_arr.indexOf(header) > -1){
+                    on_click_status = "ondblclick='editCell(this)'";
+                    on_click_user = "ondblclick='editUserCell(this)'";
+                }
+	    */
+            }
+
+            var stat_display = ''
+            var assi_display = ''
+            if(show == ''){
+                if($('#show_assignee').is(":not(:checked)")){
+                    assi_display = 'style="display:none"';
+                }
+                if($('#show_status').is(":not(:checked)")){
+                    stat_display = 'style="display:none"';
+                }
+            }
+
+            var cell = $("<td title='"+th_name+"' data-client-status = '"+client_status+"' data-bid = '"+bid+"' data-shot-sec='"+seconds+"' data-task-id='"+taskid+"' data-org-val='"+t_status+"' data-parent-id='"+parent_id+"' data-id='show_status' "+show+" "+stat_display+" "+on_click_status+" />");
+
+            col_data = '<span class="label '+stat_lbl+'" >'+t_status+'</span>';
+
+            var usercell = $("<td title='"+th_name+"' data-task-id='"+taskid+"' data-org-val='"+t_stat_user+"' data-parent-id='"+parent_id+"' data-id='show_assignee' "+show+" "+assi_display+" "+on_click_user+" />");
+            usercol_data = '<span class="label '+stat_usr_lbl+'" >'+t_stat_user+'</span>';
+        }else{
+
+	    if (mycol[0] != t_status){
+		t_status = t_status+'_'+mycol[0];
+	    }
+            var cell = $("<td id='"+parent_id+"' data-task-id='"+parent_id+"' data-task-parent-id='"+parent_id+"'/>");
+            col_data = '<a href="#" id="parent_object" onclick="show_model(this)">'+t_status+'</a>';
+
+            var usercell = '';
+            usercol_data = '';
+        }
+
+
+        cell.html(col_data);
+	if (usercell != ''){
+	    usercell.html(usercol_data);
+	}
+
+        th_id = $(this).attr("class");
+        if ($('#' + th_id).is(":not(:checked)")){
+            cell.css({'display':'none'});
+        }
+        row.append(cell,usercell);
+    });
+
+    $(row).click(function(event){
+        if(event.ctrlKey === true) {
+            $(this).toggleClass("selected")
+        }
+    });
+}
+
 $('#selectFtpShot').on('change', function(evt, params) {
 
-    $('#selectFtpAssetType').val('').trigger("liszt:updated").trigger("chosen:updated");
-    var proj_id = $('#selectProject').val();
-    if (!proj_id){
-        error_message("Please select valid project !!");
-        return null;
-    }
     var deselectedValue = params.deselected;
     var selectedValue = params.selected;
-
-    if (selectedValue){
-	load_ftp_asset_type(selectedValue);
-    }
 
     if (deselectedValue){
         var shot_name = $("#selectFtpShot option[value='"+deselectedValue+"']").text();
@@ -447,47 +973,8 @@ $("#all_ftp_shots").click(function(){
         $('#selectFtpShot option').prop('selected', false);
     }
     $('#selectFtpShot').trigger('chosen:updated');
-
-    shots = $('#selectFtpShot').val();
-    if (shots){
-	parent_id = shots[0];
-	load_ftp_asset_type(parent_id);
-    }else{
-	error_message("Please select atleast 1 shot !!!");
-	return null;
-    }
-
 });
 
-$('#selectShotFtpDepartment').change(function(){
-    if ($(this).val() == 'Lighting'){
-	$('#div_side_name').css({'display':'block'});
-	$("#selectFtpVersionSide_chosen").css({"width":"89%"})
-    }else{
-	$('#div_side_name').css({'display':'none'});
-    }
-
-    $('#selectFtpVersionSide').val('').trigger("liszt:updated").trigger("chosen:updated");
-    refresh_shots();
-});
-
-$('#refresh_shot').click(function(){
-
-    refresh_shots();
-//    setTimeout(5000);
-//    alert("Prafull");
-});
-
-$('#selectClientShot').on('change', function(evt, params) {
-
-    var selectedValue = params.selected;
-
-    if (selectedValue){
-	name = $('#selectClientShot option[value="'+selectedValue+'"]').text();
-	load_client_version(name);
-    }
-
-});
 // functions starts here
 (function () {
     var toggle_selection1=0;
@@ -545,89 +1032,11 @@ function remove_rows(tablename) {
     $(tablename).find("tbody tr").remove();
 }
 
-function reset_object(){
-
-    $('#all_assets').attr('checked',false);
-    $('#all_shots').attr('checked',false);
-    $('#all_sequences').attr('checked',false);
-
-    $("#selectSequence").empty();
-    $("#selectSequence").trigger("chosen:updated");
-    $("#selectSequence").trigger("liszt:updated");
-    $("#div_sequence_name").css({'display':'none'});
-
-    $("#selectType").empty();
-    $("#selectType").trigger("chosen:updated");
-    $("#selectType").trigger("liszt:updated");
-    $("#div_type_name").css({'display':'none'});
-
-    $("#selectShot").empty();
-    $("#selectShot").trigger("chosen:updated");
-    $("#selectShot").trigger("liszt:updated");
-    $("#div_shot_name").css({'display':'none'});
-
-    $("#selectAsset").empty();
-    $("#selectAsset").trigger("chosen:updated");
-    $("#selectAsset").trigger("liszt:updated");
-    $("#div_asset_name").css({'display':'none'});
-
-    remove_rows('#tbl_task');
-}
-
-function reset_ftp_object(){
-
-    $('#all_assets').attr('checked',false);
-    $('#all_shots').attr('checked',false);
-
-    $("#selectFtpSequence").empty();
-    $("#selectFtpSequence").trigger("chosen:updated");
-    $("#selectFtpSequence").trigger("liszt:updated");
-    $("#div_sequence_name").css({'display':'none'});
-
-    $("#selectFtpType").empty();
-    $("#selectFtpType").trigger("chosen:updated");
-    $("#selectFtpType").trigger("liszt:updated");
-    $("#div_type_name").css({'display':'none'});
-
-    $("#selectFtpShot").empty();
-    $("#selectFtpShot").trigger("chosen:updated");
-    $("#selectFtpShot").trigger("liszt:updated");
-    $("#div_shot_name").css({'display':'none'});
-
-    remove_rows('#tbl_task');
-}
-function reset_client_object(){
-
-    $("#selectClientSequence").empty();
-    $("#selectClientSequence").trigger("chosen:updated");
-    $("#selectClientSequence").trigger("liszt:updated");
-    $("#div_sequence_name").css({'display':'none'});
-
-    $("#selectClientType").empty();
-    $("#selectClientType").trigger("chosen:updated");
-    $("#selectClientType").trigger("liszt:updated");
-    $("#div_type_name").css({'display':'none'});
-
-    $("#selectClientShot").empty();
-    $("#selectClientShot").trigger("chosen:updated");
-    $("#selectClientShot").trigger("liszt:updated");
-    $("#div_shot_name").css({'display':'none'});
-
-    $("#selectClientAsset").empty();
-    $("#selectClientAsset").trigger("chosen:updated");
-    $("#selectClientAsset").trigger("liszt:updated");
-    $("#div_asset_name").css({'display':'none'});
-
-    $("#selectClientVersion").empty();
-    $("#selectClientVersion").trigger("chosen:updated");
-    $("#selectClientVersion").trigger("liszt:updated");
-
-}
 function load_types($select_elem){
     $select_elem.empty();
     $("#div_type_name").css({'display':'block'});
 
-    $select_elem.append('<option value="">Select Type</option>');
+    $select_elem.append('<option value="">-- Select --</option>');
     $select_elem.append('<option value="Set">Set</option>');
     $select_elem.append('<option value="FX">FX</option>');
     $select_elem.append('<option value="Prop">Prop</option>');
@@ -671,44 +1080,18 @@ function load_obj_name(obj_name,parent_id,no_project_flag) {
         $select_elem = $("#selectFtpSequence");
         $div_name = $("#div_sequence_name");
 	obj_name = 'Sequence';
-    }else if (obj_name == 'FtpShot'){
+    }else if (obj_name == 'Ftp Shot'){
         $select_elem = $("#selectFtpShot");
         $div_name = $("#div_shot_name");
 	task_name = $("#selectShotFtpDepartment").val();
 	status_name = $("#selectFtpStatus").val();
-    }else if (obj_name == 'FtpAsset'){
-        $select_elem = $("#selectFtpAsset");
-        $div_name = $("#div_asset_build_name");
-	task_name = $("#selectAssetFtpDepartment").val();
-	status_name = $("#selectFtpStatus").val();
-        select_type = $("#selectFtpType").val();
-    }else if (obj_name == 'ClientSequence'){
-        $select_elem = $("#selectClientSequence");
-        $div_name = $("#div_sequence_name");
-	obj_name = 'Sequence';
-    }else if (obj_name == 'ClientShot'){
-        $select_elem = $("#selectClientShot");
-        $div_name = $("#div_shot_name");
-	obj_name = 'Shot';
-    }else if (obj_name == 'ClientAsset'){
-        $select_elem = $("#selectClientAsset");
-        $div_name = $("#div_asset_name");
-        select_type = $("#selectClientType").val();
-	obj_name = 'Asset Build';
-    }else if (obj_name == 'RejectAsset'){
-        $select_elem = $("#selectVersionAssetBuild");
-        $div_name = $("#div_asset_name");
-        select_type = $("#selectVersionAssetType").val();
-	project = parent_id;
-	parent_id = 0;
-	obj_name = 'Asset Build';
     }else{
         return null
     }
     $.ajax({
         type:"POST",
         url:"/callajax/",
-        data: { 'proj_id': project ,'object_name': obj_name , 'object_type' : select_type, 'parent_id' : parent_id, 'task_name': task_name, 'status_name': status_name, 'upload_for':client_final_combo},
+        data: { 'project': project ,'object_name': obj_name , 'object_type' : select_type, 'parent_id' : parent_id, 'task_name': task_name, 'status_name': status_name, 'upload_for':client_final_combo},
         beforeSend: function(){
             if (!(parent_id)){
                 $select_elem.empty();
@@ -737,15 +1120,16 @@ function load_obj_name(obj_name,parent_id,no_project_flag) {
         }
     });
 }
-function load_choosen_data($div_name,$select_elem,obj_name,parent_id) {
+function load_choosen_data($div_name, $select_elem, obj_name, parent_id, project, asset_type) {
+    asset_type = asset_type || '';
 
     $.ajax({
         type:"POST",
         url:"/callajax/",
-        data: { 'object_name': obj_name , 'parent_id' : parent_id},
+        data: { 'object_name': obj_name , 'parent_id' : parent_id, 'project': project, 'asset_type': asset_type},
         beforeSend: function(){
             $select_elem.empty();
-	    $select_elem.append('<option value="">'+obj_name+'</option>');
+	    $select_elem.append('<option value="">-- Select --</option>');
         },
         success: function(json){
             $div_name.css({'display':'block'});
@@ -753,7 +1137,8 @@ function load_choosen_data($div_name,$select_elem,obj_name,parent_id) {
 		opt_id = obj.id
 		opt_text = obj.name
 		opt_path = obj.path
-		$select_elem.append('<option value="'+opt_id+'" data-path="'+opt_path+'">' + opt_text + '</option>');
+		assignee = obj.task_assignee
+		$select_elem.append('<option value="'+opt_id+'" task_assignee="'+assignee+'" data-path="'+opt_path+'">' + opt_text + '</option>');
             });
             $select_elem.trigger("chosen:updated");
             $select_elem.trigger("liszt:updated");
@@ -927,244 +1312,6 @@ $('#div_elements_checkbox input[type="checkbox"]').click(function() {
     });
 });
 
-function reload_tasks(reload){
-
-    reload = reload || 0;
-
-    var proj_id = $('#selectProject').val();
-    var asset_ids = $('#selectAsset').val();
-    var shot_ids = $('#selectShot').val();
-    var seq_ids = $('#selectSequence').val();
-    var type_name = $('#selectType').val();
-    var obj_name = $('#selectObject').val();
-
-    remove_rows("#tbl_task");
-    var parent_name  = ''
-    var parent_ids = ''
-    var p_name = ''
-    var parent_object_type = '';
-    var project_name = $('#selectProject option:selected').text().trim();
-
-    if (asset_ids){
-        pparent_ids = [proj_id]
-	parent_ids = asset_ids
-	id = parent_ids[0]
-	p_name = $("#selectAsset option[value='"+id+"']").text();
-	parent_object_name = 'Asset Build';
-	parent_object_type = type_name;
-    }else if(shot_ids){
-        pparent_ids = seq_ids;
-	parent_ids = shot_ids;
-	id = parent_ids[0]
-	p_name = $("#selectShot option[value='"+id+"']").text();
-	parent_object_name = 'Shot';
-	
-	if (obj_name == 'Shot Asset Build'){
-		parent_object_name = 'Shot Asset Build';
-	}
-    }else if(seq_ids){
-        pparent_ids = [proj_id]
-	parent_ids = seq_ids;
-	id = parent_ids[0]
-	p_name = $("#selectSequence option[value='"+id+"']").text();
-	parent_object_name = 'Sequence';
-    }
-    if (parent_ids.length == 1) {
-	parent_name = p_name
-    }
-    load_tasks(parent_ids, pparent_ids,parent_name,reload,parent_object_name,parent_object_type, project_name);
-
-}
-
-function load_tasks(parent_ids, pparent_ids,parent_name,reload,
-                    parent_object_name,parent_object_type, project_name
-                    ) {
-
-    var task;
-    parent_name = parent_name || '';
-    reload = reload || 0;
-    parent_object_name = parent_object_name || '';
-    parent_object_type = parent_object_type || '';
-
-    task = 'Task';
-/*
-    if (parent_ids.length == 1 || reload == 1){
-        task = 'Task';
-    }else{
-        task = 'Tasks';
-    }
-*/
-
-    data_ids = JSON.stringify(parent_ids);
-    pparent_ids = JSON.stringify(pparent_ids);
-    $.ajax({
-        type:"POST",
-        url:"/callajax/",
-        data: { 'parent_ids': data_ids ,'object_name': task, 'pparent_ids' : pparent_ids ,
-        'parent_object_name': parent_object_name, 'parent_object_type': parent_object_type,
-        'project_name': project_name
-        },
-        beforeSend: function(){
-            $('#panel_big').plainOverlay('show');
-        },
-        success: function(json){
-            $("#div_task_details").css({'display':'block'});
-            for (parent_id in json){
-                var mycol = [];
-                var mycolusers = [];
-                var task_id = [];
-                var task_parent_ids = [];
-		var details = {};
-		var parent_type = ''
-                $.each(json[parent_id], function (idx, obj) {
-		    if (!mycol[0]){
-			mycol[0] = obj.parent_name;
-			parent_type = obj.parent_type;
-		    }
-                    $('#tbl_task th').each(function(index) {
-                        var task_name = this.innerHTML;
-                        if (obj.name == task_name){
-                            task_id[index] = obj.id;
-                            mycol[index] = obj.status;
-                            mycolusers[index] = obj.users;
-                            task_parent_ids[index] = obj.parent_id;
-			    if (!details[index]){
-				details[index] = {};
-			    }
-			    details[index]['bid'] = obj.bid;
-			    details[index]['seconds'] = obj.seconds;
-			    details[index]['client_status'] = obj.client_status;
-                        }
-                    });
-                });
-	    if (parent_name && parent_name != mycol[0]){
-		mycol[0] = parent_name + ' <br>' + mycol[0] + ' <br><small style="color:aqua">(' + parent_type + ')<small>';
-	    }
-            add_rows(mycol,parent_id,mycolusers,task_id,task_parent_ids,details);
-            }
-
-	    show_graphs();
-	    var status_hash = get_status_hash();
-	    show_status_count(status_hash);
-	    show_display();
-
-            $('#panel_big').plainOverlay('hide');
-        },
-        error: function(error){
-            console.log("Error:");
-            console.log(error);
-        }
-    });
-}
-
-function add_rows(mycol,parent_id,mycolusers,task_id,task_parent_ids,details){
-
-    var details = details || {};
-    var obj_name = $("#selectObject").val();
-    var table = $('#tbl_task tbody');
-    row = $(table[0].insertRow(-1));
-
-    $('#tbl_task th').each(function(index) {
-        var th_name = $(this).text();
-        var t_status = '---';
-        var stat_lbl = 'label-default';
-        var t_stat_user = '---';
-        var stat_usr_lbl = 'label-default';
-        var taskid = ''
-
-	var bid = 0;
-	var seconds = 0;
-	var client_status = '---';
-	if (details[index]){
-	    bid = details[index]['bid'];
-	    seconds = details[index]['seconds'];
-	    client_status = details[index]['client_status'];
-	}
-
-	if (task_parent_ids[index]){
-	    parent_id = task_parent_ids[index];
-	}
-        if(mycol[index]){
-            t_status = mycol[index];
-            label = mycol[index].replace(/ /g,"_").toLowerCase();
-            stat_lbl = 'label-'+label;
-        }
-
-        if(mycolusers[index]){
-            t_stat_user = mycolusers[index];
-            stat_usr_lbl = 'label-default';
-        }
-
-        if(task_id[index]){
-            taskid = task_id[index];
-        }
-
-        on_click_status = "";
-        on_click_user = "";
-        if (index > 0){
-            if($(this).css('display') == 'none'){
-                show = "style='display:none'";
-            }else{
-                show = "";
-	    // Comment for not to change status/user from task status
-	    /*
-                var header = this.innerHTML;
-                col_arr = $('#user_columns').val().split(',');
-                if (col_arr.indexOf(header) > -1){
-                    on_click_status = "ondblclick='editCell(this)'";
-                    on_click_user = "ondblclick='editUserCell(this)'";
-                }
-	    */
-            }
-
-            var stat_display = ''
-            var assi_display = ''
-            if(show == ''){
-                if($('#show_assignee').is(":not(:checked)")){
-                    assi_display = 'style="display:none"';
-                }
-                if($('#show_status').is(":not(:checked)")){
-                    stat_display = 'style="display:none"';
-                }
-            }
-
-            var cell = $("<td title='"+th_name+"' data-client-status = '"+client_status+"' data-bid = '"+bid+"' data-shot-sec='"+seconds+"' data-task-id='"+taskid+"' data-org-val='"+t_status+"' data-parent-id='"+parent_id+"' data-id='show_status' "+show+" "+stat_display+" "+on_click_status+" />");
-
-            col_data = '<span class="label '+stat_lbl+'" >'+t_status+'</span>';
-
-            var usercell = $("<td title='"+th_name+"' data-task-id='"+taskid+"' data-org-val='"+t_stat_user+"' data-parent-id='"+parent_id+"' data-id='show_assignee' "+show+" "+assi_display+" "+on_click_user+" />");
-            usercol_data = '<span class="label '+stat_usr_lbl+'" >'+t_stat_user+'</span>';
-        }else{
-
-	    if (mycol[0] != t_status){
-		t_status = t_status+'_'+mycol[0];
-	    }
-            var cell = $("<td id='"+parent_id+"' data-task-id='"+parent_id+"' data-task-parent-id='"+parent_id+"'/>");
-            col_data = '<a href="#" id="parent_object" onclick="show_model(this)">'+t_status+'</a>';
-
-            var usercell = '';
-            usercol_data = '';
-        }
-
-
-        cell.html(col_data);
-	if (usercell != ''){
-	    usercell.html(usercol_data);
-	}
-
-        th_id = $(this).attr("class");
-        if ($('#' + th_id).is(":not(:checked)")){
-            cell.css({'display':'none'});
-        }
-        row.append(cell,usercell);
-    });
-
-    $(row).click(function(event){
-        if(event.ctrlKey === true) {
-            $(this).toggleClass("selected")
-        }
-    });
-}
 
 $('#displayOptions').change(function(){
     show_display();
@@ -1749,12 +1896,12 @@ $("#save_ver_changes").click(function(){
 });
 function save_changes(data_array,object_name) {
     var page = $('#task_menu1').find('li.active').first('a span').text()
-    var proj_id = $("#selectProject").val();
+    var project = $('#data-modal-object-id').attr("data-modal-project");
     data = JSON.stringify(data_array);
     $.ajax({
         type:"POST",
         url:"/callajax/",
-        data: { 'object_name': object_name, 'data_list': data, 'proj_id': proj_id, page},
+        data: { 'object_name': object_name, 'data_list': data, 'project': project, page},
         beforeSend: function(){
         },
         success: function(json){
@@ -1998,491 +2145,6 @@ function editArtistCell(context){
     });
 
 }
-function toggle_view(context){
-    act_id = $(context).attr('id');
-    id = act_id.split('-')[1]
-    a_val = $(context).val();
-    $('#reject_note-'+id).val('');
-    $('#reject_note_accordion-'+id).fadeOut(350);
-    $('#reject_notepad-'+id).fadeOut(350);
-    if (a_val == 'View'){
-	show_version_notes(context);
-	$('#reject_note_accordion-'+id).fadeIn(350);
-    }else if (a_val == 'Reject'){
-	$('#reject_notepad-'+id).fadeIn(350);
-    }
-}
-function toggle_linkview(context){
-    act_id = $(context).attr('id');
-    id = act_id.split('-')[1]
-    a_val = $(context).val();
-    $('#link_reject_note-'+id).val('');
-    $('#link_reject_note_accordion-'+id).fadeOut(350);
-    $('#link_reject_notepad-'+id).fadeOut(350);
-    if (a_val == 'View'){
-	show_linkversion_notes(context);
-	$('#link_reject_note_accordion-'+id).fadeIn(350);
-    }else if (a_val == 'Reject'){
-	$('#link_reject_notepad-'+id).fadeIn(350);
-    }
-}
-function show_versions(context){
-
-    task_id = $('#selectVersionTask').val();
-    asset_type = $('#selectVersionTaskAssetTypes').val();
-    object_type = $('#selectObject').val();
-
-    task_for = $(context).attr('data-for-artist');
-
-    if (task_id == ''){
-	error_message("Please select task");
-	return null;
-    }else if (asset_type == ''){
-	error_message("Please select asset type");
-	return null;
-    }
-
-    //var object_id = $('#data-modal-object-id').val();
-    if($('#user_reject_asset').prop("checked") == true){
-        var object_id = $('#selectVersionAssetBuild').val();
-    }else{
-        if (task_for == 'to_do'){
-	var object_id = $('#data-modal-object-id').attr('data-modal-parent-id');
-    }else{
-    var object_id = $('#data-modal-object-id').val();
-
-    }
-    }
-
-
-    $select_elem = $('#selectTaskVersion');
-    if (object_id){
-	load_versions(object_id, task_id, asset_type, object_type, $select_elem)
-    }
-
-}
-
-// Show Asset Type
-
-function load_asset_type(context){
-
-    /*chk = $('#user_reject_asset').is(':checked');
-    if(chk == true){
-        parent_id = $('#selectVersionAssetBuild').val();
-        parent_name = $('#selectVersionAssetBuild').text();
-
-    }
-    else{
-        parent_id = $('#data-modal-object-id').attr('data-modal-parent-id');
-
-    }*/
-
-    parent_name = $('#selectVersionTask option:selected').text();
-
-    //call
-    $select_elem = $('#selectVersionTaskAssetTypes');
-    $.ajax({
-        type:"POST",
-        url:"/callajax/",
-        data: { 'parent_name' : parent_name, 'object_name': 'Load Asset Type'},
-        beforeSend: function(){
-	    $select_elem.empty();
-	    $select_elem.append('<option value="">Select Asset Type</option>');
-        },
-        success: function(json){
-            $.each(json, function (idx, obj) {
-		    $select_elem.append('<option value="'+obj+'">' + obj+ '</option>');
-            });
-            $select_elem.trigger("chosen:updated");
-            $select_elem.trigger("liszt:updated");
-            $select_elem.data("chosen").destroy().chosen();
-        },
-        error: function(error){
-            console.log("Error:");
-            console.log(error);
-        }
-    });
-
-}
-
-function show_asset_type(context){
-
-    task_for = $(context).attr('data-for-artist');
-
-    chk = $('#user_reject_asset').is(':checked');
-    if(chk == true){
-        parent_id = $('#selectVersionAssetBuild').val();
-    }else if (task_for == 'to_do'){
-        parent_id = $('#data-modal-object-id').attr('data-modal-parent-id');
-    }else{
-	parent_id = $('#data-modal-object-id').val();
-    }
-
-    //call
-    $select_elem = $('#selectVersionTaskAssetTypes');
-    $.ajax({
-        type:"POST",
-        url:"/callajax/",
-        data: { 'parent_id' : parent_id, 'object_name': 'Ftp Asset Type'},
-        beforeSend: function(){
-	    $select_elem.empty();
-	    $select_elem.append('<option value="">Select Asset Type</option>');
-        },
-        success: function(json){
-            $.each(json, function (idx, obj) {
-		    $select_elem.append('<option value="'+obj.name+'">' + obj.name + '</option>');
-            });
-            $select_elem.trigger("chosen:updated");
-            $select_elem.trigger("liszt:updated");
-            $select_elem.data("chosen").destroy().chosen();
-        },
-        error: function(error){
-            console.log("Error:");
-            console.log(error);
-        }
-    });
-
-}
-function show_linkversions(context){
-    attr_id = $(context).attr('id');
-    id = attr_id.split('-')[1];
-
-    act_val = $('#selectLinkView-'+id).val();
-    dept_val = $('#selectLinkDepartment-'+id).val();
-    atype_val = $('#selectLinkAssetType-'+id).val();
-
-    if (dept_val == ''){
-	error_message("Please select department");
-	return null;
-    }else if (atype_val == ''){
-	error_message("Please select asset type");
-	return null;
-    }
-
-    build_val = $('#selectLinkDepartment-'+id).attr('data-asset-build');
-    $select_elem = $('#selectLinkVersion-'+id)
-    load_versions('',dept_val,atype_val,$select_elem,build_val)
-
-}
-function load_versions(object_id, task_id, asset_type, object_type, $select_elem) {
-    $.ajax({
-        type:"POST",
-        url:"/callajax/",
-        data: { 'object_id': object_id ,'object_name': 'Versions', 'asset_type': asset_type , 'task_id': task_id, 'object_type': object_type},
-        beforeSend: function(){
-        },
-        success: function(json){
-	    $select_elem.empty();
-	    $select_elem.append('<option value="">Select Version</option>');
-            $.each(json, function (idx, obj) {
-		$select_elem.append('<option value="'+obj.id+'">'+obj.name+'</option>');
-            });
-	    $select_elem.trigger("chosen:updated");
-	    $select_elem.trigger("liszt:updated");
-	    $select_elem.data("chosen").destroy().chosen();
-        },
-        error: function(error){
-            console.log("Error:");
-            console.log(error);
-        }
-    });
-}
-
-function show_version_notes(context){
-    ver_id = $('#selectTaskVersion').val();
-    if (ver_id == ''){
-	error_message("Please select version !!");
-	return null;
-    }
-    $('#version_note_details').html('');
-    version_notes(ver_id);
-    $('#btn_version_note_create').attr('data-version-id',ver_id);
-}
-
-function version_notes(task_id,obj_name,last_row,task, project='', path='', task_name='') {
-
-    note_category = $('#selectVersionNoteCategory').val();
-    project = $('#selectArtistProject').val();
-    $("#task_version_notes_loader").show();
-    $.ajax({
-        type:"POST",
-        url:"/callajax/",
-        data: { 'task_id': task_id , 'type_name': obj_name, 'last_row' : last_row, 'task': task , 'object_name': 'Version Note', 'note_category': note_category, 'project': project, 'project': project, 'task_name': task_name, 'path': path},
-        // beforeSend: function(){
-        // },
-        success: function(json){
-            $.each(json, function (idx, obj){
-                modal_body = add_note_details(idx, obj);
-                $('#version_note_details').append(modal_body);
-        		// add_version_notes(obj,id,idx);
-            });
-	$("#task_version_notes_loader").hide();
-        },
-        error: function(error){
-            console.log("Error:");
-            console.log(error);
-        }
-    });
-}
-
-$('#btn_version_note_create').click(function(){
-    version_id = $('#selectTaskVersion').val();
-    if(version_id){
-	create_version_note(version_id, obj_name);
-    }else{
-	error_message("Please select version !!!");
-	return null;
-    }
-
-});
-
-function create_version_note(version_id, obj_name){
-
-    $textarea_id = $('#text_version_note');
-    var note_text = $textarea_id.val().trim();
-    //var note_category = $('#selectVersionNoteCategory').val();
-    task_for = $('#selectVersionNoteCategory').attr('data-for-artist');
-    if (task_for == 'to_do'){
-        var note_category = 'Internal';
-    }
-    else{
-        var note_category = $('#selectVersionNoteCategory').val();
-    }
-
-    if (!(note_text.length && version_id)){
-	error_message("invalid note ...");
-	return null;
-    }
-    if (!(note_category)){
-	error_message("Please select valid category ...");
-	return null;
-    }
-
-    attachments = [];
-    $textarea_id.parent().find('table[id=gallery_versions] tr td a').each(function(){
-	href = $(this).attr('href');
-	attachments.push(href);
-    });
-
-    attach_files = JSON.stringify(attachments);
-
-    note_task = '';
-    note_for = 'AssetVersion';
-    $div_element = $('#version_note_details');
-    create_new_note(version_id, note_text, note_category, note_for, $div_element, $textarea_id, note_task, attach_files, obj_name);
-
-    $textarea_id.parent().find('table[id=gallery_versions] tbody').html('');
-
-    // for internal reject
-    if($('#internal-reject').prop("checked") == true){
-        internal_reject_task(version_id, note_text, note_category, note_for, note_task, attach_files);
-
-    }
-
-
-}
-
-function add_version_notes(obj,id,idx){
-
-note_author = obj.note_author;
-note_head = obj.note_head;
-note_replies = obj.replies;
-note_category = obj.note_category;
-note_date = obj.note_date;
-note_id = obj.note_id;
-++idx;
-pid = id
-id = pid+'_'+idx;
-
-notehead = '\
-    <div class="panel panel-default" id="note_category-'+id+'">\
-	<div class="panel-heading">\
-	    <i class="glyphicon glyphicon-envelope"></i>&nbsp;&nbsp;\
-	    <span class="label2 label-'+note_category+'">'+note_category+'</span>\
-	    <a data-toggle="collapse" data-parent="#reject_note_accordion-'+pid+'" href="#note_collapse-'+id+'" style="text-decoration: none;">\
-	    <span class="label label-default" style="width:63%">'+note_author+' : '+note_head+'</span></a>\
-	    <span class="label2 label-info">'+note_date+'</span>\
-	</div>\
-    </div>\
-';
-notebody = '\
-    <div id="note_collapse-'+id+'" class="panel-collapse collapse">\
-	<div class="panel-body" style="padding: 0px;">\
-	    <div class="box" style="overflow:auto; height:195px; margin: 10px;">';
-    replies = '';
-    for (index in note_replies){
-	replies = replies + '<p>'+note_replies[index]+'</p>';
-    }
-body2 = replies + '\
-	    </div>\
-';
-
-notetail = '\
-    <div id="reject_notepad-'+id+'" style="display:block">\
-        <div class="box" style="margin: 10px;">\
-            <table>\
-                <tr>\
-                    <td>\
-                        <textarea cols=90 rows=2 data-note-id="'+note_id+'" id="reply_ver_note_text-'+id+'" required="" style="color:black;"></textarea>\
-                    </td>\
-                    <td>\
-                        <button id="reply_ver_note-'+id+'" class="btn btn-inverse btn-default btn-lg" onclick="reply_ver_note(this)">Reply</button>\
-                    </td>\
-                </tr>\
-            </table>\
-        </div>\
-    </div>\
-';
-notetailend = '\
-    </div>\
-</div>\
-';
-$('#reject_note_accordion-'+pid).append(notehead+notebody+body2+notetail+notetailend);
-}
-
-function reply_ver_note(context){
-
-    attr_id = $(context).attr('id');
-    id = attr_id.split('-')[1];
-    reply_text = $('#reply_ver_note_text-'+id).val();
-    if (reply_text == ''){
-	error_message("Give some reply !!!");
-	return null;
-    }
-    note_id = $('#reply_ver_note_text-'+id).attr('data-note-id');
-    reply_note(reply_text,note_id);
-    $('#reply_ver_note_text-'+id).val('');
-    location.reload();
-}
-
-function show_linkversion_notes(context){
-    attr_id = $(context).attr('id');
-    id = attr_id.split('-')[1]
-    ver_id = $('#selectLinkVersion-'+id).val();
-    if (ver_id == ''){
-	error_message("Please select version !!");
-	return null;
-    }
-    $('#link_reject_note_accordion-'+id).html('');
-    link_version_notes(ver_id,id);
-}
-
-function link_version_notes(ver_id,id) {
-    $.ajax({
-        type:"POST",
-        url:"/callajax/",
-        data: { 'object_name': 'Version Note', 'ver_id': ver_id},
-        beforeSend: function(){
-        },
-        success: function(json){
-            $.each(json, function (idx, obj) {
-		add_linkversion_notes(obj,id,idx);
-            });
-        },
-        error: function(error){
-            console.log("Error:");
-            console.log(error);
-        }
-    });
-}
-
-function add_linkversion_notes(obj,id,idx){
-
-note_author = obj.note_author;
-note_head = obj.note_head;
-note_replies = obj.replies;
-note_category = obj.note_category;
-note_date = obj.note_date;
-note_id = obj.note_id;
-++idx;
-pid = id
-id = pid+'_'+idx;
-
-notehead = '\
-    <div class="panel panel-default" id="link_note_category-'+id+'">\
-	<div class="panel-heading">\
-	    <i class="glyphicon glyphicon-envelope"></i>&nbsp;&nbsp;\
-	    <span class="label2 label-'+note_category+'">'+note_category+'</span>\
-	    <a data-toggle="collapse" data-parent="#link_reject_note_accordion-'+pid+'" href="#link_note_collapse-'+id+'" style="text-decoration: none;">\
-	    <span class="label label-default" style="width:63%">'+note_author+' : '+note_head+'</span></a>\
-	    <span class="label2 label-info">'+note_date+'</span>\
-	</div>\
-    </div>\
-';
-notebody = '\
-    <div id="link_note_collapse-'+id+'" class="panel-collapse collapse">\
-	<div class="panel-body" style="padding: 0px;">\
-	    <div class="box" style="overflow:auto; height:195px; margin: 10px;">';
-    replies = '';
-    for (index in note_replies){
-	replies = replies + '<p>'+note_replies[index]+'</p>';
-    }
-body2 = replies + '\
-	    </div>\
-';
-
-notetail = '\
-    <div id="link_reject_notepad-'+id+'" style="display:block">\
-        <div class="box" style="margin: 10px;">\
-            <table>\
-                <tr>\
-                    <td>\
-                        <textarea cols=90 rows=2 data-note-id="'+note_id+'" id="link_reply_ver_note_text-'+id+'" required="" style="color:black;"></textarea>\
-                    </td>\
-                    <td>\
-                        <button id="link_reply_ver_note-'+id+'" class="btn btn-inverse btn-default btn-lg" onclick="link_reply_ver_note(this)">Reply</button>\
-                    </td>\
-                </tr>\
-            </table>\
-        </div>\
-    </div>\
-';
-notetailend = '\
-    </div>\
-</div>\
-';
-$('#link_reject_note_accordion-'+pid).append(notehead+notebody+body2+notetail+notetailend);
-}
-
-function link_reply_ver_note(context){
-
-    attr_id = $(context).attr('id');
-    id = attr_id.split('-')[1];
-    reply_text = $('#link_reply_ver_note_text-'+id).val();
-    if (reply_text == ''){
-	error_message("Give some reply !!!");
-	return null;
-    }
-    note_id = $('#link_reply_ver_note_text-'+id).attr('data-note-id');
-    reply_note(reply_text,note_id);
-    $('#link_reply_ver_note_text-'+id).val('');
-    location.reload();
-}
-
-function reply_note(reply_text,note_id) {
-    $.ajax({
-        type:"POST",
-        url:"/callajax/",
-        data: { 'object_name': 'Reply Note', 'note_id': note_id, 'reply_text': reply_text},
-        beforeSend: function(){
-        },
-        success: function(json){
-            $.each(json, function (idx, obj) {
-            });
-
-            noty({
-                text: 'Reply has been given ...',
-                layout: 'topCenter',
-                closeWith: ['click', 'hover'],
-                type: 'success'
-            });
-        },
-        error: function(error){
-            console.log("Error:");
-            console.log(error);
-        }
-    });
-}
 function add_note(context){
 
     attr_id = $(context).attr('id');
@@ -2566,255 +2228,6 @@ $(function() {
     });
 });
 
-function refresh_shots(){
-
-    var obj_name = 'FtpShot';
-    seqs = $('#selectFtpSequence').val();
-    selected_shots = $("#selectFtpShot").val();
-    for (i in seqs){
-	selectedValue = seqs[i]
-	load_ftp_shots(obj_name,selectedValue,selected_shots);
-    }
-}
-
-function refresh_asset_builds(){
-
-    var obj_name = 'FtpAsset';
-    selected_shots = $("#selectFtpAsset").val();
-    load_ftp_shots(obj_name,'',selected_shots);
-}
-function load_ftp_shots(obj_name,parent_id,selected_shots) {
-
-    var project = $('#selectProject').val();
-    if (!project){
-        error_message("Please select valid project !!")
-        return null
-    }
-
-    var client_final_combo = $("#selectFtpAssetName").val();
-    var select_type = ''
-    var $div_name = ''
-    var $select_elem = ''
-    var task_name = ''
-    var status_name = ''
-    var shots_exist = [];
-
-    if (obj_name == 'FtpShot'){
-	$select_elem = $("#selectFtpShot");
-        $div_name = $("#div_shot_name");
-        shots_exist = $("#selectFtpShot").val();
-	task_name = $("#selectShotFtpDepartment").val();
-	status_name = $("#selectFtpStatus").val();
-    }else if (obj_name == 'FtpAsset'){
-	$select_elem = $("#selectFtpAsset");
-        $div_name = $("#div_asset_name");
-	task_name = $("#selectAssetFtpDepartment").val();
-	status_name = $("#selectFtpStatus").val();
-        select_type = $("#selectFtpType").val();
-    }else{
-        return null
-    }
-
-    $.ajax({
-        type:"POST",
-        url:"/callajax/",
-        data: { 'proj_id': project ,'object_name': obj_name , 'object_type' : select_type, 'parent_id' : parent_id, 'task_name': task_name, 'status_name': status_name, 'upload_for':client_final_combo},
-        beforeSend: function(){
-	    $select_elem.empty();
-            $div_name.css({'display':'block'});
-        },
-        success: function(json){
-            $.each(json, function (idx, obj) {
-		opt_text = ''
-		opt_id = obj.id
-                if(parent_id){
-		    opt_text = obj.parent_name+'_'+obj.name
-                }else{
-		    opt_text = obj.name
-                }
-		$select_elem.append('<option value="'+opt_id+'">' + opt_text + '</option>');
-		if (selected_shots){
-		    shot_idx = selected_shots.indexOf(opt_id)
-		    if (shot_idx > -1){
-			if (obj_name == 'FtpShot'){
-			    $("#selectFtpShot option[value='"+selected_shots[shot_idx]+"']").prop('selected', true);
-			}else if (obj_name == 'FtpAsset'){
-			    $("#selectFtpAsset option[value='"+selected_shots[shot_idx]+"']").prop('selected', true);
-			}
-		    }
-		}
-            });
-            $select_elem.trigger("chosen:updated");
-            $select_elem.trigger("liszt:updated");
-            $select_elem.data("chosen").destroy().chosen();
-        },
-        error: function(error){
-            console.log("Error:");
-            console.log(error);
-        }
-    });
-}
-
-function load_ftp_asset_type(parent_id) {
-
-    $select_elem = $('#selectFtpAssetType');
-    $.ajax({
-        type:"POST",
-        url:"/callajax/",
-        data: { 'parent_id' : parent_id, 'object_name': 'Ftp Asset Type'},
-        beforeSend: function(){
-	    $select_elem.empty();
-	    $select_elem.append('<option value="">Select one ...</option>');
-        },
-        success: function(json){
-            $.each(json, function (idx, obj) {
-		$select_elem.append('<option value="'+obj.name+'">' + obj.name + '</option>');
-            });
-            $select_elem.trigger("chosen:updated");
-            $select_elem.trigger("liszt:updated");
-            $select_elem.data("chosen").destroy().chosen();
-        },
-        error: function(error){
-            console.log("Error:");
-            console.log(error);
-        }
-    });
-}
-
-function load_client_version(name) {
-
-    var object_name = '';
-    var id = $("#selectProject").val();
-    var project_name = $("#selectProject option[value='"+id+"']").text()
-    var component_select = $("#selectComponent").val();
-    var obj_name = $("#selectClientObject").val();
-    var asset_build_type = $("#selectClientType").val();
-
-    if (component_select == 'Internal'){
-        object_name = 'client_version';
-    }
-    else if (component_select == 'Client'){
-        object_name = 'client_side_versions';
-    }
-
-    $select_elem = $('#selectClientVersion');
-    $.ajax({
-        type:"POST",
-        url:"/callajax/",
-        data: { 'project_name': project_name, 'parent_name' : name, 'object_name': object_name, 'task_prefer': obj_name, 'build_type': asset_build_type},
-        beforeSend: function(){
-	    $select_elem.empty();
-        },
-        success: function(json){
-            $.each(json, function (idx, obj) {
-		$select_elem.append('<option value="'+obj.version_path+'">' + obj.version_name + '</option>');
-            });
-            $select_elem.trigger("chosen:updated");
-            $select_elem.trigger("liszt:updated");
-            $select_elem.data("chosen").destroy().chosen();
-        },
-        error: function(error){
-            console.log("Error:");
-            console.log(error);
-        }
-    });
-}
-function load_ftp_asset_name(parent_id) {
-
-    asset_type = $('#selectFtpAssetType').val();
-    if(!asset_type){
-	error_message("Please select valid asset type !!!");
-	return null;
-    }
-
-    $select_elem = $('#selectFtpAssetName');
-    $.ajax({
-        type:"POST",
-        url:"/callajax/",
-        data: { 'parent_id' : parent_id, 'object_name': 'Ftp Asset Name', 'asset_type': asset_type},
-        beforeSend: function(){
-	    $select_elem.empty();
-	    $select_elem.append('<option value="">Select one ...</option>');
-        },
-        success: function(json){
-            $.each(json, function (idx, obj) {
-		$select_elem.append('<option value="'+obj.name+'">' + obj.name + '</option>');
-            });
-            $select_elem.trigger("chosen:updated");
-            $select_elem.trigger("liszt:updated");
-            $select_elem.data("chosen").destroy().chosen();
-        },
-        error: function(error){
-            console.log("Error:");
-            console.log(error);
-        }
-    });
-}
-function load_ftp_components(parent_id,dept) {
-
-    asset_name = $('#selectFtpAssetName').val();
-    if(!asset_name){
-	error_message("Please select valid asset name !!!");
-	return null;
-    }
-
-    upload_for = $('#selectFtpStatus').val();
-
-    $select_elem = $('#selectFtpExt');
-    $.ajax({
-        type:"POST",
-        url:"/callajax/",
-        data: { 'parent_id' : parent_id, 'object_name': 'Ftp Component', 'asset_name': asset_name, 'department': dept, 'upload_for': upload_for},
-        beforeSend: function(){
-	    $select_elem.empty();
-	    $select_elem.append('<option value="">Select one ...</option>');
-        },
-        success: function(json){
-            $.each(json, function (idx, obj) {
-		$select_elem.append('<option value="'+obj.name+'">' + obj.name + '</option>');
-            });
-            $select_elem.trigger("chosen:updated");
-            $select_elem.trigger("liszt:updated");
-            $select_elem.data("chosen").destroy().chosen();
-        },
-        error: function(error){
-            console.log("Error:");
-            console.log(error);
-        }
-    });
-}
-
-$('#selectFtpAssetName').change(function(){
-
-    obj = $('#selectFtpObject').val();
-    parent_id = ''
-    values = ''
-    dept = ''
-
-    upload_notes();
-    $('#selectFtpVersionSide').val('').trigger("liszt:updated").trigger("chosen:updated");
-
-    if (obj == 'Shot'){
-	values = $('#selectFtpShot').val();
-	dept = $('#selectShotFtpDepartment').val();
-    }else if (obj == 'Asset Build'){
-	values = $('#selectFtpAsset').val();
-	dept = $('#selectAssetFtpDepartment').val();
-    }
-
-    if(!dept){
-	error_message("Please select valid department !!!");
-	return null;
-    }
-
-    if (values){
-	parent_id = values[0];
-    }else{
-	error_message("Please select "+obj);
-	return null;
-    }
-    load_ftp_components(parent_id,dept);
-});
 
 function show_upload_version(){
 
@@ -2825,10 +2238,8 @@ function show_upload_version(){
     ass = $('#selectFtpAssetName').val();
     ext = $('#selectFtpExt').val();
     side = $('#selectFtpVersionSide').val();
-    copy_opt = $('input[name="optradio"]:checked').val();
     dest_path = $('#dest_path').val();
     dest_path = dest_path.replace(/\s/g,'');
-
 
     if (!proj){
 	error_message("Please select project !!!");
@@ -2842,14 +2253,12 @@ function show_upload_version(){
     } else if (!ext){
 	error_message("Please select Components !!!");
 	return null;
-    }
-    else if (!dest_path){
+    } else if (!dest_path){
 	error_message("Please valid destination path !!!");
 	return null;
     }
 
     var data_array = [];
-    proj_name = $("#selectProject option[value='"+proj+"']").text();
     obj = $('#selectFtpObject').val();
 
     if (obj == 'Shot'){
@@ -2871,8 +2280,9 @@ function show_upload_version(){
 	}
 	for (i in shot){
 	    value = shot[i];
-	    shot_name = $("#selectFtpShot option[value='"+value+"']").text();
-	    str_ver = proj_name+'_'+shot_name+':'+value+'|'+stat+'|'+dept+'|'+ass+'|'+ext+'|'+side;
+	    task_id = $("#selectFtpShot option[value='"+value+"']").attr('data-task-id');
+	    name = $("#selectFtpShot option[value='"+value+"']").text();
+	    str_ver = proj+'|'+name+'|'+task_id+'|'+stat+'|'+ass+'|'+ext+'|'+side;
 	    data_array.push(str_ver);
 	}
     }else if (obj == 'Asset Build'){
@@ -2891,8 +2301,9 @@ function show_upload_version(){
 	}
 	for (i in asset){
 	    value = asset[i];
-	    asset_name = $("#selectFtpAsset option[value='"+value+"']").text();
-	    str_ver = proj_name+'_'+asset_name+':'+value+'|'+stat+'|'+dept+'|'+ass+'|'+ext;
+	    task_id = $("#selectFtpAsset option[value='"+value+"']").attr('data-task-id');
+	    name = $("#selectFtpAsset option[value='"+value+"']").text();
+	    str_ver = proj+'|'+name+'|'+task_id+'|'+stat+'|'+ass+'|'+ext+'|'+side;
 	    data_array.push(str_ver);
 	}
     }
@@ -2902,11 +2313,12 @@ function show_upload_version(){
 
 function load_ftp_versions(data_array) {
 
+    project = $('#selectProject').val();
     data_array = JSON.stringify(data_array);
     $.ajax({
         type:"POST",
         url:"/callajax/",
-        data: { 'data_array': data_array ,'object_name': 'FTP Versions' },
+        data: { 'data_array': data_array ,'object_name': 'Ftp Versions', 'project': project },
         beforeSend: function(){
             $('#panel_big').plainOverlay('show');
         },
@@ -2925,45 +2337,29 @@ function load_ftp_versions(data_array) {
 
 function add_version_rows(idx,obj){
 
-    var obj_name = $("#selectObject").val();
     var table = $('#tbl_ftp_version tbody');
     row = $(table[0].insertRow(-1));
-    ver = obj.version
-//    updated_version = ver+
-    camera_angle = obj.camera_angle
-    ass = $('#selectFtpAssetName').val();
-    obj_name = obj.obj_name
-    upload_status = obj.status
-    approved_version_number = obj.approved_version_number
-    trimmed_version = obj.trimmed_version
-    linked_path = obj.linked_path
-    version_id = obj.version_id
-    task_assignees = obj.assignees
-    source_path = obj.source_path
 
-    check_box = ''
-    list_ver = ver.split(',')
-    if (list_ver.length > 1){
+    upload_error = obj.upload_error
+    camera_angle = obj.camera_angle
+    obj_name = obj.name
+    upload_status = obj.status
+    upload_version = obj.upload_version
+    published_by = obj.published_by
+    published_version = obj.published_version
+    source_path = obj.source_path
+    version_id = obj.version_id
+    task_id = obj.task_id
+
+    upload_color = "style='color:#00ff03;'";
+
+    check_box = '<input type="checkbox" id="cb'+idx+'" data-source-path="'+source_path+'" data-version-id="'+version_id+'" data-task-id="'+task_id+'"/>';
+    if (upload_error == 1){
 	check_box = '<span id="cb'+idx+'"/>';
-    }else if (upload_status == 'No version found'){
-        check_box = '<span id="cb'+idx+'"/>';
-    }else if (upload_status == 'Source folder not available'){
-        check_box = '<span id="cb'+idx+'"/>';
-    }else if (upload_status == 'Sequence version not yet approved by client'){
-        check_box = '<span id="cb'+idx+'"/>';
-    }else if (upload_status == "More than one version's status is Internal Approved"){
-        check_box = '<span id="cb'+idx+'"/>';
+	upload_color = "style='color:red;'";
     }
-    else{
-	check_box = '<input type="checkbox" id="cb'+idx+'" data-td-ver = "'+ver+':'+approved_version_number+':'+version_id+':'+source_path+'"/>';
-    }
-    version = ver.replace(/,/g, "</br>");
-    if (!(upload_status == 'Ready to upload')){
-        var cell = $("<td id='check_box_1'>"+check_box+"</td><td>"+obj_name+"</td><td>"+trimmed_version+"</td><td>"+approved_version_number+"<td style='color:red;'>"+upload_status+"</td><td>"+task_assignees+"</td>");
-    }
-    else{
-        var cell = $("<td id='check_box_1'>"+check_box+"</td><td>"+obj_name+"</td><td>"+trimmed_version+"</td><td>"+approved_version_number+"<td style='color:rgb(66, 206, 82);'>"+upload_status+"</td><td>"+task_assignees+"</td>");
-    }
+
+    var cell = $("<td id='check_box_1'>"+check_box+"</td><td>"+obj_name+"</td><td>"+published_version+"</td><td>"+upload_version+"<td nowrap "+upload_color+">"+upload_status+"</td><td>"+published_by+"</td>");
 
     row.append(cell);
 
@@ -2971,20 +2367,21 @@ function add_version_rows(idx,obj){
 
 $('#upload_ftp').click(function(){
     $('#upload_ftp').prop("disabled",true);
-    var ftp_version = []
-    side = $('#selectFtpVersionSide').val();
-    upload_status = $('#selectFtpStatus').val();
-    copy_opt = 'symlink'
+
     dest_path = $('#dest_path').val();
     dest_path = dest_path.replace(/\s/g,'');
-    var listy = []
-    if (dest_path.slice(0,2) == 'Z:'){
-        var dest_path_1 = dest_path.split('\\');
-    }
-    else {
-        var dest_path_1 = dest_path.split('/');
 
+    camera_side = $('#selectFtpVersionSide').val();
+
+    upload_for = $('#selectFtpStatus').val();
+    project = $('#selectProject').val();
+
+    var dest_upload_path = dest_path.split('/');
+    if (dest_path.slice(0,2) == 'Z:'){
+        dest_upload_path = dest_path.split('\\');
     }
+
+    var ftp_version = []
 
     obj = $('#selectFtpObject').val();
     var dept = '';
@@ -2993,30 +2390,42 @@ $('#upload_ftp').click(function(){
     }else if (obj == 'Asset Build'){
 	dept = $('#selectAssetFtpDepartment').val();
     }
+
     $('tbody tr td input[type="checkbox"]').each(function(){
 	if($(this).prop('checked')){
-	    ftp_version.push($(this).attr('data-td-ver'));
+	    data = {};
+	    data['task_id'] = $(this).attr('data-task-id');
+	    data['version_id'] = $(this).attr('data-version-id');
+	    data['source_path'] = $(this).attr('data-source-path');
+	    data['camera_angle'] = camera_side;
+	    data['upload_for'] = upload_for;
+	    data['department'] = dept;
+	    data['project'] = project;
+	    current_row = $(this).closest('tr');
+	    data['obj_name'] = current_row.find("td:eq(1)").text();
+	    data['upload_version'] = current_row.find("td:eq(3)").text();
+	    data['internal_version'] = current_row.find("td:eq(2)").text();
+	    data['dest_upload_path'] = dest_upload_path;
+
+	    ftp_version.push(data);
 	}
     });
-    $('tbody tr td input[type="checkbox"]').each(function(){
-	if(!($(this).prop('checked'))){
+	if(!(ftp_version.length)){
 	    error_message("Select files after clicking on 'Show' button")
 	    return null
 	}
-    });
-    upload_files(ftp_version,side,copy_opt,dest_path_1,upload_status,dept)
+    upload_files(ftp_version, dest_upload_path)
 
 });
 
 
-function upload_files(data_array,side,copy_opt,dest_path,upload_status,dept) {
-    var client_final_combo = $('#selectFtpAssetName').val()
-    data_dest = JSON.stringify(dest_path);
+function upload_files(data_array, dest_upload_path) {
     data_array = JSON.stringify(data_array);
+    dest_upload_path = JSON.stringify(dest_upload_path);
     $.ajax({
         type:"POST",
         url:"/callajax/",
-        data: { 'data_array': data_array ,'object_name': 'FTP Upload', 'destination':data_dest, 'prefer':copy_opt, 'side':side, 'upload_status':upload_status, 'client_final_combo': client_final_combo, 'department':dept},
+        data: { 'data_array': data_array ,'object_name': 'Ftp Upload', 'dest_upload_path': dest_upload_path },
         beforeSend: function(){
             $('#panel_big').plainOverlay('show');
         },
@@ -3041,27 +2450,6 @@ function upload_files(data_array,side,copy_opt,dest_path,upload_status,dept) {
     });
     $('#upload_ftp').removeAttr("disabled");
 }
-$('#selectFtpStatus').change(function(){
-    upload_notes()
-});
-
-function upload_notes(){
-
-    if ($('#selectFtpStatus').val() == 'Internal'){
-          $('#upload_tips').html('<span style="font-weight:bold; font-size:21px;text-decoration:underline">Status Convention to be followed-</span></br> Task status : Pending Internal Review , Version Status : Ready to review');
-    }else if ($('#selectFtpAssetName').val() == 'final' && $('#selectFtpStatus').val() == 'Client') {
-        $('#upload_tips').html('<span style="font-weight:bold; font-size:21px;text-decoration:underline">Status Convention to be followed-</span></br> Task status : Client Approved , Version Status : Client Approved');
-    }else if ($('#selectFtpStatus').val() == 'Review'){
-        $('#upload_tips').html('<span style="font-weight:bold; font-size:21px;text-decoration:underline">Status Convention to be followed-</span></br>Task status , Version Status : Client Approved');
-    }else if ($('#selectFtpStatus').val() == 'Outsource'){
-        $('#upload_tips').html('<span style="font-weight:bold; font-size:21px;text-decoration:underline">Status Convention to be followed-</span></br>Task status , Version Status : Outsource Approved');
-    }else if ($('#selectFtpStatus').val() == 'DI'){
-        $('#upload_tips').html('<span style="font-weight:bold; font-size:21px;text-decoration:underline">Status Convention to be followed-</span></br>Task status , Version Status : Review Approved');
-    }else {
-        $('#upload_tips').html('<span style="font-weight:bold; font-size:21px;text-decoration:underline">Status Convention to be followed-</span></br>Task status , Version Status : Internal Approved');
-    }
-}
-
 $('#allftpcb').change(function(){
     if($(this).prop('checked')){
         $('tbody tr td input[type="checkbox"]').each(function(){
@@ -3074,559 +2462,46 @@ $('#allftpcb').change(function(){
     }
 });
 
-$('#user_reject_asset').change(function(){
-    task_parent_id = $(this).attr('data-task-parent-id');
-    if($(this).prop('checked')){
-        select_task_elem = $('#selectVersionTask');
-        select_task_elem.empty();
-        select_task_elem.trigger("chosen:updated");
-        $('#div_selectVersionAssetType').css({'display':'block'});
-        $('#div_selectVersionAssetBuild').css({'display':'block'});
-        $select_elem = $("#selectVersionAssetType");
-        load_types($select_elem)
-    }else{
-        $('#div_selectVersionAssetType').css({'display':'none'});
-        $('#div_selectVersionAssetBuild').css({'display':'none'});
-        reset_model_drop_down();
-	    load_choosen_data($('#div_selectVersionTask'),$('#selectVersionTask'),'Select Task',task_parent_id);
-        load_choosen_data($('#div_selectTaskVersion'),$('#selectTaskVersion'),'Select Version',task_parent_id);
+//------------- model calls --------------------------//
+function show_model(context){
+    task_id = $(context).closest('td').attr('data-task-id');
 
-        select_elem = $('#selectVersionTaskAssetTypes');
-        $select_elem.empty();
-	    $select_elem.append('<option value="">Select Asset Type</option>');
-    }
-
-});
-
-$('#selectVersionAssetType').change(function(){
-    asset_type = $(this).val();
-    if (!asset_type){
-	$('#div_selectVersionAssetBuild').css({'display':'none'});
-	$('#selectVersionAssetType').data("chosen").destroy().chosen();
+    if (!task_id || task_id == 'null'){
+	alert("Selected task is not created !!!");
 	return null;
     }
-
-    parent_id = $('#selectVersionAssetType').attr('data-project-id');
-    if (parent_id){
-	obj_name = 'RejectAsset';
-	load_obj_name(obj_name, parent_id, 1);
-	$('#div_selectVersionAssetBuild').css({'display':'block'});
-    }
-});
-
-$('#selectVersionAssetBuild').change(function(){
-
-    asset_id = $(this).val();
-    if (asset_id){
-	load_choosen_data($('#div_selectVersionTask'),$('#selectVersionTask'),'Select Task',asset_id);
-    }
-
-});
-
-function show_model(context) {
     reset_model_drop_down();
-    task_id = $(context).closest('td').attr('data-task-id');
+
+    last_row = 15;
     task_parent_id = $(context).closest('td').attr('data-task-parent-id');
     task_assignee = $(context).closest('td').attr('data-task-assignee');
     parent_object_type = $(context).closest('tr').attr('data-parent-object-type');
-    project_id = $(context).closest('tr').attr('data-project-id');
+    project = $(context).closest('tr').attr('data-project');
 
-    obj_name = $('#selectObject').val();
-
-    if (obj_name){
-	if (obj_name == 'Shot Asset Build'){
-	    obj_name = 'Asset Build';
-	}
-    }else{
-	obj_name = 'Task';
-    }
-
-    task = '';
-    if ($('#selectTask').val()){
-	task = $('#selectTask').val();
-    }
-
-    note_task = '';
-    if ($('#selectNoteTask').val()){
-	note_task = $('#selectNoteTask').val();
-    }
-    ver_note_task = '';
-    if ($('#selectVersionTask').val()){
-	ver_note_task = $('#selectVersionTask').val();
-    }
-
-    last_row = 15;
-    load_task_details(task_id,obj_name,last_row,task_assignee);
-
-    $('#version_note_details').html('');
-
-    $('#note_details').html('');
+    // Header details
+    load_task_details(project, task_id);
 
     // default Task Note Tab
-    load_task_notes(task_id, obj_name, last_row, note_task);
+    load_task_notes(task_id, last_row, project);
 
-    load_choosen_data($('#div_selectVersionTask'),$('#selectVersionTask'), "Select Task", task_parent_id);
-    load_choosen_data($('#div_selectNoteTask'),$('#selectNoteTask'), "Select Task", task_id);
-    load_choosen_data($('#div_selectTask'),$('#selectTask'), "Select Task", task_id);
+    load_choosen_data($('#div_selectVersionTask'),$('#selectVersionTask'), "Select Task", task_parent_id, project);
+    load_choosen_data($('#div_selectNoteTask'),$('#selectNoteTask'), "Select Task", task_parent_id, project);
+    load_choosen_data($('#div_selectTask'),$('#selectTask'), "Select Task", task_parent_id, project);
+    load_choosen_data($('#div_selectActivityTask'),$('#selectActivityTask'), "Select Task", task_parent_id, project);
 
     // user_reject_asset
     $('#user_reject_asset').attr('data-task-parent-id',task_parent_id);
-    $('#user_reject_asset').attr('data-project-id',project_id);
     if (parent_object_type == 'Shot'){
 	$('#div_user_reject_asset').css({'display':'block'});
 	$('#user_reject_asset').attr('checked',false);
-	$('#selectVersionAssetType').attr('data-project-id',project_id);
     }else{
 	$('#div_user_reject_asset').css({'display':'none'});
     }
 
-
     $('#btn_note_create').attr('data-task-id',task_id);
-
-    $('#myModal').attr("obj_name", obj_name);
-    $('#myModal').attr("task", task);
-    $('#myModal').attr("note_task", note_task);
-    $('#myModal').attr("ver_note_task", ver_note_task);
 
     $('#myModal').modal('show');
 };
-//----------- Drop down change ------------------------//
-$('#selectTask').change(function(){
-    task_id = $('#data-modal-object-id').val();
-    obj_name = $('#myModal').attr("obj_name");
-    task = $(this).val();
-    last_row = 15;
-    remove_rows('#tbl_versions');
-    //load_asset_versions(task_id,obj_name,last_row,task);
-    var path = $('#from-id').text();
-    path = path.split('/')
-    var task_name = ''
-    task = $('#selectTask option:selected').val();
-    if(task){
-        task_name = $('#selectTask option:selected').text();
-    }
-    else{
-        task_name = path[3]
-        path = path.splice(0, 3)
-    }
-    project = path[0].toLowerCase()
-    path = path.join(':')
-    load_asset_versions(task_id,obj_name,last_row,task, project, path, task_name);
-
-});
-
-$('#selectNoteTask').change(function(){
-    task_id = $('#data-modal-object-id').val();
-    obj_name = $('#myModal').attr("obj_name");
-    note_task = $(this).val();
-    last_row = 15;
-    $('#note_details').html('');
-    load_task_notes(task_id, obj_name, last_row, note_task);
-});
-
-$('#selectVersionTask').change(function(){
-    //task_id = $('#data-modal-object-id').val();
-    task_id = $("#selectVersionTask option:selected").val();
-    obj_name = $('#myModal').attr("obj_name");
-    ver_note_task = $(this).val();
-    last_row = 15;
-    $('#version_note_details').html('');
-    version_notes(task_id, 'Task', last_row, ver_note_task);
-});
-
-//------------- Scroll calls----------------//
-
-$('#note_details').on('scroll', function() {
-	$('#user_reject_asset').attr('data-task-parent-id',task_parent_id);
-    task_id = $('#data-modal-object-id').val();
-    obj_name = $('#myModal').attr("obj_name");
-    if($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight) {
-    last_row += 15
-    if (note_task != $('#selectNoteTask').val()){
-    note_task = $('#selectNoteTask').val();
-    last_row = 15;
-    $('#note_details').html('');
-    }
-        load_task_notes(task_id, obj_name, last_row, note_task);
-    }
-});
-
-$('#version_details').on('scroll', function() {
-    task_id = $('#data-modal-object-id').val();
-    obj_name = $('#myModal').attr("obj_name");
-    if($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight) {
-    last_row += 15;
-    if (task && task != $('#selectTask').val()){
-    task = $('#selectTask').val();
-    last_row = 15;
-    remove_rows('#tbl_versions');
-    }
-
-    var path = $('#from-id').text();
-    path = path.split('/')
-    var task_name = ''
-    if(path.length == 3){
-        task = $('#selectTask option:selected').val();
-        if(task){
-            task_name = $('#selectTask option:selected').text();
-        }
-    }
-    else{
-        task_name = path[3]
-        path = path.splice(0, 3)
-	task = task_id
-    }
-    project = path[0].toLowerCase()
-    path = path.join(':')
-    load_asset_versions(task_id,obj_name,last_row,task, project, path, task_name);
-   }
-});
-
-$('#version_note_details').on('scroll', function() {
-    task_id = $('#data-modal-object-id').val();
-    obj_name = $('#myModal').attr("obj_name");
-    if($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight) {
-    last_row += 15;
-    if (ver_note_task && ver_note_task != $('#selectVersionTask').val()){
-        ver_note_task = $('#selectVersionTask').val();
-        last_row = 15;
-        $('#version_note_details').html('');
-    }
-        version_notes(task_id,obj_name,last_row,ver_note_task);
-    }
-});
-
-$('#version_note_details_history').on('scroll', function() {
-    if($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight) {
-       last_row += 15;
-        var from = $('#from-id').text();
-        var task_path = $('#data-modal-object-id').attr('task_parent_path');
-        if (!from){
-            from = task_path;
-        }else{
-            from = from.replace(/\s/g, "").replace(/\//g, ':');
-        }
-        get_version_note_details_history(from, last_row)
-    }
-});
-
-$('#activity_logs_details').on('scroll', function() {
-    if($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight) {
-       last_row += 25;
-        var from = $('#from-id').text().replace(/\s\/\s/g, ':');
-        var task = $('#selectActivityTask option:selected').val()
-        get_activity_details(from, last_row, task)
-    }
-});
-
-
-//------------- tabs change calls --------------------------//
-//
-
-    // tab-1
-$('#my_not').on('click', function() {
-    task_id = $('#data-modal-object-id').val();
-    obj_name = $('#myModal').attr("obj_name");
-    note_task = $('#myModal').attr("note_task");
-    last_row = 15;
-    $('#note_details').html('');
-    load_task_notes(task_id, obj_name, last_row, note_task);
-    $('#btn_note_create').attr('data-task-id',task_id);
-});
-
-    // tab-2
-$('#my_lnk').on('click', function() {
-    var page = $('#task_menu1').find('li.active').first('a span').text()
-    page = page.trim()
-    var task_id = ''
-    if(page == 'Task Entity'){
-        task_id = $('#data-modal-object-id').val();
-    }
-    else{
-        task_id = $('#data-modal-object-id').attr('data-modal-parent-id');
-    }
-    obj_name = $('#myModal').attr("obj_name");
-    last_row = 15;
-    $('#link_details').html('');
-    load_task_links(task_id,obj_name,last_row)
-
-});
-
-    // tab-3
- $('#my_vsn').on('click', function() {
-    task_id = $('#data-modal-object-id').val();
-    obj_name = $('#myModal').attr("obj_name");
-    last_row = 15;
-    $('#tbl_versions tbody').html('');
-    $('#gallery_versions tbody').html('');
-    $('#gallery_notes tbody').html('');
-
-    var path = $('#from-id').text();
-    path = path.split('/')
-    var task_name = ''
-    task = $('#selectTask option:selected').val();
-    if(task){
-         task_name = $('#selectTask option:selected').text();
-    }
-    else{
-        task_name = path[3]
-        path = path.splice(0, 3)
-	task = task_id
-    }
-    project = path[0].toLowerCase()
-    path = path.join(':').replace(/\s+/g, "")
-    load_asset_versions(task_id,obj_name,last_row,task, project, path, task_name);
-});
-
- // tab-4
-$('#my_vsn_not').on('click', function() {
-    task_id = $('#data-modal-object-id').val();
-    obj_name = $('#myModal').attr("obj_name");
-    ver_note_task = $('#myModal').attr("ver_note_task");
-    last_row = 15;
-    $('#note_attach').val('');
-    $('#version_note_details').html('');
-
-    var path = $('#from-id').text();
-    path = path.split('/')
-    var task_name = ''
-    if(path.length == 3){
-        task = $('#selectTask option:selected').val();
-        if(task){
-            task_name = $('#selectTask option:selected').text();
-        }
-    }
-    else{
-        task_name = path[3]
-        path = path.splice(0, 3)
-    }
-    project = path[0].toLowerCase()
-    path = path.join(':')
-
-    // version_notes(task_id,obj_name,last_row,ver_note_task);
-    version_notes(task_id,obj_name,last_row,ver_note_task, project, path.toLowerCase(), task_name);
-});
-
- // tab-5
-$('#my_vsn_not_htry').on('click', function() {
-    var from = $('#from-id').text();
-    var task_path = $('#data-modal-object-id').attr('task_parent_path');
-    last_row = 15;
-    $('#note_attach').val('');
-    if (!from){
-	from = task_path;
-    }else{
-	from = from.replace(/\s/g, "").replace(/\//g, ':');
-    }
-    $('#version_note_details_history').html('');
-    get_version_note_details_history(from, last_row)
-});
-
- // tab-6
-$('#my_activity').on('click', function() {
-    var from = $('#from-id').text().replace(/\s\/\s/g, ':');
-    last_row = 25;
-    $('#tbl_activity tbody').html('');
-    $select_val = $('#selectEntityTask').html()
-    $('#selectActivityTask').html($select_val)
-    $('#selectActivityTask').trigger("chosen:updated");
-    $('#selectActivityTask').trigger("liszt:updated");
-    get_activity_details(from, last_row)
-
-});
-
-function get_activity_details(from, last_row, task=''){
-    var page = $('#task_menu1').find('li.active').first('a span').text()
-    var parent_id = $('#data-modal-object-id').val()
-    page = page.trim()
-    $("#my_activity_loader").show();
-    $.ajax({
-	type: "POST",
-	url: "/callajax/",
-	data: {"object_name": "Activity Log", "from": from, 'last_row': last_row, "task": task, "page": page, "parent_id": parent_id},
-	beforeSend: function(){
-
-	},
-	success: function(json){
-	     $.each(json, function (idx, obj){
-                add_activity_logs(idx, obj);
-            });
-	$("#my_activity_loader").hide();
-	},
-	error: function(error){
-	    console.log("Error:"+error);
-	}
-    });
-}
-
-function get_version_note_details_history(from, last_row){
-    var page = $('#task_menu1').find('li.active').first('a span').text()
-    $("#task_version_notes_history_loader").show();
-    $.ajax({
-	type: "POST",
-	url: "/callajax/",
-	data: {"object_name": "Note History", "from": from, 'last_row': last_row, "page": page},
-	beforeSend: function(){
-
-	},
-	success: function(json){
-	     //$('#version_note_details_history').html('');
-	     $.each(json, function (idx, obj){
-                modal_body = add_note_details_history(idx, obj);
-                $('#version_note_details_history').append(modal_body);
-        	});
-	$("#task_version_notes_history_loader").hide();
-	},
-	error: function(error){
-	    console.log("Error:"+error);
-	}
-    });
-}
-//----------- category change------------//
-//category for tab-4
-
-$('#selectVersionNoteCategory').change(function(){
-    task_id = $('#data-modal-object-id').val();
-    obj_name = $('#myModal').attr("obj_name");
-    ver_note_task = $('#myModal').attr("ver_note_task");
-    last_row = 15;
-    $('#note_attach').val('');
-    $('#version_note_details').html('');
-    version_notes(task_id,obj_name,last_row,ver_note_task);
-
-});
-
-//category for tab-1
-$('#selectNoteCategory').on('change', function(){
-    task_id = $('#data-modal-object-id').val();
-    obj_name = $('#myModal').attr("obj_name");
-    note_task = $('#myModal').attr("note_task");
-    last_row = 15;
-    $('#note_details').html('');
-    load_task_notes(task_id, obj_name, last_row, note_task);
-    $('#btn_note_create').attr('data-task-id',task_id);
-
-});
-
-//----------- close model ---------------//
-$('#myReset').on('click', function() {
-        $('#myModal').hide("");
-        $('#modal_header').html('');
-        $('#selectVersionTask').html('');
-        $('#selectNoteTask').html('');
-
-        $('.nav-tabs li.active').removeClass('active');
-        $('.nav-tabs li a[href="#my_notes"]').tab('show')
-    });
-
-//------------ show likModel ---------------//
-function show_link_model(param){
-    $('#myInput').val('');
-    var prj_name = $("#selectProject option:selected").text();
-    var proj_id = $("#selectProject option:selected").val();
-    var asset_ids = ($('#link_details').attr('asset_ids')).split(",");
-    asset_list = get_asset_list(proj_id, prj_name, asset_ids)
-};
-
-//--------- get asset list ------------------//
-function get_asset_list(proj_id, prj_name, asset_ids){
-    var asset_array = asset_ids.join();
-    $('#myList').html('');
-    checked_list = [];
-    unchecked_list = [];
-    //call
-    $.ajax({
-	type: "POST",
-	url:"/callajax/",
-	data: { 'object_name': 'Asset Build' , 'prj_name': prj_name, 'proj_id': proj_id},
-	success: function(json){
-        var ids = []
-        $.each(json, function (idx, obj){
-            if(jQuery.inArray(obj.id, asset_ids) !== -1){
-            checked_list.push('<li class="list-group-item"><input type="checkbox" name="asset" value="'+obj.id+'" checked/>&nbsp;'+obj.name+'</li>')
-            ids.push(obj.id)
-            }
-            else{
-              unchecked_list.push('<li class="list-group-item"><input type="checkbox" name="asset" value="'+obj.id+'"/>&nbsp;'+obj.name+'</li>')
-            }
-        });
-        $('#myList').attr('data-checked', ids);
-        checked_list.push(unchecked_list);
-        for (i = 0; i < checked_list.length; i++) {
-         $('#myList').append(checked_list[i]);
-        }
-        $("#linktask_details_loader").hide();
-        $('#linkModel').modal('show');
-        $('#entity_loader').hide();
-	},
-	error: function(error){
-	    console.log("Error:");
-	    console.log(error);
-	}
-    });
-}
-
-//-------- add asset ------------------- //
-function add_asset(task_id, obj_name, asset_name, old_asset_ids, parent_path=''){
-    var page = $('#task_menu1').find('li.active').first('a span').text()
-    $("#linktask_details_loader").show();
-    if (obj_name){
-	if (obj_name == 'Shot Asset Build'){
-	    obj_name = 'Asset Build';
-	}
-    }else{
-	obj_name = 'Task';
-    }
-    if(old_asset_ids){
-        old_asset_ids = old_asset_ids.join();
-    }
-    var selected_asset = [];
-    $.each($("input[name='asset']:checked"), function(){
-        selected_asset.push($(this).val());
-    });
-    //call
-    $.ajax({
-	type: "POST",
-	url:"/callajax/",
-	data: { 'object_name': 'Link Asset' , 'task_id': task_id, 'selected_asset': selected_asset.join(), 'asset_name': asset_name, 'old_asset_ids': old_asset_ids, "page": page, 'parent_path': parent_path},
-	success: function(json){
-	    $("#linktask_details_loader").hide();
-	    // Reload task links
-        if(page == 'entity_task'){
-         load_task_links(task_id,obj_name,15);
-        }else{
-          $('#incoming').attr('asset-ids', selected_asset);
-          $('#save_asset').attr('old-ids', selected_asset)
-          var prj_name = $("#selectEntityProject option:selected").text();
-          var proj_id = $("#selectEntityProject").val();
-          get_asset_list(proj_id, prj_name, selected_asset)
-        }
-        noty({
-                text: 'Asset Link added successfully',
-                layout: 'topCenter',
-                closeWith: ['click', 'hover'],
-                type: 'success'
-            });
-	},
-	error: function(error){
-	    console.log("Error:");
-	    console.log(error);
-	}
-
-    });
-}
-
-
-//----------- for filter asset list ----------//
-$(document).ready(function(){
-  $("#myInput").on("keyup", function() {
-    var value = $(this).val().toLowerCase();
-    $("#myList li").filter(function() {
-      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-    });
-  });
-});
-
 
 function reset_model_drop_down(){
 
@@ -3648,12 +2523,13 @@ function reset_model_drop_down(){
 
 }
 
-function load_task_details(task_id,obj_name,last_row,task_assignee){
+//------------- load on model pop up --------------------------//
+function load_task_details(project, task_id){
     $("#task_details_loader").show();
     $.ajax({
 	type: "POST",
 	url:"/callajax/",
-	data: { 'task_id': task_id , 'type_name': obj_name, 'object_name': 'Show Task Details' , 'last_row' : last_row, 'task_assignee': task_assignee},
+	data: { 'project': project, 'task_id': task_id , 'object_name': 'Show Task Details'},
 	success: function(json){
 	$.each(json, function (idx, obj) {
 	    add_task_details(idx, obj);
@@ -3668,71 +2544,91 @@ function load_task_details(task_id,obj_name,last_row,task_assignee){
 }
 
 function add_task_details(idx, obj){
-    var task_parent_path = ''
-    //var task_parent_path = path.substring(0, path.lastIndexOf('/'));
-    if(obj.link_path){
-     task_parent_path = obj.link_path.substring(0, obj.link_path.lastIndexOf('/'));
-    }
-    // <h3>'+obj.name+'</h3><label>'+obj.object_type+' ('+obj.type_name+')</label></br>
-    html = '<input type="hidden" id="data-modal-object-id" data-modal-parent-id="'+obj.parent_id+'" task_assignee="'+task_assignee+'" task_parent_path="'+task_parent_path+'" value="'+obj.object_id+'" /><br><h4 id="from-id">'+obj.link_path+'</h4>';
-    var status_label = ''
-    var status_span = ''
-    var priority_span = ''
-    if(obj.status){
+    
+    html = '<input type="hidden" id="data-modal-object-id" data-modal-project="'+obj.project+'" data-parent-object="'+obj.parent_object+'" data-modal-parent-id="'+obj.parent_id+'" task_parent_path="'+obj.parent_path+'" value="'+obj.object_id+'" />\
+	    <br><h4 id="from-id">'+obj.link_path+'</h4>';
+
+    $('#modal_header').html(html);
 
 
-    status_label = obj.status.replace(/ /g,'_').toLowerCase();
-    priority_label = obj.priority.replace(/ /g,'_');
-
-    status_span = '<span class="label label-'+status_label+'">'+obj.status+'</span>'
-    priority_span = '<span class="label label-'+priority_label+'">'+obj.priority+'</span>'
-    }
-    table = ' \
-<div class="col-md-12">\
-    <div class="col-md-4">'+html+'</div>\
-</div>\
-';
-    $('#modal_header').html(table);
-
-/*
-    //for asset_task list
-
-    $select_elem = $('#selectVersionTask');
-    $select_elem.empty();
-    $select_elem.append('<option value="">Select Task</option>');
-    $.each(obj.asset_task_dict, function (task_id,task_name) {
-		$select_elem.append('<option value="'+task_name+'" data-id="'+task_id +'">'+task_name+'</option>');
-            });
-	    $select_elem.trigger("chosen:updated");
-	    $select_elem.trigger("liszt:updated");
-
-    $select_elem_notes = $('#selectNoteTask');
-    $select_elem_notes.empty();
-    $select_elem_notes.append('<option value="">None</option>');
-    $.each(obj.asset_task_dict, function (task_id,task_name) {
-		$select_elem_notes.append('<option value="'+task_name+'" data-id="'+task_id +'">'+task_name+'</option>');
-            });
-	    $select_elem_notes.trigger("chosen:updated");
-	    $select_elem_notes.trigger("liszt:updated");
-
-*/
+    // for artist page
+    parent_name = obj.link_path.split(':');
+    last_idx = parent_name.length - 1; 
+    task_name = parent_name[last_idx];
+    $select_elem = $('#selectAssetTypes');
+    load_asset_type(task_name, $select_elem);
 }
 
-function load_task_notes(task_id, obj_name, last_row, note_task){
+//------------- tabs change calls --------------------------//
 
+    // tab-1
+$('#my_not').on('click', function() {
+    task_id = $('#data-modal-object-id').val();
+    project = $('#data-modal-object-id').attr("data-modal-project");
+    last_row = 15;
+    $('#note_details').html('');
+    if ($('#selectNoteTask').val() && task_id != $('#selectNoteTask').val()){
+	task_id = $('#selectNoteTask').val();
+    }
+    load_task_notes(task_id, last_row, project);
+    $('#btn_note_create').attr('data-task-id',task_id);
+});
+
+$('#note_details').on('scroll', function() {
+    task_id = $('#data-modal-object-id').val();
+    project = $('#data-modal-object-id').attr("data-modal-project");
+    if($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight) {
+	last_row += 15
+	if ($('#selectNoteTask').val() && task_id != $('#selectNoteTask').val()){
+	    task_id = $('#selectNoteTask').val();
+	    last_row = 15;
+	    $('#note_details').html('');
+	}
+	load_task_notes(task_id, last_row, project);
+    }
+});
+
+$('#selectNoteCategory').on('change', function(){
+    task_id = $('#data-modal-object-id').val();
+    project = $('#data-modal-object-id').attr("data-modal-project");
+    last_row = 15;
+    if ($('#selectNoteTask').val() && task_id != $('#selectNoteTask').val()){
+	task_id = $('#selectNoteTask').val();
+    }
+    $('#note_details').html('');
+    load_task_notes(task_id, last_row, project);
+    $('#btn_note_create').attr('data-task-id',task_id);
+
+});
+
+$('#selectNoteTask').change(function(){
+    task_id = $('#data-modal-object-id').val();
+    project = $('#data-modal-object-id').attr("data-modal-project");
+    last_row = 15;
+    if ($(this).val() && task_id != $(this).val()){
+	task_id = $(this).val();
+    }
+    $('#note_details').html('');
+    load_task_notes(task_id, last_row, project);
+    $('#btn_note_create').attr('data-task-id',task_id);
+});
+
+function load_task_notes(task_id, last_row, project){
+
+    note_on = 'Task'
     note_category = $('#selectNoteCategory').val();
+
     $("#task_notes_loader").show();
     $.ajax({
 	type: "POST",
 	url:"/callajax/",
-	data: { 'task_id': task_id , 'type_name': obj_name, 'object_name': 'Show Note Details' , 'last_row' : last_row, 'note_task': note_task, 'note_category': note_category},
+	data: { 'task_id': task_id , 'object_name': 'Show Note Details' , 'last_row' : last_row, 'note_category': note_category, 'project' : project, 'note_on': note_on},
 	success: function(json){
 	$.each(json, function (idx, obj) {
 	    modal_body = add_note_details(idx, obj);
 	    $('#note_details').append(modal_body);
 	});
 	$("#task_notes_loader").hide();
-	toggle_asset_type($('#selectAssetTypes'));
 	},
 	error: function(error){
 	    console.log("Error:");
@@ -3742,18 +2638,15 @@ function load_task_notes(task_id, obj_name, last_row, note_task){
 }
 
 $('#btn_note_create').click(function(){
-
     task_id = $(this).attr('data-task-id');
     if(task_id){
-	create_a_note(task_id);
+	create_task_note(task_id);
     }
-
 });
 
-
-function create_a_note(task_id){
-
+function create_task_note(task_id){
     $textarea_id = $('#text_artist_note');
+    $div_element = $('#note_details');
     var note_text = $textarea_id.val().trim();
     var note_category = $('#selectNoteCategory').val();
     if (!(note_text.length && task_id)){
@@ -3765,103 +2658,37 @@ function create_a_note(task_id){
 	return null;
     }
 
-    obj_name = $('#selectObject').val();
-    if (obj_name){
-        if (obj_name == 'Shot Asset Build'){
-            obj_name = 'Asset Build';
-        }
-    }else{
-        obj_name = 'Task';
-    }
-
     attachments = [];
     $textarea_id.parent().find('table[id=gallery_notes] tr td a').each(function(){
 	href = $(this).attr('href');
 	attachments.push(href);
     });
 
+    note_on = 'Task'
     attach_files = JSON.stringify(attachments);
-    note_task = $('#selectNoteTask').val();
-
-    note_for = obj_name;
-    $div_element = $('#note_details');
-    create_new_note(task_id, note_text, note_category, note_for, $div_element, $textarea_id, note_task, attach_files, obj_name);
+    create_new_note(task_id, note_text, note_category, note_on, $div_element, attach_files);
     $textarea_id.parent().find('table[id=gallery_notes] tbody').html('');
-
-}
-
-function create_new_note(task_id, note_text, note_category, note_for, $div_element, $textarea_id, note_task, attach_files, obj_name){
-    var page = page || $('#task_menu1').find('li.active').first('a span').text();
-    $.ajax({
-        type:"POST",
-        url:"/callajax/",
-        data: { 'object_name': 'Create Note', 'task_id': task_id, 'note_text': note_text, 'note_category': note_category, 'note_for': note_for, 'note_task': note_task, "attach_files": attach_files, "page": page},
-        beforeSend: function(){
-        },
-        success: function(json){
-            add_note_div(json["note_id"], task_id, obj_name, note_text, note_category);
-            noty({
-                text: 'Note added successfully ...',
-                layout: 'topCenter',
-                closeWith: ['click', 'hover'],
-                type: 'success'
-            });
-        },
-        error: function(error){
-            console.log("Error:");
-            console.log(error);
-        }
-    });
-}
-
-function add_note_div(note_id,task_id, obj_name, note_text, note_category){
-    var del_var = '';
-    del_var = '<button class="btn btn-xs btn-danger" style="float\:right;" id="delete-note" onclick="delete_note(this)"\
-    task-id="'+task_id+'" obj-name="'+obj_name+' "note-id="'+note_id+'">Delete</button>'
-
     $textarea_id.val('');
-    note_author = $div_element.attr('data-user-id').toLowerCase();
-    note_date = new Date().toLocaleFormat('%F %T');
-    note_head = note_text;
-//    note_category = 'Internal'
-    my_note = '\
-    <div class="box row" id="category-'+note_category+'"> \
-        <span class="label label-info">'+note_author+'</span>\
-        <span class="label label-'+note_category+'" style="width\:60%">'+note_category+'</span> \
-        <span class="label label-info" style="float\:right;">'+note_date+'</span>\
-        <p>'+note_head+'</p>\
-        <div class="box row"><strong>'+note_info+'</strong><button class="btn btn-xs btn-primary" style="float\:right;">'+ note_author +'</button>'+del_var+'</div>\
-        '+reply+'\
-        '+do_reply+'\
-    </div>\
-    ';
-    $div_element.prepend(my_note);
 
 }
 
-
-
-function reply_to_note(my_note_id){
-
-    $textarea_id = $('#text_artist_note-'+my_note_id);
-    var reply_text = $textarea_id.val().trim();
-    if (!(reply_text.length && my_note_id)){
-	error_message("invalid note ...");
-	return null;
-    }
-
+function create_new_note(entity_id, note_text, note_category, note_on, $div_element, attach_files, from_task, to_task, change_status){
+    var page = page || $('#task_menu1').find('li.active').first('a span').text().trim();
+    project = $('#data-modal-object-id').attr("data-modal-project");
+    note_id = '';
     $.ajax({
         type:"POST",
         url:"/callajax/",
-        data: { 'object_name': 'Reply Note', 'note_id': my_note_id, 'reply_text': reply_text},
+        data: { 'object_name': 'Create Note', 'entity_id': entity_id, 'note_text': note_text, 'note_category': note_category, 'note_on': note_on, "attach_files": attach_files, "page": page, "project": project, 'from_task': from_task, 'to_task': to_task, 'change_status': change_status},
         beforeSend: function(){
         },
         success: function(json){
             $.each(json, function (idx, obj) {
+		modal_body = add_note_details(idx, obj);
+		$div_element.prepend(modal_body);
             });
-
             noty({
-                text: 'Reply done ...',
+                text: 'Note on task added successfully ...',
                 layout: 'topCenter',
                 closeWith: ['click', 'hover'],
                 type: 'success'
@@ -3872,28 +2699,6 @@ function reply_to_note(my_note_id){
             console.log(error);
         }
     });
-    $textarea_id.val('');
-    user = $('#note_details').attr('data-user-id').toLowerCase();
-    current_date = new Date().toLocaleFormat('%F %T');
-    my_reply = '<p>'+user+' :- '+reply_text+'<span class="label" style="float:right;">'+current_date+'</span></p>';
-    $('#note_replies-'+my_note_id).append(my_reply);
-
-}
-function popup_video(param){
-	$('#myModal').modal('hide');
-        $(param).popVideo({
-            playOnOpen: true,
-            title: "",
-          closeOnEnd: false,
-            pauseOnClose: true,
-        }).open()
-}
-
-
-function popup_image(param){
-
-$(param).ekkoLightbox();
-
 }
 
 function add_note_details(idx, obj){
@@ -3906,6 +2711,7 @@ function add_note_details(idx, obj){
     task_name = obj.task_name;
     current_user = obj.current_user
     note_info = obj.note_info;
+    project = obj.project;
 
     if (obj.note_components.length > 0){
 	component = '';
@@ -3925,20 +2731,23 @@ function add_note_details(idx, obj){
     if (obj.replies.length > 0){
 	reply = '';
 	for (j in obj.replies){
-	    my_reply = obj.replies[j];
-	    r_array = my_reply.split('||');
-	    reply = reply + '<p>'+r_array[0]+'<span class="label" style="float:right;">'+r_array[1]+'</span></p>';
+	    obj_reply = obj.replies[j];
+	    reply_text = obj_reply.reply_text;
+	    reply_user = obj_reply.reply_by;
+	    reply_on = obj_reply.reply_on;
+	    reply = reply + '<p>'+reply_text+'<span style="float:right;">'+reply_user+' [ '+reply_on+' ]</span></p>';
 	}
     }
 
+    note_textarea = "text_artist_note-" + note_id;
     do_reply = '\
                                             <table> \
                                                 <tr> \
                                                     <td style="width: 100%;"> \
-                                                        <textarea id="text_artist_note-'+note_id+'" rows="4" cols="20" placeholder="Write a comment..." class="x-form-field x-form-text x-form-textarea" autocomplete="off" style="width: 100%; height: 48px;"></textarea> \
+                                                        <textarea id="'+note_textarea+'" rows="4" cols="20" placeholder="Write a comment..." class="x-form-field x-form-text x-form-textarea" autocomplete="off" style="width: 100%; height: 48px;"></textarea> \
                                                     </td> \
                                                     <td> \
-                                        <button class="btn btn-inverse btn-default btn-lg" id="btn_note_reply" onclick="reply_to_note(\''+note_id+'\')" style="width: 60px;"> \
+                                        <button class="btn btn-inverse btn-default btn-lg" id="btn_note_reply" onclick="reply_note(\''+project+'\',\''+note_id+'\',\''+note_textarea+'\')" style="width: 60px;"> \
                         <i class="glyphicon glyphicon-send icon-white"></i></button> \
                                                     </td> \
                                                 </tr> \
@@ -3963,8 +2772,7 @@ function add_note_details(idx, obj){
 
     var del_var = '';
     if(note_author == current_user){
-        del_var = '<button class="btn btn-xs btn-danger" style="float\:right;" id="delete-note" onclick="delete_note(this)"\
-         task-id="'+task_id+'" obj-name="'+obj_name+' "note-id="'+note_id+'">Delete</button>'
+        del_var = '<button class="btn btn-xs btn-danger" style="float\:right;" id="delete-note" onclick="delete_note(this)" note-id="'+note_id+'" project-name="'+project+'">Delete</button>'
     }
 
     modal_body = '\
@@ -3985,25 +2793,17 @@ function add_note_details(idx, obj){
 
 //------ delete note -----------------//
 function delete_note(param){
-    id = $(param).parent().parent().attr('id');
     var cnf = confirm("Are you sure. You want to delete this note!");
+    var page = $('#task_menu1').find('li.active').first('a span').text().trim();
     if (cnf == true) {
-        var note_id = id;
-        var task_id = $('#data-modal-object-id').val()
-        var obj_name = $('#selectObject').val();
+        var note_id = $(param).attr('note-id');
+        var project = $(param).attr('project-name');
 
-        if (obj_name){
-            if (obj_name == 'Shot Asset Build'){
-                obj_name = 'Asset Build';
-            }
-        }else{
-            obj_name = 'Task';
-        }
         // call ajax
         $.ajax({
         type: "POST",
         url:"/callajax/",
-        data: { 'object_name': 'Delete Note' ,'note_id': note_id},
+        data: { 'object_name': 'Delete Note' ,'note_id': note_id, 'project': project, 'page': page},
         success: function(){
             $("#" +note_id).hide();
             noty({
@@ -4022,87 +2822,68 @@ function delete_note(param){
     }
 }
 
-// ----------------- note history -------------//
+function reply_note(project, note_id, note_textarea){
 
-function add_note_details_history(idx, obj){
-    note_status = obj.status;
-    note_added_on = obj.added_on;
-    note_department = obj.department;
-    note_added_by = obj.added_by;
-    note_task_path = obj.task_path;
-    note_text = obj.note_text;
-    style = 'style="width:60%"';
-    label_status = note_status.replace(/ /g,"_").toLowerCase();
-    modal_body = '\
-	<div class="box row" id="" >\
-	    <span class="label label-info" >'+note_department+'</span>\
-	    <span class="label label-'+label_status+'" '+style+'>'+note_status+'</span> \
-	    <span class="label label-info" style="float\:right;">'+note_added_on+'</span>\
-	    <p>'+note_text+'</p>\
-	    <div class="box row"><strong>'+note_task_path+'</strong><button class="btn btn-xs btn-primary" style="float\:right;">'+ note_added_by +'</button></div>\
-	</div>\
-    ';
+    var reply_text = $('#'+note_textarea).val().trim();
+    if (!(reply_text.length && note_id)){
+	error_message("invalid note ...");
+	return null;
+    }
 
-    return modal_body;
-}
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'object_name': 'Reply Note', 'note_id': note_id, 'reply_text': reply_text, 'project': project},
+        beforeSend: function(){
+        },
+        success: function(json){
+            $.each(json, function (idx, obj) {
+            });
 
-
-// ----------------- add activity logs -------------//
-function add_activity_logs(idx, obj){
-    details_for = obj.details_for;
-    activity_date = obj.activity_date;
-    activity_by = obj.activity_by;
-    action = obj.action;
-    path = obj.path;
-    value = obj.value;
-
-    var table = $('#tbl_activity tbody');
-
-    row = $(table[0].insertRow(-1));
-    row.attr('id',details_for)
-
-    enable_dblclick = ''
-
-    row_data = '\
-	  <td>'+path+'</td> \
-	  <td class="center">'+activity_by+'</td> \
-	  <td class="center">'+action+'</td> \
-	  <td class="center">'+details_for+'</td> \
-	  <td><span class="label label-default" style="overflow:auto">'+value+'</span></td>\
-	  <td class="center">'+activity_date+'</td> \
-	'
-	row.append(row_data);
-    $(row).click(function(event){
-        if(event.ctrlKey === true) {
-            $(this).toggleClass("selected")
+            noty({
+                text: 'Reply done ...',
+                layout: 'topCenter',
+                closeWith: ['click', 'hover'],
+                type: 'success'
+            });
+	    $('#'+note_textarea).val('');
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
         }
     });
+    $textarea_id.val('');
+    user = $('#note_details').attr('data-user-id').toLowerCase();
+    current_date = moment().format('YYYY-MM-DD HH:mm:ss');
+    my_reply = '<p>'+user+' :- '+reply_text+'<span class="label" style="float:right;">'+current_date+'</span></p>';
+    $('#note_replies-'+my_note_id).append(my_reply);
 
 }
 
-$("#selectActivityTask").change(function(param){
-    var task = $(this).val()
-
-    console.log("this: ", task)
-    var from = $('#from-id').text().replace(/\s\/\s/g, ':');
-    last_row = 25;
-    $('#tbl_activity tbody').html('');
-    get_activity_details(from, last_row, task)
- });
-
-//----------
-function load_task_links(task_id,obj_name,last_row){
-    project_name = $('#selectEntityProject option:selected').text()
-    if(!project_name){
-        project_name = $('#selectArtistProject option:selected').text()
+    // tab-2
+$('#my_lnk').on('click', function() {
+    var page = $('#task_menu1').find('li.active').first('a span').text()
+    page = page.trim()
+    parent_id = $('#data-modal-object-id').attr('data-modal-parent-id');
+    if (page == 'Task Status'){
+	parent_id = $('#data-modal-object-id').val();
     }
+    last_row = 15;
+    $('#link_details').html('');
+    load_task_links(parent_id, last_row)
+
+});
+
+function load_task_links(task_id, last_row){
+    project = $('#data-modal-object-id').attr("data-modal-project");
     $("#task_link_loader").show();
     body_row_array = []
     asset_ids_array = []
     $.ajax({
 	type: "POST",
 	url:"/callajax/",
-	data: { 'task_id': task_id , 'type_name': obj_name, 'object_name': 'Show Tab Link Details' , 'last_row' : last_row, 'project_name': project_name},
+	data: { 'task_id': task_id , 'object_name': 'Show Tab Link Details' , 'last_row' : last_row, 'project': project},
 	beforeSend: function(){
 	    $('#link_details').html(" ");
 	    },
@@ -4144,20 +2925,63 @@ function add_link_details(idx, obj){
 
     return body_row;
 }
+    // tab-3
+$('#my_vsn').on('click', function() {
+    task_id = $('#data-modal-object-id').val();
+    project = $('#data-modal-object-id').attr('data-modal-project');
 
-function load_asset_versions(task_id,obj_name,last_row,task, project='', path='', task_name=''){
-    $("#version_loader").show();
+    if($('#selectTask').val() && task_id != $('#selectTask').val()){
+	task_id = $('#selectTask').val();
+    }
+
+    load_asset_versions(task_id, project);
+});
+
+$('#selectAssetTypes').on('change', function() {
+    task_id = $('#data-modal-object-id').val();
+    project = $('#data-modal-object-id').attr('data-modal-project');
+
+    if($('#selectTask').val() && task_id != $('#selectTask').val()){
+	task_id = $('#selectTask').val();
+    }
+
+    load_asset_versions(task_id, project);
+});
+
+$('#selectTask').change(function(){
+    task_id = $(this).val();
+    project = $('#data-modal-object-id').attr('data-modal-project');
+
+    load_asset_versions(task_id, project);
+
+    parent_name = $('#selectTask option:selected').text();
+    $select_elem = $('#selectAssetTypes');
+    load_asset_type(parent_name, $select_elem);
+});
+
+function load_asset_versions(task_id, project){
+    asset_type = $('#selectAssetTypes').val();
     $.ajax({
 	type: "POST",
 	url:"/callajax/",
-	data: { 'task_id': task_id , 'type_name': obj_name, 'object_name': 'Show Asset Versions' , 'last_row' : last_row, 'task': task, 'project': project, 'path': path, 'task_name': task_name},
+	data: { 'task_id': task_id , 'object_name': 'Show Asset Versions' , 'asset_type' : asset_type, 'project': project},
+	beforeSend: function(){
+            remove_rows('#tbl_versions');
+	    $("#version_loader").show();
+            if ($.fn.DataTable.isDataTable("#tbl_versions")){
+                get_table_header().clear().draw();
+                get_table_header().destroy();
+            }
+        },
 	success: function(json){
 	    $.each(json, function (idx, obj) {
 		add_version_details(idx, obj);
 	   });
 	    $("#version_loader").hide();
-	    toggle_asset_type($('#selectAssetTypes'));
 	},
+	complete: function(){
+	    create_datatable('tbl_versions');
+        },
 	error: function(error){
 	    console.log("Error:");
 	    console.log(error);
@@ -4198,34 +3022,496 @@ function add_version_row(table,obj){
         }
     });
 }
+    // tab-4
+$('#my_vsn_not').on('click', function() {
+    task_id = $('#data-modal-object-id').val();
+    project = $('#data-modal-object-id').attr('data-modal-project');
+    $('#note_attach').val('');
+    $('#version_note_details').html('');
+    last_row = 15;
+    if ($('#selectVersionTask').val() && task_id != $('#selectVersionTask').val()){
+	task_id = $('#selectVersionTask').val();
+    }
 
-function toggle_parent_note(param) {
-    category = $(param).val();
-    category = category.replace(/ /g,"_");
-    cat_id = "category-"+category
-    all_cat_id = "category-"
-    $('[id="'+cat_id+'"]').css({'display':'block'});
-    $('[id^="'+all_cat_id+'"]').each(function(index){
-        this_id = $(this).attr('id')
-        if(cat_id == all_cat_id){
-            $(this).css({"display":"block"});
-        }else if (this_id != cat_id){
-            $(this).css({"display":"none"});
+    load_version_notes(task_id, last_row, project);
+
+});
+
+$('#user_reject_asset').change(function(){
+    task_parent_id = $(this).attr('data-task-parent-id');
+    project = $('#data-modal-object-id').attr('data-modal-project');
+    reset_model_drop_down();
+    if($(this).prop('checked')){
+
+	load_choosen_data($('#div_selectVersionAssetBuild'),$('#selectVersionAssetBuild'),'Show Link Details', task_parent_id, project);
+
+        select_task_elem = $('#selectVersionTask');
+        select_task_elem.empty();
+        select_task_elem.trigger("chosen:updated");
+	$('#selectVersionAssetBuild_chosen').css({"width":"200px"});
+    }else{
+	load_choosen_data($('#div_selectVersionTask'),$('#selectVersionTask'),'Select Task',task_parent_id, project);
+
+        select_elem = $('#selectVersionTaskAssetTypes');
+        $select_elem.empty();
+	$select_elem.append('<option value="">-- Asset Type --</option>');
+    }
+
+});
+
+$('#selectVersionAssetBuild').change(function(){
+    project = $('#data-modal-object-id').attr('data-modal-project');
+    asset_id = $(this).val();
+    if (asset_id){
+	load_choosen_data($('#div_selectVersionTask'), $('#selectVersionTask'), 'Select Task', asset_id, project);
+    }
+});
+
+$('#selectVersionTask').change(function(){
+    task_id = $(this).val();
+    project = $('#data-modal-object-id').attr('data-modal-project');
+    $('#note_attach').val('');
+    $('#version_note_details').html('');
+    last_row = 15;
+    load_version_notes(task_id, last_row, project);
+
+    parent_name = $('#selectVersionTask option:selected').text();
+    $select_elem = $('#selectVersionTaskAssetTypes');
+    load_asset_type(parent_name, $select_elem);
+});
+
+function load_asset_type(parent_name, $select_elem){
+
+    parent_object = $('#data-modal-object-id').attr('data-parent-object');
+    if (parent_object == 'Sequence'){
+	parent_object = 'Shot';
+    }
+
+    if ($('#user_reject_asset').prop("checked") || parent_object == 'Project'){
+	parent_object = 'Asset Build';
+    }
+
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data: { 'parent_name' : parent_name, 'parent_object': parent_object, 'object_name': 'Asset Type'},
+        beforeSend: function(){
+	    $select_elem.empty();
+	    $select_elem.append('<option value="">-- Select --</option>');
+        },
+        success: function(json){
+            $.each(json, function (idx, obj) {
+		    $select_elem.append('<option value="'+obj.name+'">' + obj.name + '</option>');
+            });
+            $select_elem.trigger("chosen:updated");
+            $select_elem.trigger("liszt:updated");
+//            $select_elem.data("chosen").destroy().chosen();
+        },
+        error: function(error){
+            console.log("Error:");
+            console.log(error);
+        }
+    });
+
+}
+
+$('#selectVersionTaskAssetTypes').change(function(){
+    asset_type = $(this).val();
+    task_id = $('#data-modal-object-id').val();
+    project = $('#data-modal-object-id').attr('data-modal-project');
+    last_row = 15;
+    if ($('#selectVersionTask').val() && task_id != $('#selectVersionTask').val()){
+	task_id = $('#selectVersionTask').val();
+    }
+    load_choosen_data($('#div_selectTaskVersion'),$('#selectTaskVersion'), "Show Latest Asset Version", task_id, project, asset_type);
+});
+
+
+$('#selectVersionNoteCategory').change(function(){
+    task_id = $('#data-modal-object-id').val();
+    project = $('#data-modal-object-id').attr("data-modal-project");
+    $('#note_attach').val('');
+    $('#version_note_details').html('');
+    last_row = 15;
+    if ($('#selectVersionTask').val() && task_id != $('#selectVersionTask').val()){
+	task_id = $('#selectVersionTask').val();
+    }
+    load_version_notes(task_id, last_row, project);
+
+});
+
+$('#version_note_details').on('scroll', function() {
+    task_id = $('#data-modal-object-id').val();
+    project = $('#data-modal-object-id').attr("data-modal-project");
+    if($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight) {
+	last_row += 15;
+	if ($('#selectVersionTask').val() && task_id != $('#selectVersionTask').val()){
+	    task_id = $('#selectVersionTask').val();
+	    last_row = 15;
+	    $('#version_note_details').html('');
+	}
+        load_version_notes(task_id, last_row, project);
+    }
+});
+
+function load_version_notes(task_id, last_row, project){
+
+    note_on = 'Version'
+    note_category = $('#selectVersionNoteCategory').val();
+
+    $("#task_notes_loader").show();
+    $.ajax({
+	type: "POST",
+	url:"/callajax/",
+	data: { 'task_id': task_id , 'object_name': 'Show Note Details' , 'last_row' : last_row, 'note_category': note_category, 'project' : project, 'note_on': note_on},
+	success: function(json){
+	$.each(json, function (idx, obj) {
+	    modal_body = add_note_details(idx, obj);
+	    $('#version_note_details').append(modal_body);
+	});
+	$("#task_notes_loader").hide();
+	},
+	error: function(error){
+	    console.log("Error:");
+	    console.log(error);
+	}
+    });
+}
+$('#btn_version_note_create').click(function(){
+    version_id = $('#selectTaskVersion').val();
+    if(version_id){
+	create_version_note(version_id);
+    }else{
+	error_message("Please select version !!!");
+	return null;
+    }
+
+});
+
+function create_version_note(version_id){
+
+    $textarea_id = $('#text_version_note');
+    $div_element = $('#version_note_details');
+    var note_text = $textarea_id.val().trim();
+    task_for = $('#selectVersionNoteCategory').attr('data-for-artist');
+    if (task_for == 'to_do'){
+        var note_category = 'Internal';
+    }
+    else{
+        var note_category = $('#selectVersionNoteCategory').val();
+    }
+
+    if (!(note_text.length && version_id)){
+	error_message("invalid note ...");
+	return null;
+    }
+    if (!(note_category)){
+	error_message("Please select valid category ...");
+	return null;
+    }
+
+    attachments = [];
+    $textarea_id.parent().find('table[id=gallery_versions] tr td a').each(function(){
+	href = $(this).attr('href');
+	attachments.push(href);
+    });
+
+    attach_files = JSON.stringify(attachments);
+
+    from_task = $('#from-id').text();
+    to_task = $('#selectVersionTask option:selected').attr('data-path');
+
+    change_status = ''
+    // for internal reject
+    if($('#internal-reject').prop("checked") == true){
+	change_status = 'Internal Reject';
+    }
+
+    note_on = 'Version';
+    create_new_note(version_id, note_text, note_category, note_on, $div_element, attach_files, from_task, to_task, change_status);
+
+    $textarea_id.parent().find('table[id=gallery_versions] tbody').html('');
+    $textarea_id.val('');
+
+}
+
+    // tab-5
+$('#my_vsn_not_htry').on('click', function() {
+    var from_task = $('#from-id').text();
+    last_row = 15;
+    $('#version_note_details_history').html('');
+    get_version_note_details_history(from_task, last_row)
+});
+
+$('#version_note_details_history').on('scroll', function() {
+    if($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight) {
+       last_row += 15;
+        var from = $('#from-id').text();
+        get_version_note_details_history(from, last_row)
+    }
+});
+
+function get_version_note_details_history(from_task, last_row){
+    var page = $('#task_menu1').find('li.active').first('a span').text().trim();
+    project = $('#data-modal-object-id').attr("data-modal-project");
+    $("#task_version_notes_history_loader").show();
+    $.ajax({
+	type: "POST",
+	url: "/callajax/",
+	data: {"object_name": "Note History", "from_task": from_task, 'last_row': last_row, "page": page, "project": project},
+	beforeSend: function(){
+
+	},
+	success: function(json){
+	     $.each(json, function (idx, obj){
+                modal_body = add_note_details_history(idx, obj);
+                $('#version_note_details_history').append(modal_body);
+        	});
+	$("#task_version_notes_history_loader").hide();
+	},
+	error: function(error){
+	    console.log("Error:"+error);
+	}
+    });
+}
+
+function add_note_details_history(idx, obj){
+    note_status = obj.status;
+    note_added_on = obj.added_on;
+    note_department = obj.department;
+    note_added_by = obj.added_by;
+    note_task_path = obj.task_path;
+    note_text = obj.note_text;
+    style = 'style="width:60%"';
+    label_status = note_status.replace(/ /g,"_").toLowerCase();
+    modal_body = '\
+	<div class="box row" id="" >\
+	    <span class="label label-info" >'+note_department+'</span>\
+	    <span class="label label-'+label_status+'" '+style+'>'+note_status+'</span> \
+	    <span class="label label-info" style="float\:right;">'+note_added_on+'</span>\
+	    <p>'+note_text+'</p>\
+	    <div class="box row"><strong>'+note_task_path+'</strong><button class="btn btn-xs btn-primary" style="float\:right;">'+ note_added_by +'</button></div>\
+	</div>\
+    ';
+
+    return modal_body;
+}
+ // tab-6
+$('#my_activity').on('click', function() {
+    var task_id = $('#data-modal-object-id').val();
+    if ($("#selectActivityTask").val()){
+	task_id = $("#selectActivityTask").val();
+    }
+    
+    get_activity_details(task_id);
+
+});
+
+$("#selectActivityTask").change(function(param){
+    var task_id = $(this).val()
+
+    get_activity_details(task_id)
+ });
+
+function get_activity_details(task_id){
+    project = $('#data-modal-object-id').attr("data-modal-project");
+    $.ajax({
+	type: "POST",
+	url: "/callajax/",
+	data: {"object_name": "Activity Log", "task_id": task_id, "project": project},
+	beforeSend: function(){
+	    remove_rows('#tbl_activity');
+            $("#my_activity_loader").show();
+            if ($.fn.DataTable.isDataTable("#tbl_activity")){
+                get_table_header().clear().draw();
+                get_table_header().destroy();
+            }
+	},
+	success: function(json){
+	     $.each(json, function (idx, obj){
+                add_activity_logs(idx, obj);
+            });
+	},
+	complete: function(){
+	    create_datatable('tbl_activity');
+	    $("#my_activity_loader").hide();
+	},
+	error: function(error){
+	    console.log("Error:"+error);
+	}
+    });
+}
+
+function add_activity_logs(idx, obj){
+    details_for = obj.details_for;
+    activity_date = obj.activity_date;
+    activity_by = obj.activity_by;
+    action = obj.action;
+    path = obj.path;
+    value = obj.value;
+
+    var table = $('#tbl_activity tbody');
+
+    row = $(table[0].insertRow(-1));
+    row.attr('id',details_for)
+
+    enable_dblclick = ''
+
+    row_data = '\
+	  <td nowrap >'+path+'</td> \
+	  <td class="center">'+activity_by+'</td> \
+	  <td class="center">'+action+'</td> \
+	  <td class="center">'+details_for+'</td> \
+	  <td><span class="label label-default" style="overflow:auto">'+value+'</span></td>\
+	  <td class="center" nowrap>'+activity_date+'</td> \
+	'
+	row.append(row_data);
+}
+
+//category for tab-1
+//----------- close model ---------------//
+$('#myReset').on('click', function() {
+        $('#myModal').hide("");
+        $('#modal_header').html('');
+        $('#selectVersionTask').html('');
+        $('#selectNoteTask').html('');
+
+        $('.nav-tabs li.active').removeClass('active');
+        $('.nav-tabs li a[href="#my_notes"]').tab('show')
+    });
+
+//--------- get asset list ------------------//
+function get_asset_list(prj_name, asset_ids){
+    var asset_array = asset_ids.join();
+    $('#myList').html('');
+    checked_list = [];
+    unchecked_list = [];
+    //call
+    $.ajax({
+	type: "POST",
+	url:"/callajax/",
+	data: { 'object_name': 'Asset Build' , 'project': prj_name},
+	success: function(json){
+        var ids = []
+        $.each(json, function (idx, obj){
+            if(jQuery.inArray(obj.id, asset_ids) !== -1){
+            checked_list.push('<li class="list-group-item"><input type="checkbox" name="asset" value="'+obj.id+'" checked/>&nbsp;'+obj.name+'</li>')
+            ids.push(obj.id)
+            }
+            else{
+              unchecked_list.push('<li class="list-group-item"><input type="checkbox" name="asset" value="'+obj.id+'"/>&nbsp;'+obj.name+'</li>')
+            }
+        });
+        $('#myList').attr('data-checked', ids);
+        checked_list.push(unchecked_list);
+        for (i = 0; i < checked_list.length; i++) {
+         $('#myList').append(checked_list[i]);
+        }
+        $("#linktask_details_loader").hide();
+        $('#linkModel').modal('show');
+        $('#entity_loader').hide();
+	},
+	error: function(error){
+	    console.log("Error:");
+	    console.log(error);
+	}
+    });
+}
+function add_entity_asset_link(param){
+    var task_id = $('#save_asset').attr('task-id');
+    var obj_name = $('#selectEntityObject').val();
+    var asset_name = $('#selectEntityObject').val();
+    var parent_path = $(param).attr('parent_path')
+    var tr_id = $(param)
+    var old_asset_ids = ""
+    if($('#save_asset').attr('old-ids')){
+        old_asset_ids = ($('#save_asset').attr('old-ids')).split(",");
+    }
+    add_asset(task_id, obj_name, asset_name, old_asset_ids, parent_path)
+};
+
+//-------- add asset ------------------- //
+function add_asset(task_id, obj_name, asset_name, old_asset_ids, parent_path=''){
+    var page = $('#task_menu1').find('li.active').first('a span').text().trim();
+    var prj_name = $("#selectEntityProject option:selected").text();
+    var proj_id = $("#selectEntityProject").val();
+    $("#linktask_details_loader").show();
+    if (obj_name){
+	if (obj_name == 'Shot Asset Build'){
+	    obj_name = 'Asset Build';
+	}
+    }else{
+	obj_name = 'Task';
+    }
+    if(old_asset_ids){
+        old_asset_ids = old_asset_ids.join();
+    }
+    var selected_asset = [];
+    $.each($("input[name='asset']:checked"), function(){
+        selected_asset.push($(this).val());
+    });
+    //call
+    $.ajax({
+	type: "POST",
+	url:"/callajax/",
+	data: { 'object_name': 'Link Asset' , 'task_id': task_id, 'selected_asset': selected_asset.join(), 'project': prj_name, "page": page},
+	success: function(json){
+	    $("#linktask_details_loader").hide();
+	    // Reload task links
+        if(page == 'entity_task'){
+         load_task_links(task_id,obj_name,15);
+        }else{
+          $('#incoming').attr('asset-ids', selected_asset);
+          $('#save_asset').attr('old-ids', selected_asset)
+          get_asset_list(prj_name, selected_asset)
+        }
+        noty({
+                text: 'Asset Link added successfully',
+                layout: 'topCenter',
+                closeWith: ['click', 'hover'],
+                type: 'success'
+            });
+	},
+	error: function(error){
+	    console.log("Error:");
+	    console.log(error);
 	}
 
-    })
+    });
 }
 
-function toggle_asset_type(param) {
-    _this = param
-    $.each($("#tbl_versions tbody tr"), function(idx) {
-        if($(this).text().toLowerCase().indexOf($(_this).val().toLowerCase()) === -1)
-            $(this).hide();
-        else
-            $(this).show();
-        });
+
+//----------- for filter asset list ----------//
+$(document).ready(function(){
+  $("#myInput").on("keyup", function() {
+    var value = $(this).val().toLowerCase();
+    $("#myList li").filter(function() {
+      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+    });
+  });
+});
+
+
+function popup_video(param){
+	$('#myModal').modal('hide');
+        $(param).popVideo({
+            playOnOpen: true,
+            title: "",
+          closeOnEnd: false,
+            pauseOnClose: true,
+        }).open()
 }
 
+
+function popup_image(param){
+
+$(param).ekkoLightbox();
+
+}
+
+
+
+//----------
 $('#tab_shot_reports').click(function(){
     $('#download_user_task').attr("onclick","$('#tbl_shot_task').table2excel({filename: 'artist_prod_shot',exclude: '.noExl'});");
 });
@@ -4233,6 +3519,19 @@ $('#tab_shot_reports').click(function(){
 $('#tab_asset_build_reports').click(function(){
     $('#download_user_task').attr("onclick","$('#tbl_asset_build_task').table2excel({filename: 'asset_build_prod_shot',exclude: '.noExl'});");
 });
+
+/*
+ *  Task Entity page Download 
+ *  button
+ * */
+$("#download_user_task").click(function(){
+    $("#example").table2excel({
+    exclude: ".noExl",
+    name: "TaskEntity",
+    filename: "task_entity"
+    });
+});
+
 
 $('#download_task_status').click(function(){
     $("#tbl_task").table2excel({
@@ -4242,29 +3541,6 @@ $('#download_task_status').click(function(){
     });
 });
 
-function insert_db_note(note_text, note_category, object_id, change_status, users, task_path, version){
-    var page = $('#task_menu1').find('li.active').first('a span').text()
-    var from = $('#from-id').text();
-    var to = task_path;
-
-    if (!from){
-	from = task_path;
-    }else{
-	from = from.replace(/\s/g, "").replace(/\//g, ':');
-    }
-
-    $.ajax({
-	type: "POST",
-	url: "/callajax/",
-	data: {"object_name": "DB Note", "note_text": note_text, "note_category": note_category, "task_id": object_id, "users": users, "task_path": task_path, "change_status": change_status, "version":version, "from": from, "to": to, 'page': page},
-	success: function(json){
-	},
-	error: function(error){
-	    console.log("Error:"+error);
-	}
-    });
-
-}
 function add_task_note(note, note_category, object_id, note_for, attach_files){
     var page = $('#task_menu1').find('li.active').first('a span').text()
     $.ajax({
@@ -4285,12 +3561,12 @@ function add_task_note(note, note_category, object_id, note_for, attach_files){
     });
 }
 
-function object_status_change(new_status, old_status, object_id, status_for){
-    var page = $('#task_menu1').find('li.active').first('a span').text()
+function object_status_change(project, object_id, status_for, new_status){
+    var page = $('#task_menu1').find('li.active').first('a span').text().trim();
     $.ajax({
 	type: "POST",
 	url: "/callajax/",
-	data: {"object_name": "Change Status", "new_status": new_status, "old_status": old_status, "object_id": object_id, "status_for": status_for, 'page': page},
+	data: {"object_name": "Change Status", "new_status": new_status, "object_id": object_id, "status_for": status_for, 'page': page, 'project': project},
 	success: function(json){
 	    noty({
                 text: 'Status has been changed ...',
@@ -4358,8 +3634,6 @@ function approve_task(param){
     $td_task_path = $tr.find('td[data-td=task_path]');
     var task_path = $td_task_path.text().trim();
     
-    var task_name = $(param).closest('tr').find('td:eq(1)').find('strong').text().trim();
-
     $td_version = $tr.find('td[data-td=version]');
     var version = $td_version.text();
 
@@ -4373,6 +3647,9 @@ function approve_task(param){
     object_id = $tr.attr('data-task-id');
     version_id = $tr.attr('data-version-id');
     object_type = $tr.attr('data-object-type');
+    project = $tr.attr('data-project');
+
+    $('#data-modal-object-id').attr("data-modal-project", project);
 
     change_status = '';
     change_status_label = '';
@@ -4412,24 +3689,6 @@ function approve_task(param){
 	note_category = 'Client feedback';
     }
 
-    /*if (object_id){
-    // changing status here
-	object_status_change(change_status, my_status ,object_id, 'Task');
-
-	if (version_id){
-	    object_status_change(change_status, my_status ,version_id, 'AssetVersion');
-	}
-
-	$td_status.html('<span class="label label-'+change_status_label+'">'+change_status+'</span>');
-	$td_status.attr('data-org-val',change_status);
-
-	my_date = new Date().toLocaleFormat('%F %T');
-	$td_date.html('<strong>'+my_date+'</strong>');
-
-	$(param).css({'display':'none'});
-	$(param).parent().find('[id=task_reject]').css({'display':'none'});
-    }*/
-
     $('#task_reject_note').val('');
     $('#gallery tbody').html('');
     $('#task_details_loader').html('<h3>Approve Note</h3><table><tr><td nowrap>Task : '+task_path+'</td><td>Version : '+version+'</td></tr></table>')
@@ -4452,22 +3711,25 @@ function approve_task(param){
         });
 
         attach_files = JSON.stringify(attachments);
+
+	from_task = to_task = task_path 
+
         if (object_id){
             // changing status here
-            object_status_change(change_status, my_status , object_id, 'Task');
-            add_task_note(note_text, note_category, object_id, 'Task', attach_files);
+	    note_on = 'Task';
+            object_status_change(project, object_id, note_on, change_status);
+	    create_new_note(object_id, note_text, note_category, note_on, '', attach_files, from_task, to_task, change_status);
 
             if (version_id && version_id != 'undefined'){
-                object_status_change(change_status, my_status ,version_id, 'AssetVersion');
-                add_task_note(note_text, note_category, version_id, 'AssetVersion', attach_files);
+		note_on = 'Version';
+                object_status_change(project, version_id, note_on, change_status);
+		create_new_note(version_id, note_text, note_category, note_on, '', attach_files, from_task, to_task, change_status);
             }
-
-           insert_db_note(note_text, note_category, object_id, change_status, users, task_path, version);
 
             $td_status.html('<span class="label label-'+change_status_label+'">'+change_status+'</span>');
             $td_status.attr('data-org-val',change_status);
 
-            my_date = new Date().toLocaleFormat('%F %T');
+            my_date = moment().format('YYYY-MM-DD HH:mm:ss');
             $td_date.html('<strong>'+my_date+'</strong>');
 
             $(param).css({'display':'none'});
@@ -4501,6 +3763,9 @@ function reject_task(param){
     object_id = $tr.attr('data-task-id');
     version_id = $tr.attr('data-version-id');
     object_type = $tr.attr('data-object-type');
+    project = $tr.attr('data-project');
+
+    $('#data-modal-object-id').attr("data-modal-project", project);
 
     change_status = '';
     change_status_label = '';
@@ -4545,20 +3810,22 @@ function reject_task(param){
 
 	attach_files = JSON.stringify(attachments);
 
-	object_status_change(change_status, my_status , object_id, 'Task');
-	add_task_note(note_text, note_category, object_id, 'Task', attach_files);
+	from_task = to_task = task_path
+        // changing status here
+	note_on = 'Task';
+        object_status_change(project, object_id, note_on, change_status);
+	create_new_note(object_id, note_text, note_category, note_on, '', attach_files, from_task, to_task, change_status);
 
-	if (version_id && version_id != 'undefined'){
-	    object_status_change(change_status, my_status , version_id, 'AssetVersion');
-	    add_task_note(note_text, note_category, version_id, 'AssetVersion', attach_files);
-	}
-
-	insert_db_note(note_text, note_category, object_id, change_status, users, task_path, version);
+        if (version_id && version_id != 'undefined'){
+	    note_on = 'Version';
+            object_status_change(project, version_id, note_on, change_status);
+	    create_new_note(version_id, note_text, note_category, note_on, '', attach_files, from_task, to_task, change_status);
+        }
 
 	$td_status.html('<span class="label label-'+change_status_label+'">'+change_status+'</span>');
 	$td_status.attr('data-org-val',change_status);
 
-	my_date = new Date().toLocaleFormat('%F %T');
+	my_date = moment().format('YYYY-MM-DD HH:mm:ss');
 	$td_date.html('<strong>'+my_date+'</strong>');
 
 	$(param).css({'display':'none'});
@@ -4569,28 +3836,6 @@ function reject_task(param){
 
 }
 // Function for internal rejection
-function internal_reject_task(version_id, note_text, note_category, note_for, note_task, attach_files){
-    var users = $('#data-modal-object-id').attr('task_assignee');
-    var task_name = $("#selectVersionTask option:selected").text();
-    var object_id = $("#selectVersionTask option:selected").val();
-//    var selected = $('#selectVersionTask').find('option:selected');
-//    var object_id = selected.data('id');
-    var task_parent_path = $('#data-modal-object-id').attr('task_parent_path');
-    var task_path = $("#selectVersionTask option:selected").attr('data-path'); // task_parent_path.replace(/\s/g, "").replace(/\//g, ':') + ":" + String(task_name)
-    var version = $("#selectTaskVersion option[value='"+ version_id +"']").text(); //$('#selectTaskVersion:selected').text();
-    var my_status = 'Pending Internal Review';
-    var change_status = 'Internal Reject';
-    var change_status_label = 'internal_reject';
-    var note_category = 'Internal';
-    var note_text = note_text; //$(this).parent().find('textarea[id=task_reject_note]').val().trim();
-
-    object_status_change(change_status, my_status , object_id, 'Task');
-    if (version_id){
-	object_status_change(change_status, my_status , version_id, 'AssetVersion');
-    }
-
-    insert_db_note(note_text, note_category, object_id, change_status, users, task_path, version);
-}
 
 //
 $('#selectMGMDashProject').change(function(){
@@ -4799,18 +4044,15 @@ function show_month_dialog(task,month,tasks){
 }
 function mgm_dashboard(){
 
-    project_id = $('#selectMGMDashProject').val();
-    if(!project_id){
+    project = $('#selectMGMDashProject').val();
+    if(!project){
 	error_message("Please select valid project !!!");
     }
-
-    project = $("#selectMGMDashProject option[value='"+project_id+"']").text();
-    work_status = $("#selectWorkDone option:selected").text().trim();
 
     $.ajax({
 	type: "POST",
 	url: "/callajax/",
-	data : {'object_name': 'MGM Dashboard', 'project': project, 'work_status': work_status},
+	data : {'object_name': 'MGM Dashboard', 'project': project },
 	beforeSend: function(){
 
 	    remove_rows('#tbl_sequence');
@@ -4818,6 +4060,8 @@ function mgm_dashboard(){
 	    remove_rows('#tbl_outsource_sequence');
 	    remove_rows('#tbl_outsource_asset_build');
         to_clear_checkboxes();
+        },
+        complete: function(){
         },
 	success: function(json){
 	    $.each(json,function(idx,obj){
@@ -5324,18 +4568,17 @@ $('#show_records').click(function(){
 
 function user_dashboard(){
 
-    project_id = $('#selectDashProject').val();
-    if(!project_id){
+    project = $('#selectDashProject').val();
+    if(!project){
 	error_message("Please select valid project !!!");
     }
 
-    project = $("#selectDashProject option[value='"+project_id+"']").text();
     duration = $('#reportrange span').html();
     if(!duration){
 	error_message("Please select valid duration !!!");
     }
 
-    task = $('#selectTask').val();
+    task = $('#selectMGMTask').val();
 
     dur_arr = duration.split(' : ');
 
@@ -5352,6 +4595,11 @@ function user_dashboard(){
 	    $("#div_status_count .dashboard-list").remove();
 	    $("#div_task_count .dashboard-list").remove();
             $('#panel_big').plainOverlay('show');
+	    if ($.fn.DataTable.isDataTable("#tbl_task")){
+                get_table_header().clear().draw();
+                get_table_header().destroy();
+            }
+
         },
 	success: function(json){
 	    $.each(json,function(idx,obj){
@@ -5380,6 +4628,9 @@ function user_dashboard(){
 	    });
             $('#panel_big').plainOverlay('hide');
 	},
+	complete: function(){
+//	    create_datatable('tbl_task');
+	},
 	error: function(error){
 	    console.log("Error:"+error);
 	}
@@ -5391,10 +4642,9 @@ function user_task_table(data){
 
     $.each(data, function(idx,obj){
 	row = '<tr>\
-	<td title="Task"><strong>'+obj.task_name+'</strong></td>\
-	<td><strong>'+obj.task+'</strong></td>\
+	<td title="Task"><strong>'+obj.task+'</strong></td>\
 	<td title="User"><strong>'+obj.user+'</strong></td>\
-	<td title="Status"><strong>'+obj.ftrack_status+'</strong></td>\
+	<td title="Status"><strong>'+obj.task_status+'</strong></td>\
 	<td><strong>'+obj.start_min_date+'</strong></td>\
 	<td><strong>'+obj.stop_max_date+'</strong></td>\
 	<td title="Time" data-seconds="'+obj.total_seconds+'" data-task="'+obj.task_name+'"><strong>'+obj.total_hours+'</strong></td>\
@@ -5533,7 +4783,10 @@ function show_dashboard_graphs(){
 	    }
 	}
 	if (th_name == 'Task'){
-	    var td_name = $(this).text();
+	    var full_path = $(this).text();
+	    task_arr = full_path.split(':');
+	    last_idx = task_arr.length - 1;
+	    td_name = task_arr[last_idx];
 	    key = th_name + ':' + td_name
 	    if(!task_hash[th_name]){
 		task_hash[th_name] = {};
@@ -5715,10 +4968,10 @@ function artist_action(param){
     action_attr = $(param).attr('title');
     note_text = '';
     if (action_attr == 'START'){
-	action = 'Started';
+	    action = 'Started';
     }else if (action_attr == 'PAUSE'){
-	action = 'Paused';
-	note_text = prompt("Why you want to pause the task ?", "");
+	    action = 'Paused';
+	    note_text = prompt("Why you want to pause the task ?", "");
 	if (note_text != null)
 	    note_text = note_text.trim();
 
@@ -5727,147 +4980,189 @@ function artist_action(param){
             return null;
         }
     }else if (action_attr == 'REVIEW'){
-	action = 'Review';
+	    action = 'Review';
     }else{
-	action = 'Stopped';
+	    action = 'Stopped';
     }
 
     fn_artist_task_action(param,action,note_text);
 }
 
 function fn_artist_task_action(param,action,note_text){
-    var page = $('#task_menu1').find('li.active').first('a span').text()
-    var parent_id = $(param).closest('tr').attr('data-task-parent-id')
-    var path = $(param).closest('tr').find("td:eq(2)").text()
-    path = path.replace("[", "").replace("]", "")
-    $tr = $(param).closest('tr');
 
-    project = $tr.attr('data-project');
-    task_id = $tr.attr('data-task-id');
+    currentRow = $(param).closest('tr');
+    var page = $('#task_menu1').find('li.active').first('a span').text().trim();
+    var parent_id = currentRow.attr('data-task-parent-id');
+    var path = currentRow.find("td:eq(0)").text().trim();
+    var row_index = currentRow.index();
+
+    project = currentRow.attr('data-project');
+    task_id = currentRow.attr('data-task-id');
+
+
+    var clicked_button_id = $(param).attr("id");
+    if(clicked_button_id == 'task_approved'){
+        currentRow.find("td:eq(9)").find("#"+clicked_button_id).css("display", "none");
+        currentRow.find("td:eq(9)").find("#task_reject").css("display", "inline");
+    }
+    if(clicked_button_id == 'task_reject'){
+        currentRow.find("td:eq(9)").find("#"+clicked_button_id).css("display", "none");
+        currentRow.find("td:eq(9)").find("#task_approved").css("display", "inline");
+    }
 
     $.ajax({
-	type: "POST",
-	url: "/callajax/",
-	data : {'object_name': 'Artist Action', 'project': project, 'task_id': task_id, 'action': action, 'note_text': note_text, 'page': page, "parent_id": parent_id, 'path': path},
-	beforeSend: function(){
-        },
-	success: function(json){
-//	    $.each(json,function(idx,obj){
-//	    });
-                    noty({
-                            text: 'Your task has been '+action,
-                            layout: 'topCenter',
-                            closeWith: ['click', 'hover'],
-                            type: 'success'
-			});
-		setTimeout(location.reload.bind(location), 3000);
-	},
-	error: function(error){
-	    console.log("Error:"+error);
-	}
+	    type: "POST",
+	    url: "/callajax/",
+        data : {'object_name': 'Artist Action', 'project': project, 'task_id': task_id, 'action': action,
+                    'note_text': note_text, 'page': page, "parent_id": parent_id, 'path': path},
+        beforeSend: function(){
+            },
+        success: function(json){
 
+            $.each(json, function(key, dict_value){
+                currentRow.find("td:eq(1)").attr("data-org-val", dict_value.task_status);
+                currentRow.find("td:eq(1)").find("span").removeClass();
+                currentRow.find("td:eq(1)").find("span").text(dict_value.task_status);
+                currentRow.find("td:eq(1)").find("span").addClass("label label-"+dict_value.status_label);
+
+                currentRow.find("td:eq(2)").find('strong').text(dict_value.start_date);
+                currentRow.find("td:eq(3)").find('strong').text(dict_value.finish_date);
+
+                currentRow.find("td:eq(4)").find('span').text(dict_value.backup_status);
+                currentRow.find("td:eq(4)").find("span").removeClass();
+                currentRow.find("td:eq(4)").find("span").addClass("label label-" + dict_value.backup_status);
+
+                currentRow.find("td:eq(5)").find('strong').text(dict_value.upload_date);
+                currentRow.find("td:eq(6)").find('strong').text(dict_value.bid_hours);
+                currentRow.find("td:eq(7)").find('strong').text(dict_value.total_hours);
+                currentRow.find("td:eq(8)").find('strong').text(dict_value.time_left);
+            });
+            noty({
+                    text: 'Your task has been '+action,
+                    layout: 'topCenter',
+                    closeWith: ['click', 'hover'],
+                    type: 'success'
+            });
+        },
+        complete: function(){
+            console.log("ajax call completed")
+        },
+        error: function(error){
+            console.log("Error:"+error);
+        }
     });
 
 }
 
 function show_artist_tasks(){
 
-    project_id = $('#selectArtistProject').val();
-    if(!project_id){
+    project = $('#selectArtistProject').val();
+    if(!project){
 	    error_message("Please select valid project !!!");
     }
 
-    project = $("#selectArtistProject option[value='"+project_id+"']").text();
     selected_status = $('#selectStatus').val();
 
     $.ajax({
-	type: "POST",
-	url: "/callajax/",
-	data : {'object_name': 'Artist Tasks', 'project': project, 'status': selected_status},
-	beforeSend: function(){
-	    remove_rows('#tbl_task');
-            $('#panel_big').plainOverlay('show');
+        type: "POST",
+        url: "/callajax/",
+        data : {
+	    'object_name': 'Artist Tasks', 'status': selected_status, 'project': project
         },
-	success: function(json){
-	    $.each(json,function(idx,obj){
-	        color_code = 'style="color:#a7ff0c"';
-	        if (obj.time_left.startsWith('-')){
-	            color_code = 'style="color:#ff2a0c"'
-	        }
-		action_play = 'display:none;';
-		action_pause = 'display:none;';
-		action_stop = 'display:none;';
-		action_review = 'display:none;';
-		if (obj.backup_status == 'Started'){
-		    action_pause = '';
-		    action_stop = '';
-		    action_review = '';
-		}else if (obj.backup_status == 'Paused'){
-		    action_play = '';
-		    action_stop = '';
-		}else{
-		    action_play = '';
-		}
-	        table_row = '\
-            <tr class="'+obj.task_pub_status+'" data-project="'+obj.project+'" data-task-id="'+obj.task_id+'" data-task-parent-id="'+obj.parent_id+'" data-parent-object-type="'+obj.parent_object_type+'" data-project-id="'+obj.project_id+'">\
-                  <td>\
-                    <strong>'+obj.project+'</strong>\
-                  </td>\
-                  <td>\
-                    <strong>'+obj.task+'</strong>\
-                  </td>\
-                  <td style="width:400px;" data-task-id="'+obj.task_id+'" data-task-assignee="'+obj.user_name+'" data-task-parent-id="'+obj.parent_id+'">\
-                    <strong><a href="#" id="task_object"\
-                               onclick="show_model(this)">[ '+obj.path+' ]</a></strong>\
-                  </td>\
-                  <td data-task-id="'+obj.task_id+'"\
-                      data-org-val="'+obj.ftrack_status+'"\
-                      data-project-id="'+obj.project_id+'">\
-                    <span class="label label-'+obj.status_label+'">'+obj.ftrack_status+'</span>\
-                  </td>\
-                  <td>\
-                    <strong>'+obj.start_date+'</strong>\
-                  </td>\
-                  <td>\
-                    <strong>'+obj.finish_date+'</strong>\
-                  </td>\
-                  <td>\
-                    <span class="label label-'+obj.backup_status+'">'+obj.backup_status+'</span>\
-                  </td>\
-                  <td>\
-                    <strong>'+obj.upload_date+'</strong>\
-                  </td>\
-                  <td>\
-                    <strong>'+obj.bid_hours+'</strong>\
-                  </td>\
-                  <td>\
-                    <strong>'+obj.total_hours+'</strong>\
-                  </td>\
-                  <td>\
-                    <strong '+color_code+'>'+obj.time_left+'</strong>\
-                  </td>\
-		  <td style="width: 205px;">\
-                    <button title="START" class="btn btn-inverse btn-success btn-sm" id="task_approved"\
-                            style="color: black;'+action_play+'" onclick="artist_action(this)">\
-                      <i class="glyphicon glyphicon-play"></i>\
-                    </button>\
+        beforeSend: function(){
+		remove_rows('#tbl_task');
+                $('#panel_big').plainOverlay('show');
+                if ($.fn.DataTable.isDataTable("#tbl_task")){
+                    get_table_header().clear().draw();
+                    get_table_header().destroy();
+                }
+            },
+        success: function(json){
+
+            $.each(json,function(idx,obj){
+                color_code = 'style="color:#a7ff0c"';
+                if (obj.time_left.startsWith('-')){
+                    color_code = 'style="color:#ff2a0c"'
+                }
+                action_play = 'display:none;';
+                action_pause = 'display:none;';
+                action_stop = 'display:none;';
+                action_review = 'display:none;';
+                if (obj.backup_status == 'Started'){
+                    action_pause = '';
+                    action_stop = '';
+                    action_review = '';
+                }else if (obj.backup_status == 'Paused'){
+                    action_play = '';
+                    action_stop = '';
+                }else{
+                    action_play = '';
+                }
+                table_row = '\
+                <tr class="'+obj.task_pub_status+'" data-project="'+obj.project+'" data-task-id="'+obj.task_id+'" data-task-parent-id="'+obj.parent_id+'" data-parent-object-type="'+obj.parent_object_type+'">\
+                      <td style="width:400px;" data-task-id="'+obj.task_id+'" data-task-assignee="'+obj.user_name+'" data-task-parent-id="'+obj.parent_id+'">\
+                        <strong><a href="#" id="task_object" style="color: aqua;" \
+                                   onclick="show_model(this)">'+obj.path+'</a></strong>\
+                      </td>\
+                      <td data-task-id="'+obj.task_id+'"\
+                          data-org-val="'+obj.task_status+'">\
+                        <span class="label label-'+obj.status_label+'">'+obj.task_status+'</span>\
+                      </td>\
+                      <td>\
+                        <strong>'+obj.start_date+'</strong>\
+                      </td>\
+                      <td>\
+                        <strong>'+obj.finish_date+'</strong>\
+                      </td>\
+                      <td>\
+                        <span class="label label-'+obj.backup_status+'">'+obj.backup_status+'</span>\
+                      </td>\
+                      <td>\
+                        <strong>'+obj.upload_date+'</strong>\
+                      </td>\
+                      <td>\
+                        <strong>'+obj.bid_hours+'</strong>\
+                      </td>\
+                      <td>\
+                        <strong>'+obj.total_hours+'</strong>\
+                      </td>\
+                      <td>\
+                        <strong '+color_code+'>'+obj.time_left+'</strong>\
+                      </td>\
+              <td style="width: 205px;">\
+                        <button title="START" class="btn btn-inverse btn-success btn-sm" id="task_approved"\
+                                style="color: black;'+action_play+'" onclick="artist_action(this)">\
+                          <i class="glyphicon glyphicon-play"></i>\
+                        </button>\
+                        <button title="STOP" class="btn btn-inverse btn-danger btn-sm" id="task_reject"\
+                                style="color: black;'+action_stop+'" onclick="artist_action(this)">\
+                          <i class="glyphicon glyphicon-stop"></i>\
+                        </button>\
+                      </td>\
+                    </tr>';
+                /*
+                    <td>\
+                        <strong>'+obj.project+'</strong>\
+                      </td>\
+                      <td>\
+                        <strong>'+obj.task+'</strong>\
+                      </td>\
+
                     <button title="PAUSE" class="btn btn-inverse btn-warning btn-sm" id="task_pause"\
-                            style="color: black;'+action_pause+'" onclick="artist_action(this)">\
-                      <i class="glyphicon glyphicon-pause"></i>\
-                    </button>\
-                    <button title="STOP" class="btn btn-inverse btn-danger btn-sm" id="task_reject"\
-                            style="color: black;'+action_stop+'" onclick="artist_action(this)">\
-                      <i class="glyphicon glyphicon-stop"></i>\
-                    </button>\
-                    <button title="REVIEW" class="btn btn-inverse btn-primary btn-sm" id="task_review"\
-                            style="color: black;'+action_review+'" onclick="artist_action(this)">\
-                      <i class="glyphicon glyphicon-send"></i>\
-                    </button>\
-                  </td>\
-                </tr>';
-            $('#tbl_task tbody').append(table_row);
-	    });
+                                style="color: black;'+action_pause+'" onclick="artist_action(this)">\
+                          <i class="glyphicon glyphicon-pause"></i>\
+                        </button>\
+                        <button title="REVIEW" class="btn btn-inverse btn-primary btn-sm" id="task_review"\
+                                style="color: black;'+action_review+'" onclick="artist_action(this)">\
+                          <i class="glyphicon glyphicon-send"></i>\
+                        </button>\
+                */
+                $('#tbl_task tbody').append(table_row);
+            });
             $('#panel_big').plainOverlay('hide');
+	},
+	complete: function(){
+	    create_datatable('tbl_task');
 	},
 	error: function(error){
 	    console.log("Error:"+error);
@@ -5875,6 +5170,7 @@ function show_artist_tasks(){
 
     });
 }
+
 $('#selectReviewProject').change(function(){
     show_review_tasks();
 });
@@ -5898,18 +5194,20 @@ function show_review_tasks(){
 	beforeSend: function(){
 	    remove_rows('#tbl_task');
 	    $('#panel_big').plainOverlay('show');
+                if ($.fn.DataTable.isDataTable("#tbl_task")){
+                    get_table_header().clear().draw();
+                    get_table_header().destroy();
+                }
         },
 	success: function(json){
 	    $.each(json,function(idx,obj){
 	        table_row = '\
-	    <tr data-task-id="'+obj.task_id+'" data-version-id="'+obj.version_id+'" data-object-type="'+obj.object_type+'">\
-                  <td><strong>'+obj.project+'</strong></td>\
-                  <td><strong>'+obj.task+'</strong></td>\
+	    <tr data-task-id="'+obj.task_id+'" data-version-id="'+obj.version_id+'" data-object-type="'+obj.object_type+'" data-project="'+obj.project+'">\
                   <td style="width:300px;" data-task-id="'+obj.task_id+'" data-td="task_path"><strong>'+obj.path+'</strong></td>\
                   <td data-td="version"><strong>'+obj.version+'</strong></td>\
-                  <td data-td="users"><strong>'+obj.users+'</strong></td>\
-                  <td title="'+obj.task+'" data-task-id="'+obj.task_id+'" data-org-val="'+obj.ftrack_status+'" data-td="status">\
-                    <span class="label label-'+obj.status_label+'">'+obj.ftrack_status+'</span>\
+                  <td data-td="users"><strong>'+obj.published_by+'</strong></td>\
+                  <td title="'+obj.task+'" data-task-id="'+obj.task_id+'" data-org-val="'+obj.status+'" data-td="status">\
+                    <span class="label label-'+obj.status_label+'">'+obj.status+'</span>\
                   </td>\
                   <td data-td="modified_date"><strong>'+obj.updated_on+'</strong></td>\
                   <td>\
@@ -5920,8 +5218,16 @@ function show_review_tasks(){
                   </td>\
                 </tr>';
             $('#tbl_task tbody').append(table_row);
+            $("#tbl_task tbody tr").css("background-color","transparent");
 	    });
+	    /*
+	    <td><strong>'+obj.project+'</strong></td>\
+        <td><strong>'+obj.task+'</strong></td>\<td data-td="users"><strong>'+obj.users+'</strong></td>\
+	    */
 	    $('#panel_big').plainOverlay('hide');
+	},
+	complete: function(){
+	    create_datatable('tbl_task');
 	},
 	error: function(error){
 	    console.log("Error:"+error);
@@ -6152,7 +5458,7 @@ $('#btn_create_shot_csv').click(function(){
 	end_frame = $(this).find('td:eq(2)').text().trim();
 	desc = $(this).find('td:eq(3)').text().trim();
 
-    parent_id = get_parent_id();
+	parent_id = get_parent_id();
 	td_array['parent_id'] = parent_id;
 	td_array['parent_object'] = get_parent_object();
 	td_array['shot_name'] = shot_name;
@@ -6449,13 +5755,11 @@ $('#id_project_name').keyup(function(){
             error_message("No special characters allowed");
             $('#id_project_code').val('');
             $('#id_project_name').val('');
-            $("#projectModal").modal("hide");
         }
         if (digit_pattern.test(nm)){
             error_message("Only digits are not allowed");
             $('#id_project_code').val('');
             $('#id_project_name').val('');
-            $("#projectModal").modal("hide");
         }
         if(len > 0 && len <= max){
             $('#id_project_code').val($this.val().toLowerCase());
@@ -6555,20 +5859,20 @@ $('#submit_details').click(function(){
         error_message("Start date must not exceed end date");
         return false;
     }
+    var page = $('#task_menu1').find('li.active').first('a span').text().trim();
+    data_array['page'] = page;
     data_array['start_date'] = start_date;
     data_array['end_date'] = end_date;
     data_array['start_frame'] = start_frame;
     data_array['resolution'] = resolution;
-    data_array['project_folder'] = project_folder;
-    var page = $('#task_menu1').find('li.active').first('a span').text()
-    data_array['page'] = page
+    data_array['action'] = 'add';
 
     var data_list = [];
     data_list.push(data_array);
 
     var entity_name = 'Project'
 
-    update_form_data(entity_name,data_list);
+    update_form_data('None', entity_name, data_list, 'Project');
     $('#table_view').empty();
     window.setTimeout(function(){
         get_project_details();
@@ -6576,7 +5880,7 @@ $('#submit_details').click(function(){
     hide_project_modal();
 });// end of create project details function
 
-function update_form_data(entity_name,data_list, object){
+function update_form_data(project_name, entity_name, data_list, object){
     object_name = 'Update Form Data';
     data_list = JSON.stringify(data_list);
     $('#entity_loader').show();
@@ -6586,6 +5890,7 @@ function update_form_data(entity_name,data_list, object){
         data: {
 	    'object_name': object_name,
 	    'data_list': data_list,
+	    'project': project_name,
 	    'entity_name': entity_name},
         beforeSend: function(){
 	    $('.modal-header').plainOverlay('show');
@@ -6602,25 +5907,6 @@ function update_form_data(entity_name,data_list, object){
                     timeout: 1000
                 });
             }
-                //$('#table_view').empty();
-                /*if (entity_name == 'Task')
-                    get_task_details(get_project_name(), get_task_name, entity_name);*/
-                /*if (entity_name == 'Sequence'){
-//                    $('#table_view').empty();
-                    get_sequence_details();
-                }
-                if (entity_name == 'Shot'){
-                    $('#table_view').empty();
-                    get_shot_details();
-                }
-                if (entity_name == 'Project'){
-                    $('#table_view').empty();
-                    get_project_details();
-                }*/
-                /*if (entity_name == 'AssetBuild'){
-                    $('#table_view').empty();
-                    get_asset_details();
-                }*/
                 if(object == 'Shot'){
                     $('#selectSequenceRange').val("");
                     $('#selectSequenceRange').trigger("chosen:updated");
@@ -6743,21 +6029,23 @@ $("#update_details").click(function(){
         error_message("Date fields must not be blank");
         return false;
     }
+    var page = $('#task_menu1').find('li.active').first('a span').text().trim();
+    data_array['page'] = page;
     data_array['project_id'] = project_id;
     data_array['start_date'] = start_date;
     data_array['end_date'] = end_date;
     data_array['resolution'] = resolution;
     data_array['start_frame'] = start_frame;
+    data_array['project_code'] = project_code;
     data_array['fps'] = fps;
-    data_array['project_folder'] = project_folder;
-    data_array['resolution'] = resolution
+    data_array['action'] = 'update';
 
     var data_list = [];
     data_list.push(data_array);
 
     var entity_name = 'Project';
 
-    update_form_data(entity_name,data_list);
+    update_form_data('None', entity_name, data_list, 'Project');
     $('#table_view').empty();
 
     hide_project_modal();
@@ -6771,8 +6059,6 @@ $("#id_sequence_name").keyup(function(){
 
      var prj_name = $("#id_sequence_parent_object_type").val().trim();
      var sequence_name = $('#id_sequence_name').val().trim();
-//     if(prj_name == 'sw9')
-
      flg = 0;
      if (!pattern_name.test(sequence_name)){
         error_message("Must be Alphanumeric Only");
@@ -6839,10 +6125,6 @@ $('#submit_sequence_details').click(function(){
         error_message("Please select proper status!!!");
         return false;
     }
-
-    //if( get_project_name() == 'ic2')
-      //  sequence_name = 'sq' + sequence_name;
-
     var data_array = {};
     data_array['parent_id'] = get_parent_id();
     data_array['parent_object'] = get_parent_object();
@@ -7074,7 +6356,7 @@ function get_asset_details(){
         url: "/callajax/",
         data :{
         "object_name" : "display_asset_details",
-        "project_name": get_project_name()
+        "project": get_project_name()
         },
         beforeSend: function(){
             $("#table_view").empty();
@@ -7083,7 +6365,7 @@ function get_asset_details(){
         success: function(json){
             var table = $('#project_table');
                 $.each(json, function(idx, data){
-                    var row = $('<tr id="'+data.ftrack_id+'" data-object="AssetBuild">');
+                    var row = $('<tr id="'+data.asset_id+'" data-object="AssetBuild">');
                     row.append("<td>" + data.name + "</td>");
                     row.append("<td>" + data.description + "</td>");
                     row.append("<td>" + data.type + "</td>");
@@ -7093,6 +6375,9 @@ function get_asset_details(){
                     table.append(row);
             });// end of each loop
             $("#table_view").append(table);
+        },
+	complete: function(){
+	    create_datatable('project_table');
         }
     });
 }
@@ -7382,25 +6667,18 @@ function asset_name_check(asset_name){
 */
 $("#id_project_name").focusout(function(){
 
-    var prj_name = $("#id_project_name").val().trim();
     var prj_code = $("#id_project_code").val().trim();
     $.ajax({
         type: "POST",
         url:"/callajax/",
         data:{
-            "object_name": "Duplicate_name_check",
-            'prj': prj_code,
-            'name': prj_code,
-            'flag': 'prj_name'
+            "object_name": "Project",
         },
         success: function(json){
-            var s = JSON.stringify(json);
-            if (s == 'true'){
-                error_message("Project Name already exists");
-                $("#projectModal").modal("hide");
-                clear_project_fields();
-            }
-            if (s == 'false'){
+            if (json[prj_code]){
+                error_message("Project ("+ prj_code +") already exists");
+		clear_project_fields();
+            }else{
                 $("#submit_details").removeAttr("disabled");
             }
         }
@@ -7538,17 +6816,14 @@ function clear_task_fields(){
     function to get task
     details sequence/asset/shot wise
 */
-function get_task_details(project_name, name, type){
+function get_task_details(project_name, parent_id){
     $.ajax({
         type:"POST",
         url:"/callajax/",
         data:{
             "object_name": "display_task_details",
-            "project_name": project_name,
-            "name": name,
-            "type": type,
-            "shot_name": get_shot_name(),
-            "asset_name": get_asset_name()
+            "project": project_name,
+            "parent_id": parent_id
         },
         beforeSend: function(){
             $("#table_view").empty();
@@ -7557,14 +6832,15 @@ function get_task_details(project_name, name, type){
         success: function(json){
             var table = $('#project_table');
             $.each(json, function(idx, data){
-                var row = $('<tr id="'+data.ftrack_id+'" data-object="Task">');
+                var row = $('<tr id="'+data.task_id+'" data-object="Task">');
                     row.append("<td>" + data.name + "</td>");
-                    row.append("<td>" + data.startdate + "</td>");
-                    row.append("<td>" + data.enddate + "</td>");
-                    row.append("<td>" + data.ftrack_status + "</td>");
-                    row.append("<td>" + data.current_assignees + "</td>");
+                    row.append("<td>" + data.start_date + "</td>");
+                    row.append("<td>" + data.end_date + "</td>");
+                    row.append("<td>" + data.task_status + "</td>");
+                    row.append("<td>" + data.users + "</td>");
                     row.append("<td>" + data.bid + "</td>");
                     row.append("<td>" + data.priority + "</td>");
+                    row.append("<td></td>");
 //                    row.append("<td>"+
 //                    "<button class='btn btn-xs btn-success' type='button' onclick='update_tasks(this)'>Update</button>"
 //                    +"</td>");
@@ -7572,6 +6848,9 @@ function get_task_details(project_name, name, type){
                     $("#table_view").append(table);
                 });
             $("#table_view").show();
+        },
+	complete: function(){
+	    create_datatable('project_table');
         }
     });// end of ajax call
 }
@@ -7760,10 +7039,10 @@ function get_project_details(){
         type: "POST",
         url: "/callajax/",
         data :{
-        "object_name" : "display_project_thumbnail_manner"
+        "object_name" : "Show Projects"
         },
         beforeSend: function(){
-	    var create_proj = '<div class="box col-md-3" style="text-align: center;font-size: 20px;height: 261px;">\
+	    var create_proj = '<div class="box col-at-5" style="text-align: center;font-size: 20px;height: 305px;">\
 		    <br><br>\
 		    <button id="create_project" type="button" class="btn btn-default btn-lg" onclick="create_project_click()" style="height: 120px;font-size: 24px;color: #b0e22b;"> \
           <span class="glyphicon glyphicon-plus"></span> <br> New Project \
@@ -7775,25 +7054,29 @@ function get_project_details(){
 	    var table = $('#project_table');
                 $.each(json, function(idx, data){
                     new_div = '\
-                        <div class="box col-md-3" style="height: 261px;background-color: #666;">\
+                        <div class="box col-at-5" style="background-color: #666; height: 305px;">\
               <ul class="list-group">\
                 <li class="list-group-item">\
-                  <label>Project Name: &nbsp;</label><a id="'+data.ftrack_id+'" data-object="Project">'+data.name+'</a>\
-                  <div style="text-align: center;">\
+                  <div style="text-align: right;">\
                     <button class="btn btn-xs btn-info" type="button" onclick="display_view_modal(this)">View</button>\
+		    <button class="btn btn-xs btn-success" type="button" onclick="display_proj_modal(this)">Update</button>\
                   </div>\
+                  <label>Project &nbsp; Name &nbsp;: &nbsp;</label><a id="'+data.proj_id+'" data-object="Project">'+data.name+'</a>\
                 </li>\
                 <li class="list-group-item">\
-                  <label>Start Date: &nbsp;</label><strong>'+data.startdate+'</strong>\
+                  <label>Start &nbsp; Date &nbsp;: &nbsp;</label><strong>'+data.start_date+'</strong>\
                 </li>\
                 <li class="list-group-item">\
-                  <label>Resolution: &nbsp;</label><strong>'+data.resolution+'</strong>\
+                  <label>Resolution &nbsp;: &nbsp;</label><strong>'+data.resolution+'</strong>\
                 </li>\
                 <li class="list-group-item">\
-                  <label>Start Frame: &nbsp;</label><strong>'+data.startFrame+'</strong>\
+                  <label>Start &nbsp;Frame &nbsp;: &nbsp;</label><strong>'+data.start_frame+'</strong>\
                 </li>\
                 <li class="list-group-item">\
-                  <label>FPS: &nbsp;</label><strong>'+data.fps+'</strong>\
+                  <label>FPS &nbsp;: &nbsp;</label><strong>'+data.fps+'</strong>\
+                </li>\
+                <li class="list-group-item">\
+                  <label>Path &nbsp;: &nbsp;</label><strong>'+data.proj_path+'</strong>\
                 </li>\
               </ul>\
             </div>';
@@ -7801,7 +7084,6 @@ function get_project_details(){
                 });
                 $("#table_view").show();
         }
-    //<button class="btn btn-xs btn-success" type="button" onclick="display_proj_modal(this)">Update</button>\
     });// end of ajax call
 }
 
@@ -7814,6 +7096,7 @@ function display_proj_modal(name){
     $("#update_details").show();
     $("#submit_details").hide()
     $('#projectModal').modal('show');
+
     get_details_before_update(project_name, 'project', '', '', '', entity_id);
 }
 
@@ -7972,7 +7255,7 @@ function get_sequence_details(){
         url: "/callajax/",
         data: {
         "object_name": "display_sequence_details",
-        "project_name": get_project_name(),
+        "project": get_project_name(),
         },
         beforeSend:function(){
             $("#table_view").empty();
@@ -7981,7 +7264,7 @@ function get_sequence_details(){
         success: function(json){
             var table = $('#project_table');
                 $.each(json, function(idx, data){
-                    var row = $('<tr id="'+data.ftrack_id+'" data-object="Sequence">');
+                    var row = $('<tr id="'+data.seq_id+'" data-object="Sequence">');
                     row.append("<td>" + data.name + "</td>");
                     row.append("<td>" + data.description + "</td>");
                     row.append("<td>" + data.type + "</td>");
@@ -7990,6 +7273,9 @@ function get_sequence_details(){
                     table.append(row);
             });// end of each loop
             $("#table_view").append(table);
+        },
+	complete: function(){
+	    create_datatable('project_table');
         }
     });
 }
@@ -8235,6 +7521,7 @@ function display_shots(name){
     var th = $("#project_table thead tr").find("th:eq(0)").text().split(" ")[0];
     set_table_header(th);
 
+    parent_id = $(name).closest('tr').attr('id');
     $("#asset_li").hide();
     $("#sequence_li").hide();
     $("#view_asset_li").hide();
@@ -8243,6 +7530,7 @@ function display_shots(name){
     $("#shot_li").hide();
     $("#task_li").hide();
     $("#task_view_li").show();
+    $("#task_view_li").attr('data-parent-id', parent_id);
     $("#shot_view_li").show();
     $("#createModal").modal("show");
 }
@@ -8261,17 +7549,9 @@ $("#view_shot").click(function(){
 */
 $("#view_task").click(function(){
     $("#createModal").modal("hide");
-    var type = get_table_header().trim();
-    if (type == "Sequence"){
-        get_task_details(get_project_name(), get_sequence_name(), type);
-        }
-    else if (type == "Shot"){
-        get_task_details(get_project_name(), get_sequence_name(), type);
-        }
-    else if (task == 'Asset'){
-        var asset_name = $("#project_table tbody").closest('tr').find("td:eq(0)").text();
-        get_task_details(get_project_name(), asset_name, type)
-    }
+
+    parent_id = $(this).parent().attr('data-parent-id');
+    get_task_details(get_project_name(), parent_id);
 });
 
 /*
@@ -8287,7 +7567,7 @@ function get_shot_details(){
         data:{
         "object_name": "display_shot_details",
         'seq_name': get_sequence_name(),
-        'prj_name': get_project_name()
+        'project': get_project_name()
         },
         beforeSend:function(){
             $("#table_view").empty();
@@ -8296,18 +7576,21 @@ function get_shot_details(){
         success: function(json){
                 var table = $('#project_table');
                 $.each(json, function(idx, data){
-                    var row = $('<tr id="'+data.ftrack_id+'" data-object="Shot">');
+                    var row = $('<tr id="'+data.shot_id+'" data-object="Shot">');
                     row.append("<td>" + data.name + "</td>");
-                    row.append("<td>" + data.startframe + "</td>");
-                    row.append("<td>" + data.endframe + "</td>");
+                    row.append("<td>" + data.start_frame + "</td>");
+                    row.append("<td>" + data.end_frame + "</td>");
                     row.append("<td>" + data.total_frames + "</td>");
-                    row.append("<td>" + data.fps + "</td>");
+                    row.append("<td>" + data.duration + "</td>");
                     row.append("<td>"+
                     "<button class='btn btn-xs btn-info' type='button' onclick='view_tasks(this)'>View Task</button>"+
                     "</td>");
                     table.append(row);
             });
             $("#table_view").append(table);
+        },
+	complete: function(){
+	    create_datatable('project_table');
         }
     });
 }
@@ -8321,6 +7604,7 @@ function view_tasks(name){
     var type = $("#project_table thead tr").find("th:eq(0)").text().trim().split(" ")[0];
 
     set_table_header(type);
+    parent_id = $(name).closest('tr').attr('id');
 
     if (type == "Shot"){
 
@@ -8328,7 +7612,7 @@ function view_tasks(name){
 
         set_shot_name(name);
         set_entity_name("Shot");
-        get_task_details(get_project_name(), get_sequence_name(), "Shot");
+        get_task_details(get_project_name(), parent_id);
     }
     else if (type == "Asset"){
 
@@ -8340,7 +7624,7 @@ function view_tasks(name){
 
         set_asset_type(asset_type_name);
         set_entity_name("Asset");
-        get_task_details(get_project_name(), name, "Asset");
+        get_task_details(get_project_name(), parent_id);
     }
 }
 /*
@@ -8491,7 +7775,8 @@ $("#previous_page").click(function(){
     var th_name = $("#table_view #project_table").find('th:eq(0)').text();
     var nm = th_name.split(" ")[0].trim();
 
-    if($("#table_view #project_table tbody td").length > 0){//.contains('td')){
+    if($("#table_view #project_table tbody td").length > 0){
+	
         prev_name = $("#table_view #project_table").find('td:eq(2)').text();
 	prev = $("#table_view #project_table").find('tbody tr').attr('data-object');
         if(prev_name == 'Sequence'){
@@ -8519,11 +7804,11 @@ $("#previous_page").click(function(){
         }
         else if(nm == 'Task'){
             $("#table_view").empty();
-            if (get_table_header().trim() == "Sequence")
+            if (get_table_header() == "Sequence")
                 get_sequence_details();
-            else if (get_table_header().trim() == "Shot")
+            else if (get_table_header() == "Shot")
                 get_shot_details();
-            else if (get_table_header().trim() == "Asset")
+            else if (get_table_header() == "Asset")
                 get_asset_details();
 
             $("#previous_div").show();
@@ -8713,7 +7998,7 @@ function get_details_before_update(project_name, flag, seq_name, shot_name, asse
         url:"/callajax/",
         data:{
         'object_name': 'get_details',
-        'project_name': project_name,
+        'project': project_name,
         'sequence_name': seq_name,
         'shot_name': shot_name,
         'asset_name': asset_name,
@@ -8723,15 +8008,13 @@ function get_details_before_update(project_name, flag, seq_name, shot_name, asse
         success:function(json){
             if(flag == 'project'){
                 $.each(json, function(idx, data){
-                    $('#project_id #id_project_code').val(data.project);
-                    $('#project_id #id_project_code').attr('data-id',data.ftrack_id);
-                    $('#project_id #id_start_date').val(data.startdate);
-                    $('#project_id #id_end_date').val(data.enddate);
-                    $('#project_id #id_status').val(data.status);
+                    $('#project_id #id_project_code').val(data.name);
+                    $('#project_id #id_project_code').attr('data-id',data.proj_id);
+                    $('#project_id #id_start_date').val(data.start_date);
+                    $('#project_id #id_end_date').val(data.end_date);
                     $('#project_id #id_fps').val(data.fps);
                     $('#project_id #id_resolution').val(data.resolution);
-                    $("#project_id #id_project_folder").val(data.project_folder);
-                    $('#project_id #id_start_frame').val(data.startframe);
+                    $('#project_id #id_start_frame').val(data.start_frame);
                 });
             }
             if(flag == 'sequence'){
@@ -8827,13 +8110,13 @@ function light_image_box_open(param) {
     var cls_img = param.closest('img');
     var id = cls_img.src
     window.scrollTo(0, 0);
-    document.getElementById(id).style.display = 'block';
+    $('#'+id).style.display = 'block';
 }
 
 function light_image_box_close(param) {
     var cls_div = param.closest('div');
     var id = cls_div.id
-    document.getElementById(id).style.display = 'none';
+    $('#'+id).style.display = 'block';
 }
 
 //-----------------for new Entity Model---------------------------------------//
@@ -8844,7 +8127,7 @@ $("#selectEntityProject").change(function(){
     $('#selectEntityObject').val('').trigger("liszt:updated").trigger("chosen:updated");
 
     $('#selectEntityTask').empty();
-    $('#selectEntityTask').append('<option value="">Select Task</option>');
+    $('#selectEntityTask').append('<option value="">-- Select --</option>');
     $('#selectEntityTask').trigger("liszt:updated").trigger("chosen:updated");
 
     $("#selectAssetName").empty();
@@ -8925,7 +8208,8 @@ $("#selectEntityObject").change(function(){
         $('#div_entity_sequence_name').css({'display': 'none'})
         $('#div_entity_shot_name').css({'display': 'none'})
         $('#assetType').css({'display': 'block'})
-	$('#selectEntityAssetType').data("chosen").destroy().chosen();
+	$select_elem = $("#selectEntityAssetType");
+        load_types($select_elem);
         $('#ast_btn').show();
     }
     if(selected_value == 'Shot'){
@@ -8990,7 +8274,7 @@ function get_task(selected_object, selected_type){
         data: { 'selected_object' : selected_object, 'selected_asset_type': selected_type, 'object_name': 'Load Task'},
         beforeSend: function(){
             $select_elem.empty();
-            $select_elem.append('<option value="">Select Task</option>');
+            $select_elem.append('<option value="">-- Select --</option>');
         },
         success: function(json){
             $.each(json, function (idx, obj) {
@@ -9019,28 +8303,22 @@ function load_asset_task_name(selectedValue, asst_name){
     $.ajax({
         type:"POST",
         url:"/callajax/",
-        data: { 'selected_project': selected_project, 'selected_task': selected_task,
-        'selected_object' : selected_object, 'selected_asset_type': selected_asset_type, 'object_name': 'Load Asset Name'},
+        data: { 'project': selected_project, 'selected_task': selected_task,
+        'selected_object' : selected_object, 'object_type': selected_asset_type, 'object_name': 'Asset Build'},
         beforeSend: function(){
 	     if(!selectedValue){
 	       $select_elem.empty();
-          }
-          else{
-          /*$select_elem.empty();
-          $select_elem.trigger("chosen:updated");
-          $select_elem.trigger("liszt:updated");
-          $select_elem.data("chosen").destroy().chosen();*/
-	     }
+		}
 	    },
         success: function(json){
             $.each(json, function (idx, obj) {
                 if(!selectedValue){
-                   $select_elem.append('<option value="'+obj.ftrack_id+'">' + obj.task_name+ '</option>');
+                   $select_elem.append('<option value="'+obj.id+'">' + obj.name+ '</option>');
                 }
                 else{
-                    var index = selectedValue.indexOf(obj.ftrack_id);
+                    var index = selectedValue.indexOf(obj.id);
                     if(index == -1){
-                        $select_elem.append('<option value="'+obj.ftrack_id+'">' + obj.task_name+ '</option>');
+                        $select_elem.append('<option value="'+obj.id+'">' + obj.name+ '</option>');
                     }
                 }
             });
@@ -9065,7 +8343,6 @@ $("#selectAssetName").on('change', function(evt, params) {
     var selectedValue=params.selected
 
     if(!selected_task){
-        // alert("Select Task");
         return null
     }
     if (selectedValue)
@@ -9102,7 +8379,7 @@ function load_entity_tasks(selectedValues, project_name, selected_object, select
     $.ajax({
         type:"POST",
         url:"/callajax/",
-        data: {'parent_ids': parent_ids, 'project_name': project_name, 'selected_object': selected_object,
+        data: {'parent_ids': parent_ids, 'project': project_name, 'selected_object': selected_object,
         'selected_task': selected_task, 'object_name': 'Load Entity Task'},
         beforeSend: function(){
          if($('#all_assetsName').is(':checked') || $('#all_entity_shots').is(':checked')){
@@ -9123,6 +8400,9 @@ function load_entity_tasks(selectedValues, project_name, selected_object, select
             $('#example tfoot tr').removeClass('selected_tr');
             $('#example tfoot').attr('data-selected-tr', "");
         },
+	complete: function(){
+//	    create_datatable('example');
+	},
         error: function(error){
             console.log("Error:\n" + error);
         }
@@ -9148,7 +8428,7 @@ function add_entity_rows(json, selected_object){
 	            tr_count = $('#example tfoot tr').length;
 	            idx = tr_count
 	        }
-	        html = html + '<tr id="'+idx+'" org-data="" task-id="'+obj.ftrack_id+'" current_users="'+obj.current_assignees+'" parent_id="'+obj.parent_id+'"parent_object_type="'+obj.parent_object_type+'" onclick="RowClick(this,false,event)"><td><a href="#" id="parent_object" onclick="show_model_entity(this)">'+obj.name+'</a></td>'
+	        html = html + '<tr id="'+idx+'" data-project="'+obj.project+'" org-data="" task-id="'+obj.task_id+'" current_users="'+obj.current_assignees+'" data-task-parent-id="'+obj.parent_id+'" parent_object_type="'+obj.parent_object_type+'" onclick="RowClick(this,false,event)"><td data-task-id="'+obj.task_id+'" data-task-parent-id="'+obj.parent_id+'"><a href="#" id="parent_object" onclick="show_model(this)">'+obj.name+'</a></td>'
             html = html + '<td ondblclick="editEntityCell(this)" option-id="users_options" data-org-val=""><label class="label label-default">'+obj.current_assignees+'</label></td>'
             html = html + '<td ondblclick="editEntityCell(this)" option-id="status_options" data-org-val=""><span class="label label-'+obj.status_label+'">'+obj.status+'</span></td>'
             html = html + '<td ondblclick="editEntityCell(this)" option-id="bids_options" data-org-val=""><span class="label label-default">'+obj.bid+'</span></td>'
@@ -9183,7 +8463,6 @@ $("#all_assetsName").click(function(){
                selectedValues.push($(this).val());
             });
         if(!selected_task){
-            // alert("Select Task");
             return null
         }
         load_entity_tasks(selectedValues, project_name, selected_asset_type, selected_task);
@@ -9234,13 +8513,13 @@ $("#selectEntityTask").change(function(){
 
 // For edit table rows
 function editEntityCell(context, option){
-    context_data = String($(context).html().search('<select'))
+    context_data = String($(context).html().search('<select'));
     if(context_data == 0)
     {
         return null;
     }
-    var col_index = $(context).index()
-    var $select_elm = ''
+    var col_index = $(context).index();
+    var $select_elm = '';
     var option = $(context).attr('option-id');
     var $tr_element = $(context).closest('tr');
     var trid = $tr_element.attr('id');
@@ -9620,8 +8899,8 @@ $("#save").on('click', function(context) {
 
 // For create data list from table columns
 function create_data_list(ids_list){
-    var page = $('#task_menu1').find('li.active').first('a span').text()
-    var priority_dict = {"A":'Urgent', "B":'High', "C":'Medium', "D":'Low'}
+    var page = $('#task_menu1').find('li.active').first('a span').text().trim();
+    var priority_dict = {"A":'Urgent', "B":'High', "C":'Medium', "D":'Low'};
     var child_task_name = $('#selectEntityTask').val();
     var project_id = $('#selectEntityProject').val();
     var project_name = $('#selectEntityProject option:selected').text();
@@ -9636,9 +8915,9 @@ function create_data_list(ids_list){
         var data_dict = {}
         var col1 = col2 = col3 = col4 = col5 = col6 = col7= ""
         var current_users_list = $('#'+ids_list[i]).attr('current_users');
-        var parent_id = $('#'+ids_list[i]).attr('parent_id');
+        var parent_id = $('#'+ids_list[i]).attr('data-task-parent-id');
         var parent_object_type = $('#'+ids_list[i]).attr('parent_object_type');
-        var ftrack_id = $('#'+ids_list[i]).attr('task-id');
+        var task_id = $('#'+ids_list[i]).attr('task-id');
         // name
         col1 = $('#'+ids_list[i]).find("td:eq(0)").text();
         //user
@@ -9655,7 +8934,7 @@ function create_data_list(ids_list){
         col7 = $('#'+ids_list[i]).find("td:eq(6)").text();
 
         //---------------------------------
-        data_dict['task_id'] = ftrack_id
+        data_dict['task_id'] = task_id
         org_col3 = $($org_data_tr).find("td:eq(3)").text()
         //if(col4 != '0'){}
         if(col2 != $($org_data_tr).find("td:eq(1)").text()){
@@ -9697,15 +8976,15 @@ function create_data_list(ids_list){
                 data_dict['endframe'] = col9
                 }
         }
-        data_dict['id'] = ids_list[i]
-        data_dict['parent_id'] = parent_id
-        data_dict['task_name'] = child_task_name
-        data_dict['parent_object_type'] = parent_object_type
-        data_dict['project_id'] = project_id
-        data_dict['project_name'] = project_name
-        data_dict['page'] = page
-        var path = project_name + ':' + col1.replace('_', ':') + ':' +child_task_name
-        data_dict['path'] = path
+        data_dict['id'] = ids_list[i];
+        data_dict['parent_id'] = parent_id;
+        data_dict['task_name'] = child_task_name;
+        data_dict['parent_object_type'] = parent_object_type;
+        data_dict['project_id'] = project_id;
+        data_dict['project_name'] = project_name;
+        data_dict['page'] = page;
+        var path = project_name + ':' + col1.replace('_', ':') + ':' +child_task_name;
+        data_dict['path'] = path;
         data_list.push(data_dict);
 
 
@@ -9744,9 +9023,7 @@ function save_data(data_list, ids_list){
     $.ajax({
         type:"POST",
         url:"/callajax/",
-        data: {'parent_ids': parent_ids, 'selected_project': selected_project, 'selected_task': selected_task,
-        'selected_object' : selected_object, 'selected_asset_type': selected_asset_type,
-        'object_name': 'Save Entity Data', "data_str_list": data_str_list},
+        data: {'project': selected_project, 'object_name': 'Update Form Data', 'entity_name' : "Task", "data_list": data_str_list},
         beforeSend: function(){
             $('#panel_big').plainOverlay('show');
 	     },
@@ -9758,38 +9035,6 @@ function save_data(data_list, ids_list){
                 $('#example thead th:nth-child(8)').hide();
                 $('#example thead th:nth-child(9)').hide();
             }
-            /*$.each(ids_list, function (idx, id) {
-                for(i=0; i< data_list.length; i++){
-                    html = '';
-                    if(id == data_list[i]['id']){
-                        if(selected_object == 'Asset Build'){
-                            html = html + '<td>'+data_list[i]["parent_name"]+'</td>'
-                        }
-                        if(selected_object == 'Shot'){
-                            html = html + '<td>'+data_list[i]["parent_name"]+'</td>'
-                        }
-                        if(selected_object == 'Sequence'){
-                            html = html + '<td>'+data_list[i]["parent_name"]+'</td>'
-                        }
-                        html = html + '<td ondblclick="editEntityCell(this)" option-id="users_options"  data-org-val=""><label class="label label-default">'+data_list[i]['assignee']+'</label></td>'
-                        var status_label = data_list[i]['task_status'].toLowerCase().replace(/\s/g, "_");
-                        html = html + '<td ondblclick="editEntityCell(this)" option-id="status_options" data-org-val=""><span class="label label-'+status_label+'">'+data_list[i]['task_status']+'</span></td>'
-                        html = html + '<td ondblclick="editEntityCell(this)" option-id="bids_options" data-org-val=""><span class="label label-default">'+data_list[i]['bid']/(10*60*60)+'</span></td>'
-                        html = html + '<td ondblclick="editEntityCell(this)" option-id="complexity_options" data-org-val=""><span class="label label-default">'+priority_dict[data_list[i]['priority']]+'</span></td>'
-                        html = html + '<td ondblclick="addDate(this)"; data-org-val=""><input type="text"  onchange="select_change(this);" style="display: none;" id="inp_'+id+'" data-id="'+id+'"  class="x-form-field x-form-text x-form-empty-field"><span id="spn_'+id+'" class="label label-default">'+data_list[i]['start_date']+'</span></td>'
-                        html = html + '<td ondblclick="editEntityCell(this)" option-id="description_option" data-org-val=""><span class="label label-default">'+data_list[i]['description']+'</span></td>'
-                        if(selected_object == "Shot"){
-                               html = html + '<td ondblclick="editEntityCell(this)" option-id="stframe_options" data-org-val=""><span class="label label-default">'+data_list[i]['startframe']+'</span></td>'
-                               html = html + '<td ondblclick="editEntityCell(this)" option-id="edframe_options" data-org-val=""><span class="label label-default">'+data_list[i]['endframe']+'</span></td>'
-                        }
-                        html = html + '<td><button class="btn btn-inverse btn-default btn-sm" data-toggle="dropdown" id="incoming" onclick="show_entity_link_model(this)">Create Asset Link</button></td>'
-
-                        html = html + '<td><button class="btn btn-inverse btn-default btn-sm" onclick="single_reset('+id+')" style="display: none;" id="td_'+id+'"><i class="glyphicon glyphicon-hand-left icon-white"></i>&nbsp;&nbsp;Undo</button></td>'
-                        $('#'+id).html(html);
-                        $('#'+id).attr('current_users', data_list[i]['assignee'])
-                    }
-                }
-            });*/
             $('#panel_big').plainOverlay('hide');
             $('#entity_loader').hide();
         },
@@ -9838,7 +9083,6 @@ $('#add').on('click', function(param){
     }
 
 });
-
 // For add asset name
 $('#addAsset').on('click', function(){
     var asset_name = $('#asst_name').val();
@@ -9846,7 +9090,7 @@ $('#addAsset').on('click', function(){
         alert("Please enter asset name.");
         return null;
     }
-    var page = $('#task_menu1').find('li.active').first('a span').text()
+    var page = $('#task_menu1').find('li.active').first('a span').text().trim() 
     var project_name = $('#selectEntityProject option:selected').text();
     var asset_description = $('#asset_description').val();
     var parent_object = "Project"
@@ -9856,17 +9100,18 @@ $('#addAsset').on('click', function(){
     var data_dict = {}
     var data_list = []
 
-    data_dict['asset_build_name'] = asset_name
-    data_dict['entity_name'] = entity_name
-    data_dict['description'] = asset_description
-    data_dict['parent_object'] = parent_object
-    data_dict['asset_build_type'] = asset_build_type
-    data_dict['parent_id'] = parent_id
-    data_dict['project_name'] = project_name
-    data_dict['page'] = page
-    var path = project_name + ':' + asset_name
-    data_dict['path'] = path
-    data_list.push(data_dict)
+    data_dict['asset_build_name'] = asset_name;
+    data_dict['entity_name'] = entity_name;
+    data_dict['description'] = asset_description;
+    data_dict['parent_object'] = parent_object;
+    data_dict['asset_build_type'] = asset_build_type;
+    data_dict['parent_id'] = parent_id;
+    data_dict['project_name'] = project_name;
+    data_dict['page'] = page;
+    data_dict['action'] = 'add';
+    var path = project_name + ':' + asset_name;
+    data_dict['path'] = path;
+    data_list.push(data_dict);
     data_str_list = JSON.stringify(data_list);
     //call
     $('#entity_loader').show();
@@ -9874,7 +9119,7 @@ $('#addAsset').on('click', function(){
     $.ajax({
         type:"POST",
         url:"/callajax/",
-        data: {'object_name': 'Asset Build Create','data_list': data_str_list, 'entity_name': entity_name},
+        data: {'object_name': 'Update Form Data', 'data_list': data_str_list, 'entity_name': 'AssetBuild', 'project': project_name},
         beforeSend: function(){
            // $('#panel_big').plainOverlay('show');
 	     },
@@ -9931,7 +9176,7 @@ function load_entity_obj_name(obj_name, parent_id, opt_val='') {
     $.ajax({
         type:"POST",
         url:"/callajax/",
-        data: {'proj_id': project, 'object_name': obj_name, 'parent_id' : parent_id },
+        data: {'project': project, 'object_name': obj_name, 'parent_id' : parent_id },
         beforeSend: function(){
             if((!$('#selectEntitySequence').val()))
             {
@@ -10073,8 +9318,6 @@ $("#create").click(function(){
             $('#demo').hide();
             $('#sequence').css({'visibility': ''});
 
-            //$('#select_x_range').trigger("chosen:updated");
-            //$('#select_x_range').trigger("liszt:updated");
             $('#div_x_range').show();
             $('#select_x_range').data("chosen").destroy().chosen();
         }
@@ -10084,7 +9327,7 @@ $("#create").click(function(){
             var x_range = '1'
             $select_elem = $('#selectShotRange');
             //get range
-            get_ranges(project_name, task_name, $select_elem, sequence_range='', x_range)
+            get_ranges(task_name, x_range, $select_elem)
             $('#shot').css({'visibility': ''});
             $('#selectSequenceRange_chosen').hide();
             $('#lable_id').text("")
@@ -10155,8 +9398,7 @@ $("#selectSequenceRange").change(function(){
             task_name = 'sc'
             var x_range = $('#select_x_range').val();
             $select_elem = $('#selectShotRange');
-            //call
-            get_ranges(project_name, task_name, $select_elem, sequence_range, x_range)
+            get_ranges(task_name, x_range, $select_elem);
             $('#shot').css({'visibility': ''});
         }
 		else{
@@ -10169,58 +9411,21 @@ $("#selectSequenceRange").change(function(){
         }
 });
 // get range
-function get_ranges(project_name, task_name, $select_elem, sequence_range='', x_range='1'){
-    var obj_name = 'Shot'
-    var object_range = []
-    $.ajax({
-                type:"POST",
-                url:"/callajax/",
-                data: {'project_name': project_name, 'object_name': 'Get Range', 'task_name' : task_name, 'x_range':x_range },
-                beforeSend: function(){
-                    /*$select_elem.empty();
-                    $select_elem.append('<option value="">Select</option>');*/
-                },
-                success: function(json){
-                    console.log("success.............")
-                    $.each(json, function (idx, obj) {
-                        object_range.push(obj);
-                       });
-                    set_object_range(sequence_range, obj_name, object_range, $select_elem)
-                },
-                error: function(error){
-                    console.log("Error:");
-                    console.log(error);
-                }
-            });
-}
-//set range for shot
-function set_object_range(sequence_range, obj_name, object_range, $select_elem){
-    var project_id = $('#selectEntityProject option:selected').val();
-    var created_shot = []
+function get_ranges(task_name, x_range, $select_elem){
+    var project = $('#selectEntityProject option:selected').val();
     //call
     $.ajax({
             type:"POST",
             url:"/callajax/",
-            data: {'proj_id': project_id ,'object_name': obj_name, 'parent_id' : sequence_range },
+            data: {'project': project ,'object_name': 'Get Range', 'task_name' : task_name , 'x_range': x_range},
             beforeSend: function(){
                 $select_elem.empty();
-                $select_elem.append('<option value="">Select</option>');
+                $select_elem.append('<option value="">-- Select --</option>');
             },
             success: function(json){
-                var shots_array = []
                 $.each(json, function (idx, obj) {
-                    shots_array.push(obj.name)
+                    $select_elem.append('<option value="'+obj+'">' + obj + '</option>');
                 });
-                $("#selectSequenceRange").find("option[value=" + sequence_range +"]").attr('data-shots', shots_array);
-                $.each(object_range, function (idx, obj) {
-                        // Commited for checking shots
-                        /*index = shots_array.indexOf(obj)
-                        if(index == -1){
-                        $select_elem.append('<option value="'+obj+'">' + obj + '</option>');
-                       }*/
-                       $select_elem.append('<option value="'+obj+'">' + obj + '</option>');
-                });
-                created_shot = shots_array;
                 $select_elem.trigger("chosen:updated");
                 $select_elem.trigger("liszt:updated");
 		$select_elem.data('chosen').destroy().chosen();
@@ -10284,12 +9489,9 @@ $("#all_entity_shots").click(function(){
                selectedValues.push($(this).val());
             });
         if(!selected_task){
-            // alert("Select Task");
-            //$('#all_entity_shots').prop('checked', false);
             return null
         }
         if(selectedValues.length == 0){
-            // alert("Select Task");
             $('#all_entity_shots').prop('checked', false);
             return null
         }
@@ -10316,7 +9518,6 @@ $("#all_entity_sequences").click(function(){
                selectedValues.push($(this).val());
             });
         if(!selected_task){
-            // alert("Select Task");
             return null
         }
         load_entity_tasks(selectedValues, project_name, selected_object, selected_task);
@@ -10398,7 +9599,7 @@ $("#selectEndShotRange").change(function(){
 
 // create short
 $("#createShot").click(function(){
-    var page = $('#task_menu1').find('li.active').first('a span').text()
+    var page = $('#task_menu1').find('li.active').first('a span').text().trim()
     var project_id = $('#selectEntityProject').val();
     var project_name = $('#selectEntityProject option:selected').text();
     var selected_task = $('#selectEntityTask').val();
@@ -10424,8 +9625,8 @@ $("#createShot").click(function(){
     }
     // for checking duplicate shots
     seq_array = [];
-    current_shots = $("#selectSequenceRange").find("option[value=" + parent_id +"]").attr('data-shots');
-    current_sht_array = current_shots.split(",");
+//    current_shots = $("#selectSequenceRange").find("option[value=" + parent_id +"]").attr('data-shots');
+//    current_sht_array = current_shots.split(",");
     $("#selectShotRange option").each(function()
     {
         seq_array.push($(this).val());
@@ -10434,38 +9635,38 @@ $("#createShot").click(function(){
     ed_index = seq_array.indexOf(shot_end_range);
     //-----
     if(shot_start_range == shot_end_range){
-            shot_create_type = 'Static Short'
+            shot_create_type = 'Static Shot'
             s = shot_start_range
             if(shot_type)
             {
              s = s + shot_type
             }
-            elm = current_sht_array.indexOf(s);
-            if(elm != -1){
-                alert("Shot " + s +" already created!")
-                return null
-            }
-            else{
+//            elm = current_sht_array.indexOf(s);
+//            if(elm != -1){
+//                alert("Shot " + s +" already created!")
+//                return null
+//            }
+//            else{
                 creat_array.push(s)
-            }
+//            }
     }
     else{
         for(i=st_index; i<= ed_index; i++){
-            elm = current_sht_array.indexOf(seq_array[i]);
-            if(elm != -1){
+//            elm = current_sht_array.indexOf(seq_array[i]);
+//            if(elm != -1){
                 //alert("Shots between range " +shot_start_range+ " to " + shot_end_range +" already created!")
                 //return null
-                skip_array.push(seq_array[i])
-                console.log("Shots between range " +shot_start_range+ " to " + shot_end_range +" already created!")
+//                skip_array.push(seq_array[i])
+//                console.log("Shots between range " +shot_start_range+ " to " + shot_end_range +" already created!")
 
-            }
-            else{
+//            }
+//            else{
                 creat_array.push(seq_array[i])
-            }
+//            }
         }
-        if(skip_array.length > 1){
-            alert("Shots " +skip_array+ " already created and will be skip!")
-        }
+//        if(skip_array.length > 1){
+//            alert("Shots " +skip_array+ " already created and will be skip!")
+//        }
     }
     data_list = []
     task_data_list = []
@@ -10488,25 +9689,25 @@ $("#createShot").click(function(){
         else{
             shot_name = creat_array[i];
         }
-        data_dict['shot_name'] = shot_name
-        data_dict['shot_create_type'] = shot_create_type
-        data_dict['entity_name'] = entity_name
-        data_dict['parent_id'] = parent_id
-        data_dict['parent_object'] = parent_object
-        data_dict['description'] = description
-        data_dict['project_id'] = project_id
-        data_dict['project_name'] = project_name
-        data_dict['page'] = page
-        var path = project_name + ':' + parent_name + ':' + shot_name
-        data_dict['path'] = path
-        data_list.push(data_dict)
+        data_dict['shot_name'] = shot_name;
+        data_dict['shot_create_type'] = shot_create_type;
+        data_dict['entity_name'] = entity_name;
+        data_dict['parent_id'] = parent_id;
+        data_dict['parent_object'] = parent_object;
+        data_dict['description'] = description;
+        data_dict['project_id'] = project_id;
+        data_dict['project_name'] = project_name;
+        data_dict['page'] = page;
+        var path = project_name + ':' + parent_name + ':' + shot_name;
+        data_dict['path'] = path;
+        data_list.push(data_dict);
     }
-    update_form_data(entity_name, data_list, 'Shot');
+    update_form_data(project_name, entity_name, data_list, 'Shot');
 });
 
 //create   Sequence
 $("#createSequence").click(function(){
-    var page = $('#task_menu1').find('li.active').first('a span').text()
+    var page = $('#task_menu1').find('li.active').first('a span').text().trim();
     var project_id = $('#selectEntityProject').val();
     var project_name = $('#selectEntityProject option:selected').text();
     var entity_name = 'Sequence'
@@ -10589,19 +9790,20 @@ $("#createSequence").click(function(){
         else{
             shot_name = creat_array[i];
         }
-        data_dict['seq_name'] = shot_name
-        data_dict['entity_name'] = entity_name
-        data_dict['parent_id'] = parent_id
-        data_dict['parent_object'] = parent_object
-        data_dict['description'] = description
-        data_dict['project_id'] = project_id
-        data_dict['project_name'] = project_name
-        data_dict['page'] = page
-        var path = project_name + ':' + shot_name
-        data_dict['path'] = path
+        data_dict['seq_name'] = shot_name;
+        data_dict['entity_name'] = entity_name;
+        data_dict['parent_id'] = parent_id;
+        data_dict['parent_object'] = parent_object;
+        data_dict['description'] = description;
+        data_dict['project_id'] = project_id;
+        data_dict['project_name'] = project_name;
+        data_dict['page'] = page;
+        data_dict['action'] = 'add';
+        var path = project_name + ':' + shot_name;
+        data_dict['path'] = path;
         data_list.push(data_dict)
     }
-    update_form_data(entity_name, data_list, 'Sequence');
+    update_form_data(project_name, entity_name, data_list, 'Sequence');
 });
 
 
@@ -10650,8 +9852,9 @@ $("#add_asset_csv").click(function(){
         $("#addAsset").attr("disabled", true);
         $("#addAssetFromCSV").show();
         var parent_id = $('#selectEntityProject').val();
-        set_parent_id(parent_id)
-        set_parent_object('Project')
+        set_parent_id(parent_id);
+        set_parent_object('Project');
+	set_project_name(parent_id);	
     }
     else{
         $("#addAsset").attr("disabled", false);
@@ -10669,7 +9872,7 @@ $("#addAssetFromCSV").click(function(){
 
 // For  add asset csv file from show_task_entity page
 $('#add_asset_build_csv').click(function(){
-    var page = $('#task_menu1').find('li.active').first('a span').text()
+    var page = $('#task_menu1').find('li.active').first('a span').text().trim();
     var project_name = $('#selectEntityProject option:selected').text();
     var asset_build_type = $('#selectEntityAssetType').val();
 	var entity_name = "AssetBuild"
@@ -10686,15 +9889,16 @@ $('#add_asset_build_csv').click(function(){
 	td_array['asset_build_name'] = asset_build_name;
 	td_array['asset_build_type'] = asset_build_type;
 	td_array['description'] = desc;
-    td_array['project_name'] = project_name
-    td_array['page'] = page
-    var path = project_name + ':' + asset_name
-    td_array['path'] = path
-    data_list.push(td_array);
+	td_array['action'] = 'add';
+	td_array['project_name'] = project_name
+	td_array['page'] = page
+	var path = project_name + ':' + asset_name
+	td_array['path'] = path
+	data_list.push(td_array);
     });
     if (data_list.length > 0)
 	var entity_name = 'AssetBuild';
-	update_form_data(entity_name,data_list, "AssetBuild"); // save assets
+	update_form_data(project_name, entity_name, data_list, "AssetBuild"); // save assets
 	$('#table_view').empty();
 
 	$('#assetModal').modal('hide');
@@ -10703,17 +9907,16 @@ $('#add_asset_build_csv').click(function(){
 
 // For show asset link modal
 function show_entity_link_model(param){
-    //
     var asset_ids = [];
-    var parent_id = $(param).closest('tr').attr('parent_id');
+    var parent_id = $(param).closest('tr').attr('data-task-parent-id');
     var parent_path = $(param).closest('tr').find("td:eq(0)").text();
     var selected_object = $('#selectEntityObject').val();
+    var prj_name = $("#selectEntityProject option:selected").text();
     $('#entity_loader').show();
-    //call
     $.ajax({
 	type: "POST",
 	url:"/callajax/",
-	data: { 'task_id': parent_id , 'type_name': selected_object, 'object_name': 'Show Link Details' , 'last_row' : 15},
+	data: { 'parent_id': parent_id , 'type_name': selected_object, 'object_name': 'Show Link Details' , 'last_row' : 15, 'project': prj_name},
 	beforeSend: function(){
 
 	    },
@@ -10721,12 +9924,8 @@ function show_entity_link_model(param){
         $.each(json, function (idx, obj) {
             asset_ids.push(obj.id)
         });
-        //
         $('#myInput').val('');
-        var prj_name = $("#selectEntityProject option:selected").text();
-        var proj_id = $("#selectEntityProject").val();
-        get_asset_list(proj_id, prj_name, asset_ids)
-        var old_asset_ids = ""
+        get_asset_list(prj_name, asset_ids)
         $('#save_asset').attr('old-ids', "")
         $('#save_asset').attr('old-ids', asset_ids)
         $('#save_asset').attr('task-id', parent_id)
@@ -10736,29 +9935,6 @@ function show_entity_link_model(param){
         console.log("Error:\n" + error);
     }
     });
-};
-
-// For add asset asset link from show_task_entity page
-function add_entity_asset_link(param){
-    var task_id = $('#save_asset').attr('task-id');
-    var obj_name = $('#selectEntityObject').val();
-    var asset_name = $('#selectEntityObject').val();
-    var parent_path = $(param).attr('parent_path')
-    var tr_id = $(param)
-    var old_asset_ids = ""
-    if($('#save_asset').attr('old-ids')){
-        old_asset_ids = ($('#save_asset').attr('old-ids')).split(",");
-    }
-    add_asset(task_id, obj_name, asset_name, old_asset_ids, parent_path)
-};
-
-// For add asset asset link from tast_status page
-function add_asset_link(param){
-    var task_id = $('#data-modal-object-id').val()
-    var obj_name = $('#selectObject').val();
-    var asset_name = $('#selectObject option:selected').val();
-    var old_asset_ids = ($('#link_details').attr('asset_ids')).split(",");
-    add_asset(task_id, obj_name, asset_name, old_asset_ids, "entity_task")
 };
 
 // For check all asset link model list
@@ -10792,15 +9968,12 @@ $("#reset_link_asset").click(function(){
 });
 
 $("#select_x_range").change(function(){
-    var project_name = $('#selectEntityProject option:selected').text();
     var task_name = 'sc'
     var $select_elem = $('#selectShotRange');
     var x_range = $(this).val();
     //get range
-    get_ranges(project_name, task_name, $select_elem, sequence_range='', x_range)
+    get_ranges(task_name, x_range, $select_elem);
 });
-
-//--------------------------------------------------------------------------------//
 
 
 $("#show_sequence_delivery").click(function(){
@@ -10814,7 +9987,6 @@ function sequence_delivery_details(){
             error_message("Please select valid project");
             return false;
     }
-//    project = $("#selectProjectDetails option[value='"+project_id+"']").text();
     duration = $('#sequence_date_wise span').html();
     if(!duration){
             error_message("Please select valid duration");
@@ -10828,7 +10000,7 @@ function sequence_delivery_details(){
     $.ajax({
         type: "POST",
         url: "/callajax/",
-        data : {'object_name': 'Sequence Delivery Details', 'project': project, 'duration': duration,
+        data : {'object_name': 'Sequence Delivery', 'project': project, 'duration': duration,
         'first': first, 'last': last},
         beforeSend: function(){
             $("#summary_display").empty();
@@ -10990,78 +10162,28 @@ function sequence_shot_details(tr_data){
 
 function console_log(obj){
     str_data = JSON.stringify(obj);
-    console.log(str_data);
 }
 
-//---------------------------------------------------------------------------//
-function show_model_entity(context) {
-    reset_model_drop_down();
-    task_parent_id = $(context).closest('tr').attr('parent_id');
-    task_id = task_parent_id //$(context).closest('tr').attr('task-id');
-    task_assignee = $(context).closest('tr').attr('current_users');
-    parent_object_type = $(context).closest('tr').attr('data-parent-object-type');
-    project_id = $("#selectEntityProject option:selected").val();
-
-    obj_name = $('#selectEntityObject').val();
-
-    if (obj_name){
-	if (obj_name == 'Shot Asset Build'){
-	    obj_name = 'Asset Build';
-	}
-    }else{
-	obj_name = 'Task';
-    }
-
-    task = '';
-    if ($('#selectEntityTask').val()){
-	task = $('#selectEntityTask').val();
-    }
-
-    note_task = '';
-    if ($('#selectNoteTask').val()){
-	note_task = $('#selectNoteTask').val();
-    }
-    ver_note_task = '';
-    if ($('#selectVersionTask').val()){
-	ver_note_task = $('#selectVersionTask').val();
-    }
-
-    last_row = 15;
-
-    load_task_details(task_id,obj_name,last_row,task_assignee);
-
-    $('#version_note_details').html('');
-
-    $('#note_details').html('');
-
-    // default Task Note Tab
-    load_task_notes(task_parent_id, obj_name, last_row, note_task);
-
-    load_choosen_data($('#div_selectVersionTask'),$('#selectVersionTask'), "Select Task", task_parent_id);
-    load_choosen_data($('#div_selectNoteTask'),$('#selectNoteTask'), "Select Task", task_id);
-    load_choosen_data($('#div_selectTask'),$('#selectTask'), "Select Task", task_id);
-
-    // user_reject_asset
-    $('#user_reject_asset').attr('data-task-parent-id',task_parent_id);
-    $('#user_reject_asset').attr('data-project-id',project_id);
-    if (parent_object_type == 'Shot'){
-	$('#div_user_reject_asset').css({'display':'block'});
-	$('#user_reject_asset').attr('checked',false);
-	$('#selectVersionAssetType').attr('data-project-id',project_id);
-    }else{
-	$('#div_user_reject_asset').css({'display':'none'});
-    }
-
-
-    $('#btn_note_create').attr('data-task-id',task_id);
-
-    $('#myModal').attr("obj_name", obj_name);
-    $('#myModal').attr("task", task);
-    $('#myModal').attr("note_task", note_task);
-    $('#myModal').attr("ver_note_task", ver_note_task);
-
-    $('#myModal').modal('show');
-};
+function create_datatable(table_id){
+    
+        var table = $('#'+table_id).DataTable({
+                scrollY:570,
+                "lengthMenu": [[20, 40, 50, 100], [20, 40, 50, 100]],
+                fixedHeader:{
+                    header: true
+                }
+        });
+        set_table_header(table);
+        $(".dataTables_filter label input").css("background-color", "#444");
+        $(".dataTables_filter label input").css("height", "18px");
+        $(".dataTables_filter label input").attr("placeholder","Type to search ...");
+        $(".dataTables_filter label input").addClass("x-form-field x-form-text x-form-empty-field");
+        $(".dataTables_filter label").css("color", "lightgrey");
+        $(".dataTables_length label").css("color", "lightgrey");
+        $(".dataTables_length select").css("background-color", "#444");
+        $(".dataTables_length select").addClass("input-sm");
+        $(".dataTables_info").css("color", "#fff");
+}
 //---------------------------------------------------------------------------//
 // Reload page here
 window.onload = function() {
@@ -11072,7 +10194,7 @@ window.onload = function() {
         mgm_dashboard();
     }
     if ($('#artist_tasks').attr('class') == 'active'){
-        show_artist_tasks();
+         show_artist_tasks();
     }
     if ($('#review_tasks').attr('class') == 'active'){
         show_review_tasks();

@@ -58,8 +58,8 @@
                   <a href="#" id="previous_page">Previous Page</a>
                 </li>
               </ul>
-              <div id="table_view" style="display:none;">
-              </div>
+		    <div class="box-content" id="table_view" style="display:none;">
+		    </div>
 
             </div>
           </div>
@@ -124,7 +124,7 @@
              aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered rounded_border">
             <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal" style="color: #fff;">×</button>
+<!--              <button type="button" class="close" data-dismiss="modal" style="color: #fff;">×</button> -->
               <br>
               <div class="container">
                 <form action="{% url 'create_entities' %}" method="post"
@@ -152,12 +152,6 @@
                     <label class="control-label col-sm-2">End Date : &nbsp;</label>
                     <div class="col-sm-10">
                       {{ project_form.end_date }}
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label class="control-label col-sm-2">WorkFlow Schema &nbsp;</label>
-                    <div class="col-sm-10">
-                      {{ project_form.workflow_schema }}
                     </div>
                   </div>
                   <div class="form-group">
@@ -282,7 +276,7 @@
                       </div>
                   </div>-->
                   <br/>
-                  <div class="form-group  form-row">
+                  <div class="form-group">
                     <div class="col-sm-offset-2 col-sm-10">
                       <input type="button" value="Create" id="submit_details"
                              class="btn btn-success"/>
@@ -290,7 +284,7 @@
                              class="btn btn-default" style="display:none;"/>
                       <input type="button" value="Cancel"
                              id="cancel_project_details"
-                             class="btn btn-warning"/>
+                             class="btn btn-danger"/>
                     </div>
                   </div>
                 </form>

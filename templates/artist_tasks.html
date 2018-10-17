@@ -38,51 +38,29 @@
                 <select id="selectArtistProject" data-rel="chosen" style="width: 122px;">
                   {% for proj,id in data.projects.items %}
                   {% if proj == data.project %}
-                  <option value="{{ proj }}" selected>{{ proj }}</option>
+                  <option value="{{ id }}" selected>{{ proj }}</option>
                   {% else %}
-                  <option value="{{ proj }}">{{ proj }}</option>
+                  <option value="{{ id }}">{{ proj }}</option>
                   {% endif %}
                   {% endfor %}
                 </select>
               </div>
             </div>
-            <div class="col-at-sm-3" style="display:block;">
-              <div class="controls">
-                <label class="control-label" for="selectStatus">Status : &nbsp;</label>
-                <select id="selectStatus" data-rel="chosen" data-placeholder="Select one...">
-
-                  <option value="">All</option>
-                  {% for status in statuses %}
-                  <option value="{{status.name}}">{{status.name}}</option>
-                  {% endfor %}
-
-                </select>
-              </div>
-            </div>
-
-            <div class="col-at-2" style="float: right;">
-              &nbsp; <input data-errorqtip="" aria-invalid="false" id="search"
-                            data-qtip="Type to filter on task name or description"
-                            placeholder="Type to search ..." class="x-form-field x-form-text x-form-empty-field"
-                            autocomplete="off" type="text">
-              <!--                            &nbsp; &nbsp;<label id="table_row_count"></label> -->
-            </div>
             <div class="box-icon" style="float: right;">
               <button class="btn btn-inverse btn-default btn-sm" id="task_refresh">
                 <i class="glyphicon glyphicon-refresh icon-white"></i></button>
-              <button class="btn btn-inverse btn-default btn-sm" id="download_user_task">
-                <!--                            <button class="btn btn-inverse btn-default btn-xs" id="download_user_task" onClick ="$('#tbl_task').tableExport({type:'excel',escape:'false',filename:'user_task_details'});">-->
+              <button class="btn btn-inverse btn-default btn-sm" id="download_user_task"
+                      onclick="$('#tbl_task').table2excel({filename: 'to_do_list',exclude: '.noExl'});">
                 <i class="glyphicon glyphicon-save icon-white"></i></button>
             </div>
           </div>
+
           <div class="col-at-12">
-            <div class="box" style="overflow:auto; overflow-y:auto; height:710px"
-                 id="div_task_details">
+            <div class="box" id="div_task_details">
+              <div class="box-content">
               <table class="table table-hover table-bordered" id="tbl_task">
                 <thead>
                 <tr>
-                  <th>Project</th>
-                  <th>Task</th>
                   <th>Path</th>
                   <th>Status</th>
                   <th>Start Date</th>
@@ -96,11 +74,13 @@
                 </tr>
                 </thead>
                 <tbody>
+
                 </tbody>
               </table>
-
+              </div>
             </div>
           </div>
+
         </div>
       </div>
       <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
@@ -109,7 +89,7 @@
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
             <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal" id="myReset">×</button>
+	    <button type="button" class="close" data-dismiss="modal" id="myReset">×</button>
               <div id="modal_header">
                 <div id="task_details_loader" style="text-align: left;"><img
                   src="/static/img/loading.gif"></div>
@@ -166,8 +146,7 @@
                               <span>Category : </span>
                               <select id="selectNoteCategory" data-rel="chosen"
                                       data-placeholder="Select one..."
-                                      style="width:130px !important;"
-                                      onchange="toggle_parent_note(this)">
+                                      style="width:130px !important;">
                                 <option value="">All</option>
                                 <option value="None">None</option>
                                 <option value="Internal">Internal</option>
@@ -199,79 +178,71 @@
                             <div class="controls">
                               <span>Asset Types : </span>
                               <select id="selectAssetTypes" data-rel="chosen"
-                                      data-placeholder="Select one..."
-                                      style="width:130px !important;"
-                                      onchange="toggle_asset_type(this)">
-                                <option value="">All</option>
-                                {% for type in asset_types %}
-                                <option value="{{ type }}">{{ type }}</option>
-                                {% endfor %}
+					data-placeholder="Select one..." 
+                                      style="width:130px !important;">
+				<option>-- Select --</option>
                               </select>
-                              <input data-errorqtip="" aria-invalid="false"
-                                     id="search_version"
-                                     data-qtip="Type to filter on task name or description"
-                                     placeholder="Type to filter..."
-                                     class="x-form-field x-form-text x-form-empty-field"
-                                     autocomplete="off" type="text" style="float: right;">
                             </div>
                           </div>
                           <div id="version_loader" style="text-align: center;"><img
                             src="/static/img/loading.gif"></div>
-                          <div class="box"
-                               style="overflow:auto; overflow-y:auto; height:650px; overflow-x:auto; width:855px; white-space: nowrap;"
-                               id="version_details">
-                            <table class="table table-striped" id="tbl_versions">
-                              <thead>
-                              <tr>
-                                <th onclick="sortOrder(this)"><i
-                                  class="glyphicon glyphicon-sort-by-alphabet"></i>&nbsp;
-                                  Name
-                                </th>
-                                <th>Type</th>
+			    <div class="box" id="div_version_details">
+              <div class="box-content">
+              <table class="table table-hover table-bordered" id="tbl_versions">
+                <thead>
+                <tr>
+		    <th>Name</th>
+		    <th>Type</th>
                                 <th>Status</th>
                                 <th>Published On</th>
                                 <th>Published by</th>
                                 <th>Description</th>
-                              </tr>
-                              </thead>
-                              <tbody>
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
+                </tr>
+                </thead>
+                <tbody>
 
+                </tbody>
+              </table>
+              </div>
+            </div>
+	    </div>
                         <div role="tabpanel" class="tab-pane" id="my_version_notes">
                           <div class="box">
                             <div class="box col-at-11">
 
-                              <div class="col-at-1" id="div_user_reject_asset" style="display: none;">
+                              <div class="col-at-1" id="div_user_reject_asset"
+                                   style="display: none;">
                                 <div class="controls">
                               <span id="span_user_reject_asset">
-                                &nbsp;&nbsp;<input type="checkbox" id="user_reject_asset">
-                                &nbsp;&nbsp; Asset &nbsp;&nbsp;
+                                <input type="checkbox" id="user_reject_asset">
+                                &nbsp; Asset
                               </span>
                                 </div>
                               </div>
-                              <div class="col-at-sm-3" id="div_selectVersionAssetType" style="display: none;">
+                              <div class="col-at-sm-3" id="div_selectVersionAssetType"
+                                   style="display: none;">
                                 <div class="controls">
-                                  <select id="selectVersionAssetType" style="width: 106px;" data-rel="chosen">
+                                  <select id="selectVersionAssetType"
+                                          style="width: 106px;" data-rel="chosen">
 
                                   </select>
                                 </div>
                               </div>
-                              <div class="col-lg-3" id="div_selectVersionAssetBuild" style="display: none;">
+                              <div class="col-lg-3" id="div_selectVersionAssetBuild"
+                                   style="display: none;">
                                 <div class="controls">
-                                  <select id="selectVersionAssetBuild" data-rel="chosen" style="width: 200px;">
+                                  <select id="selectVersionAssetBuild"
+                                          data-rel="chosen" style="width: 200px;">
                                     <option value="">Select Asset Build</option>
                                   </select>
                                 </div>
                               </div>
 
-                              <div class="col-at-sm-3" id="div_selectVersionTask" style="display: block;">
+                              <div class="col-at-5" id="div_selectVersionTask"
+                                   style="display: block;">
                                 <div class="controls">
                                   <select id="selectVersionTask" data-rel="chosen"
-                                          style="width: 106px;"
-                                          onchange="load_asset_type(this)">
+                                          style="width: 116px;">
                                     <option value="">Select Task</option>
 
                                   </select>&nbsp;&nbsp;
@@ -279,20 +250,18 @@
                               </div>
 
 
-                              <div class="col-at-5" id="div_selectVersionTaskAssetTypes" style="display: block;">
+                              <div class="col-at-5" id="div_selectVersionTaskAssetTypes"
+                                   style="display: block;">
                                 <div class="controls">
                                   <select id="selectVersionTaskAssetTypes"
                                           data-rel="chosen" data-for-artist="to_do"
-                                          style="width: 120px;"
-                                          onchange="show_versions(this)">
+                                          style="width: 120px;">
                                     <option value="">Select Asset Type</option>
-                                    <!--{% for type in asset_types %}
-                                    <option value="{{type}}">{{type}}</option>
-                                    {% endfor %}-->
                                   </select>&nbsp;&nbsp;
                                 </div>
                               </div>
-                              <div class="col-lg-3" id="div_selectTaskVersion" style="display: block;">
+                              <div class="col-lg-3" id="div_selectTaskVersion"
+                                   style="display: block;">
                                 <div class="controls">
                                   <select id="selectTaskVersion" data-rel="chosen"
                                           style="width: 215px;">
@@ -309,16 +278,22 @@
                                             class="x-form-field x-form-text x-form-textarea"
                                             autocomplete="off" style="width: 100%; height: 48px;"></textarea>
                               <button type="button" title="Attach file here ..."
-                                      class="btn btn-inverse btn-default btn-xs" data-gallery="gallery_versions"
-                                      style="float: left;margin-right: 5px;" onclick="attach_media_files(this)"><span
+                                      class="btn btn-inverse btn-default btn-xs"
+                                      data-gallery="gallery_versions"
+                                      style="float: left;margin-right: 5px;"
+                                      onclick="attach_media_files(this)"><span
                                 class="glyphicon glyphicon-plus"></span></button>
                               <div class="progress" style="display:none">
-                                <div class="progress-bar" role="progressbar" style="width: 0%;">0%</div>
+                                <div class="progress-bar" role="progressbar"
+                                     style="width: 0%;">0%
+                                </div>
                               </div>
-                              <button class="btn btn-inverse btn-default btn-xs" id="btn_version_note_create"
+                              <button class="btn btn-inverse btn-default btn-xs"
+                                      id="btn_version_note_create"
                                       title="Add Comment"
                                       style="width: 60px;float: right;">
-                                <i class="glyphicon glyphicon-send icon-white"></i></button>
+                                <i class="glyphicon glyphicon-send icon-white"></i>
+                              </button>
                               <input id="fileupload" type="file" name="file" multiple
                                      style="display: none;"
                                      data-form-data='{"csrfmiddlewaretoken": "{{ csrf_token }}"}'>
@@ -336,7 +311,7 @@
                             <select id="selectVersionNoteCategory" data-rel="chosen"
                                     data-placeholder="Select one..."
                                     style="width:130px !important;"
-                                    onchange="toggle_parent_note(this)" data-for-artist="to_do">
+                                    data-for-artist="to_do">
                               <option value="">All</option>
                               <option value="None">None</option>
                               <option value="Internal">Internal</option>
@@ -353,75 +328,39 @@
                                style="overflow:auto; overflow-y:auto; height:450px;"
                                id="version_note_details" data-user-id="{{user_id}}"></div>
                         </div>
-                      <!------------------ History ------------------------------->
                         <div role="tabpanel" class="tab-pane" id="my_version_notes_history">
 
                           <div id="task_version_notes_history_loader"
                                style="text-align: center; display: none;"><img
                             src="/static/img/loading.gif"></div>
-                          <!--<div class="box">
-                            <span>Category :&nbsp;</span>
-                            <select id="selectVersionNoteCategoryHistory" data-rel="chosen"
-                                    data-placeholder="Select one..."
-                                    style="width:130px !important;"
-                                    onchange="toggle_parent_note(this)" data-for-artist="to_do">
-                              <option value="">All</option>
-                              <option value="None">None</option>
-                              <option value="Internal">Internal</option>
-                              <option value="Client feedback">Client
-                                feedback
-                              </option>
-                              <option value="Client">Client</option>
-                            </select>
-                            </div>-->
                           <div class="box"
                                style="overflow:auto; overflow-y:auto; height:700px;"
                                id="version_note_details_history" data-user-id="{{user_id}}"></div>
                         </div>
-                        <!--------------------- end ---------------------------->
-                       <!------------------ Activity Logs ------------------------------->
                         <div role="tabpanel" class="tab-pane" id="my_activity_logs">
 
                           <div id="my_activity_loader"
                                style="text-align: center; display: none;"><img
                             src="/static/img/loading.gif"></div>
-                          <!--<div class="box"-->
-                               <!--style="overflow:auto; overflow-y:auto; height:500px;"-->
-                               <!--id="activity_logs" data-user-id="{{user_id}}"></div>-->
-                            <!---->
-                          <div class="box">
-                              <div class="controls" style="height: 30px;">
-                                  <input data-errorqtip="" aria-invalid="false"
-                                         id="search_activity"
-                                         data-qtip="Type to filter on task name or description"
-                                         placeholder="Type to filter..."
-                                         class="x-form-field x-form-text x-form-empty-field"
-                                         autocomplete="off" type="text" style="float: right;">&nbsp;
-                              </div>
-                            </div>
-                        <div class="box"
-                                 style="overflow:auto; overflow-y:auto; height:650px; overflow-x:auto; width:855px; white-space: nowrap;"
-                                 id="activity_logs_details">
-                        <table class="table table-striped" id="tbl_activity">
-                                <thead>
-                                <tr>
-                                  <th onclick="sortOrder(this)"><i
-                                    class="glyphicon glyphicon-sort-by-alphabet"></i>&nbsp;
-                                    Path
-                                  </th>
-                                  <th>Activity By</th>
-                                  <th>Action</th>
-                                  <th>Details For</th>
-                                  <th>Value</th>
-                                  <th>Activity Date</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                              </table>
+			<div class="box">
+                          <div class="box-content" id="activity_logs_details">
+                            <table class="table table-striped" id="tbl_activity">
+                              <thead>
+                              <tr>
+                                <th>Path</th>
+                                <th>Activity By</th>
+                                <th>Action</th>
+                                <th>Details For</th>
+                                <th>Value</th>
+                                <th>Activity Date</th>
+                              </tr>
+                              </thead>
+                              <tbody>
+                              </tbody>
+                            </table>
+                          </div>
+			</div>
                         </div>
-                        </div>
-                        <!--------------------- end ---------------------------->
                       </div>
                     </div>
                   </div>
@@ -429,12 +368,6 @@
               </div>
             </div>
           </div>
-          <!--
-                          <div class="modal-footer">
-                              <a href="#" class="btn btn-default" data-dismiss="modal">Close</a>
-                              <a href="#" class="btn btn-primary" data-dismiss="modal">Save changes</a>
-                          </div>
-          -->
         </div>
       </div>
     </div>

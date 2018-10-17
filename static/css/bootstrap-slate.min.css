@@ -1948,8 +1948,8 @@ pre code {
 	.col-lg-10 {
 		width:83.33333333%
 	}
-	.col-lg-9 {
-		width:75%
+	.col-at-9 {
+		width:52.75%
 	}
 	.col-at-8 {
 		width:60.66666667%
@@ -5989,7 +5989,7 @@ a.thumbnail:hover,a.thumbnail:focus,a.thumbnail.active {
 	border-color:#000
 }
 .rounded_border{
-//            width: 750px;
+            width: 445px;
             background-color: #444;
             border: 3px solid darkgrey;
             border-radius: 13px;

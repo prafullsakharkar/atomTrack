@@ -5,9 +5,9 @@ from pprint import pprint
 
 session = ase_session.Session()
 
-project = 'ice'
+project = 'aaj'
 
-client = pymongo.MongoClient('192.168.1.19', 27017)
+client = pymongo.MongoClient('192.168.1.99', 27017)
 
 mongo_db = client['userDailyBackupTask']
 collection = mongo_db['%s_versions' % project]
@@ -15,14 +15,15 @@ bulk = collection.initialize_ordered_bulk_op()
 
 obj_vers = session.query('AssetVersion where task.project.name is "%s"' % project)
 i = 0
+len_vers = len(obj_vers)
 for ver in obj_vers:
     i += 1
     data = dict()
     verid = ver['id']
     search_key = { 'ftrack_id' : verid }
-    print("%s : VERSION : %s" %(i,verid))
-    if i < 80000:
-	continue
+    print("%s : VERSION : %s : %s" %(i, verid, len_vers))
+#    if i < 80000:
+#	continue
     try:
         pub_date = ver['date']
         published_on = datetime.datetime.strptime(pub_date.strftime('%F %T'), '%Y-%m-%d %H:%M:%S')
@@ -43,6 +44,7 @@ for ver in obj_vers:
         data['asset_type'] = ver['asset']['type']['name']
         data['asset_name'] = ver['asset']['name']
         data['task_id'] = ver['task_id']
+        data['parent_id'] = ver['task']['parent_id']
         data['ftrack_status'] = ver['status']['name']
         data['description'] = ver['comment']
 
@@ -61,7 +63,7 @@ for ver in obj_vers:
         print("WRONG:%s" %verid)
 
     bulk.find(search_key).upsert().update_one({'$set': data})
-    if i % 100 == 0:
+    if i % 1000 == 0:
 	bulk.execute()
 	bulk = collection.initialize_ordered_bulk_op()
 	print("%s : executing bulk" %i)
