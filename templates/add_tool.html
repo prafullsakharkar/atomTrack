@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+{% include "header.html" %}
+<body>
+{% include "top_bar.html" %}
+<div class="ch-container">
+    <div class="row">
+        <noscript>
+            <div class="alert alert-block col-md-12">
+                <h4 class="alert-heading">Warning!</h4>
+
+                <p>You need to have <a href="http://en.wikipedia.org/wiki/JavaScript" target="_blank">JavaScript</a>
+                    enabled to use this site.</p>
+            </div>
+        </noscript>
+    </div>
+
+    <div class="row">
+        <!-- leftside menu start -->
+        {% include "left_side_menu.html" %}
+        <!-- leftside menu start -->
+
+        <div class="col-at-12" id="panel_big">
+            <ul class="breadcrumb">
+                <li>
+                    <a href="#">Main</a>
+                </li>
+                <li>
+                    <a href="#">Add Email</a>
+                </li>
+            </ul>
+            <div class="sidebar-nav">
+                <div class="box-content row">
+                    <div class="box row">
+                        <div class="form-group">
+                            <div class="col-at-4">
+                                <div class="controls">
+                                    <label class="control-label" for="project">Projects : &nbsp;</label>
+                                    <select id="project" data-rel="chosen" style="width: 10%;">
+                                        <option value="Select" selected="selected">Select</option>
+                                        {% for proj,id in data.projects.items %}
+                                        <option value="{{ id }}">{{ proj }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-at-4" id="div_tools" style="display:none;">
+                                <div class="controls">
+                                    <label class="control-label" for="selectTools">Tools : &nbsp;</label>
+                                    <select id="selectTools" data-rel="chosen" style="width: 10%;">
+                                        <option value="Select" selected="selected">Select</option>
+                                        {% for tool_names in data.tools %}
+                                        <option value="{{ tool_names }}">{{ tool_names }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-at-3" id="div_tasks" style="display:none;">
+                                <div class="controls">
+                                    <label class="control-label" for="selectTasks">Department : &nbsp;</label>
+                                    <select id="selectTasks" data-rel="chosen" style="width: 10%;">
+                                        <option value="Select" selected="selected">Select</option>
+                                        {% for task_names in data.tasks %}
+                                        <option value="{{ task_names }}">{{ task_names }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="box row">
+                        <div class="col-at-12" >
+                           <!-- <div class="col-lg-1">
+                                <div class="controls">
+
+                                </div>
+                            </div>-->
+                            <div class="dual-list list-left col-lg-3">
+                                <label class="control-label">Email : &nbsp;</label>
+                                <div class="well" style="background-color:transparent;">
+                                    <div class="row">
+                                        <div class="col-lg-11">
+                                            <div class="form-group">
+                                                <!--height:550px;<span class="input-group-addon glyphicon glyphicon-search">
+                                                </span>-->
+                                                <input type="text" name="SearchDualList" class="form-control"
+                                                       placeholder="search" style="color: #000;"/>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-1">
+                                            <div class="btn-group">
+                                                <a class="btn btn-default selector" title="select all"
+                                                   onclick="select_all(this);">
+                                                    <i class="glyphicon glyphicon-unchecked"></i></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--Previous ul li tags-->
+                                    <div class="form-group div_emails" style="overflow:auto; height:450px;">
+                                        {% for role, values in data.emails.items %}
+                                    <div class="card" style="width:91%;" id="{{ role }}">
+                                        <div class="card-header">
+                                            {{ role }}
+                                            <div class="btn-group">
+                                                <a id="{{ role }}_btn" class="btn btn-default selector"
+                                                   title="select all" onclick="select_all(this);">
+                                                    <i class="glyphicon glyphicon-unchecked"></i></a>
+                                            </div>
+                                        </div>
+                                        <ul class="list-group list-group-flush" id="{{ role }}_ul">
+                                        {% for email in values %}
+                                            <li class="list-group-item" data-type="{{ role }}">{{ email }}</li>
+                                        {% endfor %}
+                                        </ul>
+                                    </div>
+                                    {% endfor %}
+                                    </div>
+
+                                </div>
+                            </div>
+                            <!--<div class="col-lg-3">-->
+                                <div class="list-arrows col-lg-1 text-center"
+                                     style="margin-top: 10%;margin-bottom: 11%;display:none;">
+                                    <button class="btn btn-default btn-round btn-xs btn-primary to"
+                                            style="font-size: large;">
+                                        <span class="glyphicon glyphicon-chevron-right"></span>
+                                        Add TO
+                                    </button>
+
+                                    <button class="btn btn-default btn-round btn-xs cc" style="font-size: large;">
+                                        <span class="glyphicon glyphicon-chevron-right"></span>
+                                        Add CC
+                                    </button>
+                                    <button class="btn btn-info btn-xs btn-round mail_list" style="font-size: large;">
+                                        <span class="glyphicon glyphicon-backward"></span>
+                                        Remove
+                                    </button>
+                                </div>
+                            <!--</div>-->
+                            <div class="dual-list list-right col-lg-3" style="display:none;">
+                                <label class="control-label">To List : &nbsp;</label>
+                                <div class="well" style="background-color:transparent;">
+                                    <div class="row">
+                                        <div class="col-lg-11">
+                                            <div class="form-group">
+                                                <input type="text" name="SearchDualList" class="form-control"
+                                                       placeholder="search" style="color: #000;"/>
+                                                <!--height:550px;
+                                                <span class="input-group-addon glyphicon glyphicon-search">
+                                                </span>-->
+                                            </div>
+                                            <!--<div class="btn-group">-->
+                                                <!--<a class="btn btn-default selector" title="select all"><i-->
+                                                        <!--class="glyphicon glyphicon-unchecked"></i></a>-->
+                                            <!--</div>-->
+                                        </div>
+                                        <div class="col-lg-1">
+                                            <div class="btn-group">
+                                                <a class="btn btn-default selector" title="select all"
+                                                onclick="select_all(this);">
+                                                    <i class="glyphicon glyphicon-unchecked"></i></a>
+                                            </div>
+                                            <!--<div class="form-group">-->
+                                                <!--<input type="text" name="SearchDualList" class="form-control"-->
+                                                       <!--placeholder="search" style="color: #000;"/>-->
+                                                <!--&lt;!&ndash;height:550px;-->
+                                                <!--<span class="input-group-addon glyphicon glyphicon-search">-->
+                                                <!--</span>&ndash;&gt;-->
+                                            <!--</div>-->
+                                        </div>
+                                    </div>
+
+                                    <ul class="list-group" id="to_list"
+                                        style="cursor: pointer;height: 381px;overflow: auto;">
+
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="dual-list list-right col-lg-3" style="display:none;">
+                                <label class="control-label">CC List : &nbsp;</label>
+                                <div class="well" style="background-color:transparent;">
+                                    <div class="row">
+                                        <div class="col-lg-11">
+                                            <div class="form-group">
+                                                <input type="text" name="SearchDualList" class="form-control"
+                                                       placeholder="search" style="color: #000;"/>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-1">
+                                            <div class="btn-group">
+                                                <a class="btn btn-default selector" onclick="select_all(this);"
+                                                   title="select all">
+                                                    <i class="glyphicon glyphicon-unchecked"></i></a>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <ul class="list-group" id="cc_list"
+                                        style="cursor: pointer;height: 381px;overflow: auto;">
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="container">
+                                <button class="btn btn-default btn-block" id="add_email" style="display:none;"
+                                        onclick="store_email_tool_wise(this);"
+                                        type="button" value="Submit">Submit</button>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+{% include "footer.html" %}
+</html>

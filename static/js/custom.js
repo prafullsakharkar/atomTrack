@@ -5171,6 +5171,503 @@ function show_artist_tasks(){
     });
 }
 
+$('#select_all_pages').change(function(){
+    if($(this).prop('checked')){
+        $('tbody tr td input[type="checkbox"]').each(function(){
+            $(this).prop('checked', true);
+        });
+    }else{
+        $('tbody tr td input[type="checkbox"]').each(function(){
+            $(this).prop('checked', false);
+        });
+    }
+});
+
+function toggle_tr_check(param){
+
+    checked = $(param).prop('checked');
+    $(param).closest('tr').find("td input[type='checkbox']").each(function(){
+	$(this).prop('checked', checked);
+    });
+
+}
+
+function update_role_pages(action){
+    role = '';
+    if(action == 'create'){
+	role = $('#user_role').val().trim();
+	exists = '';
+	$("#selectRole option").each(function(){
+	    if($(this).text().toLowerCase() == role.toLowerCase())
+		exists = 'true';
+	});
+	if(exists){
+	    alert("Role already exists : "+role);
+	    $('#user_role').val('');
+	    return null;
+	}
+
+    }else{
+	role = $("#selectRole").val();
+    }
+    page_array = [];
+    $("#tbl_pages tbody tr").each(function(){
+	if($(this).find("td:eq(0) input").is(":checked")){
+	    page_dict = {};
+            page_dict['id'] = $(this).find("td:eq(0) input").attr("id");
+            page_dict['name'] = $(this).find("td:eq(1)").text().trim();
+            page_dict['url'] = $(this).find("td:eq(0) input").attr("data-url");
+
+	    access = [];
+            for(i=2;i<=5;i++){
+                if($(this).find("td:eq('"+i+"') input").is(":checked"))
+                    access.push($(this).find("td:eq('"+i+"') input").attr('name'));
+            }
+            page_dict['access'] = access;
+            page_array.push(page_dict);
+        }
+    });
+
+    var page_details = JSON.stringify(page_array);
+    $.ajax({
+        type:"POST",
+        url:"/callajax/",
+        data:{
+            'object_name': 'Update Role Page', 'page_details': page_details, "role": role
+        },
+        success: function(json){
+                noty({
+                    text: 'Role ('+role+') '+action+' successfully',
+                    layout: 'topCenter',
+                    closeWith: ['click', 'hover'],
+                    type: 'success'
+                });
+		if (action == 'create'){
+		    $('#selectRole').append('<option value="'+role+'" selected>'+role+'</option>');
+		    $('#selectRole').trigger("liszt:updated").trigger("chosen:updated");
+		}
+        },
+	error: function(error){
+	    console.log("Error:"+error);
+	}
+    });
+
+}
+
+$('#selectRole').change(function(){
+    show_role_pages();
+});
+function show_role_pages(){
+
+    role = $('#selectRole').val();
+    if(!role){
+	error_message("Please select valid role !!!");
+    }
+
+    $.ajax({
+        type: "POST",
+        url: "/callajax/",
+        data : {
+	    'object_name': 'Role Pages', 'role': role
+        },
+        beforeSend: function(){
+		remove_rows('#tbl_pages');
+                $('#panel_big').plainOverlay('show');
+                if ($.fn.DataTable.isDataTable("#tbl_pages")){
+                    get_table_header().clear().draw();
+                    get_table_header().destroy();
+                }
+            },
+        success: function(json){
+
+            $.each(json,function(idx,obj){
+		url = obj.url;
+		id = obj.id;
+		name = obj.name;
+		access = obj.access;
+		active = 'checked';
+		if (obj.active == 'inactive'){
+		    active = '';
+		}
+		    
+		var add = '';
+		var update = '';
+		var del = '';
+		$.each(access, function(idx,acc){
+		    if (acc == 'Add'){
+			add = 'checked';
+		    }else if (acc == 'Update'){
+			update = 'checked';
+		    }else if (acc == 'Delete'){
+			del = 'checked';
+		    }
+		});
+
+                table_row = '\
+		    <tr><td><input id="'+id+'" data-url="'+url+'" type="checkbox" '+active+' onclick="toggle_tr_check(this)"></td>\
+		    <td><strong>'+name+'</strong></td>\
+		    <td><input name="Add" id="add_'+id+'" type="checkbox" '+add+'></td>\
+		    <td><input name="Update" id="update_'+id+'" type="checkbox" '+update+'></td>\
+		    <td><input name="Delete" id="delete_'+id+'" type="checkbox" '+del+'></td></tr>\
+		';
+                $('#tbl_pages tbody').append(table_row);
+            });
+            $('#panel_big').plainOverlay('hide');
+	},
+	complete: function(){
+	    create_datatable('tbl_pages');
+	},
+	error: function(error){
+	    console.log("Error:"+error);
+	}
+
+    });
+}
+
+function editRoleCell(context, select_div){
+
+    var OriginalContent = $(context).text();
+    OriginalContent = OriginalContent.split(',');
+
+    var clone = $('#'+select_div).clone(true);
+    $clonedChosen = clone.find('select').clone().off()
+
+    $parentTd = $(context).closest('td');
+    $parentTd.empty().append($($clonedChosen).show("show"));
+
+    $select = $parentTd.find('select')
+    $select.chosen({width: "200px"})
+
+    $select.val(OriginalContent).trigger("liszt:updated");
+    $select.trigger("chosen:updated");
+
+    $select.trigger('chosen:open');
+    $select.on('chosen:hiding_dropdown', function () {
+        tasks = $select.val();
+	task_text = '---';
+	
+	if (tasks && $.isArray(tasks)){
+	    task_text = tasks.join();
+	}else if(tasks){
+	    task_text = tasks;
+	}
+        $(context).html('<label class="label label-default" id="label_'+select_div+'">'+task_text+'</label>');
+    });
+
+}
+function edit_users(param){
+    $tr = $(param).closest('tr');
+    full_name = $tr.find('td[name=full_name]').text();
+    user_name = $tr.find('td[name=user_name]').text().trim();
+    dept = $tr.find('td[name=department]').text();
+    role = $tr.find('td[name=role]').text();
+    columns = $(param).attr('data-active_columns');
+
+    if (!columns){
+	columns = '---';
+    }
+
+    table_data = '<table>\
+		    <tr><td><strong>Full Name :</strong></td><td><strong>'+full_name+'</strong></td></tr>\
+		    <tr><td><strong>User Name :</strong></td><td><strong>'+user_name+'</strong></td></tr>\
+		    <tr><td><strong>Department :</strong></td><td><strong>'+dept+'</strong></td></tr>\
+		    <tr><td><strong>Role :</strong></td><td><strong>'+role+'</strong></td></tr>\
+		    <tr><td><strong>Change Role :</strong></td>\
+			<td ondblclick="editRoleCell(this,\'user_roles\')"><label class="label label-default" id="label_user_roles">'+role+'</label></td></tr>\
+		    <tr><td><strong>Tasks :</strong></td>\
+			<td ondblclick="editRoleCell(this, \'user_tasks\')"><label class="label label-default" id="label_user_tasks">'+columns+'</label></td></tr>\
+		    <tr><td colspan=2><a href="#" class="btn btn-primary btn-sm" id="update_user_roles">Save changes</a>\
+              <a href="#" class="btn btn-danger btn-sm" data-dismiss="modal">Close</a></td></tr>\
+		</table>';
+
+    $('#user_details_loader').html(table_data)
+    var $newModal = $("#myModal").clone();
+    $newModal.modal('show');
+
+    $newModal.on('click', '#update_user_roles', function(e){
+	e.preventDefault();
+
+	columns = $(this).closest('table').find('label[id="label_user_tasks"]').text().trim();
+	role = $(this).closest('table').find('label[id="label_user_roles"]').text().trim();
+
+    $.ajax({
+	type: "POST",
+	url: "/callajax/",
+	data : {'object_name': 'Update Users Role', 'user_name': user_name, 'role': role, 'columns': columns},
+	beforeSend: function(){
+        },
+	success: function(json){
+            noty({
+                text: 'User ('+user_name+') updated successfully ...',
+                layout: 'topCenter',
+                closeWith: ['click', 'hover'],
+                type: 'success'
+            });
+	},
+	error: function(error){
+	    console.log("Error:"+error);
+	}
+
+    });
+
+	$newModal.modal('hide');
+    });
+
+}
+/*
+      JS code for click on
+          Email list, To List and CC List
+*/         
+
+$("#selectEmailProject").change(function(){
+    get_assigned_emails();
+});
+
+$("#selectTool").change(function(){
+    get_assigned_emails();
+});
+
+$("#selectEmailTask").change(function(){
+    get_assigned_emails();
+});
+
+function get_assigned_emails(){
+
+    project_name = $("#selectEmailProject").val();
+    tool_name = $("#selectTool").val();
+    task_name = $("#selectEmailTask").val();
+
+    if (!project_name || !tool_name || !task_name){
+	return null;
+    }
+
+    $.ajax({
+        type: "POST",
+        url: "/callajax/",
+        data: {
+            "object_name": "Assigned Emails", "project": project_name,
+            "tool_name": tool_name, "task_name": task_name
+        },
+        beforeSend: function(){
+             $('#panel_big').plainOverlay('show');
+             $("#cc_list").empty();
+             $("#to_list").empty();
+             $(".div_emails ul").empty();
+        },
+        success: function(json){
+            if(jQuery.isEmptyObject(json))
+                error_message("No records to show");
+            else{
+                display_to_cc_unique_email_ids(json);
+            }
+            $('#panel_big').plainOverlay('hide');
+        }
+    });
+
+}
+
+function display_to_cc_unique_email_ids(json){
+
+    to = json.to;
+    cc = json.cc;
+    unique_emails_data = json.unique_list;
+    if(to){
+        $.each(to, function(idx, value){
+            li = $("<li class='list-group-item' data-value='"+value+"' data-type='"+value.role+"'>"
+            +value.email+"</li>");
+            $("#to_list").append(li);
+        });
+    }
+    if(cc){
+        $.each(cc, function(idx, value){
+            li = $(
+            "<li class='list-group-item' data-value='"+value+"' data-type='"+value.role+"'>"
+            +value.email+"</li>");
+            $("#cc_list").append(li);
+        });
+    }
+    if(unique_emails_data){
+        $.each(unique_emails_data, function(role, value){
+            $.each(value, function(idx, email){
+                li_data = $("<li class='list-group-item' data-type='"+role+"'>"+email+"</li>");
+                $("#"+role+"_ul").append(li_data);
+            });
+        });
+    }
+}
+
+function store_email_tool_wise(param){
+
+    project_name = $("#selectEmailProject").val();
+    tool_name = $("#selectTool").val();
+    task_name = $("#selectEmailTask").val();
+
+    if (!project_name || !tool_name || !task_name){
+	error_message("Fields must not be empty");
+	return null;
+    }
+
+    email_array = {};
+    to_array = [];
+    cc_array = [];
+
+    $("#to_list li").each(function(){
+        to_array.push($(this).text().trim());
+    });
+
+    $("#cc_list li").each(function(){
+        cc_array.push($(this).text().trim());
+    });
+
+    email_array["to"] = to_array;
+    email_array["cc"] = cc_array;
+    email_array = JSON.stringify(email_array);
+    if(to_array.length == 0  && cc_array.length == 0){
+        error_message("Email field must not be empty");
+        return null;
+    }
+    $.ajax({
+        type: "POST",
+        url: "/callajax/",
+        data: {
+            "object_name": "Add Emails", "project": project_name,
+            "tool_name": tool_name, "task_name": task_name,
+            "email_list": email_array
+        },
+        beforeSend: function(){
+             $('#panel_big').plainOverlay('show');
+        },
+        success: function(json){
+            noty({
+                text: 'Your changes were saved ...',
+                layout: 'topCenter',
+                closeWith: ['click', 'hover'],
+                type: 'success'
+            });
+
+            $('#panel_big').plainOverlay('hide');
+        }
+    });
+}
+
+
+$('body').on('click', '.list-group .list-group-item', function () {
+    $(this).toggleClass('active');
+});
+
+$('.list-arrows button').click(function () {
+    var $button = $(this), actives = '';
+    var index = '';
+    var selected_checkbox = get_selected_checkbox();
+    if ($button.hasClass('cc')) {
+        actives = $('.list-left ul li.active');
+        actives.removeClass("active");
+        actives.clone().appendTo('#cc_list');
+        actives.remove();
+    } else if ($button.hasClass('to')) {
+        actives = $('.list-left ul li.active');
+        actives.removeClass("active");
+        actives.clone().appendTo("#to_list"); 
+        actives.remove();
+    }
+    else if ($button.hasClass('mail_list')) {
+        to = $("#to_list li.active");
+        cc = $("#cc_list li.active");
+
+        if(to.length){
+            $("#to_list li").each(function(){
+                var active_class = $(this).hasClass("active");
+                if(active_class){
+                    remove_mails_from_to_cc_list(this);
+                }
+            });
+        }
+        if (cc.length){
+            $("#cc_list li").each(function(){
+                var active_class = $(this).hasClass("active");
+                if(active_class){
+                    remove_mails_from_to_cc_list(this);
+                }
+            });
+        }
+    }
+    if(selected_checkbox){
+        selected_checkbox.removeClass("selected");
+        selected_checkbox.children('i').removeClass('glyphicon-check').addClass('glyphicon-unchecked');
+    }
+    if($('.dual-list .selector').hasClass("selected"))
+        $('.dual-list .selector').removeClass("selected");
+});
+
+
+$('[name="SearchDualList"]').keyup(function (e) {
+    var code = e.keyCode || e.which;
+    if (code == '9') return;
+    if (code == '27') $(this).val(null);
+    var $rows = $(this).closest('.dual-list').find('.list-group li');
+    var val = $.trim($(this).val()).replace(/ +/g, ' ').toLowerCase();
+    $rows.show().filter(function () {
+        var text = $(this).text().replace(/\s+/g, ' ').toLowerCase();
+        return !~text.indexOf(val);
+    }).hide();
+});
+
+function remove_mails_from_to_cc_list(param){
+    index = $(param).index();
+    var type = $(param).attr("data-type");
+    $(param).removeClass("active");
+        if($("#" + type + "_ul li").length == 0)
+            $(param).clone().appendTo($("#" + type + "_ul"));
+        else
+            $("#" + type + "_ul li:eq('"+index+"')").before($(param).clone());
+    $(param).remove();
+}
+
+var checkbox_value='';
+function set_selected_checkbox($checkbox){
+    checkbox_value = $checkbox;
+}
+function get_selected_checkbox(){
+    return checkbox_value;
+}
+
+function select_all(this_param){
+    var role_array = ['Co-ordinator', 'Supervisor', 'Lead', 'Developer'];
+    var $checkBox = $(this_param);
+    var id_val = $(this_param).attr("id");
+    set_selected_checkbox($checkBox);
+    if(typeof id_val == "undefined"){
+        if (!$checkBox.hasClass('selected')) {
+            $checkBox.addClass('selected').closest('.well').find('ul li:not(.active)').addClass('active');
+            $checkBox.children('i').removeClass('glyphicon-unchecked').addClass('glyphicon-check');
+            for(i = 0; i < role_array.length; i++){
+                var btn_id = "#" + role_array[i] +"_btn";
+                $(btn_id).removeClass("selected");
+                $(btn_id).children('i').removeClass('glyphicon-check').addClass('glyphicon-unchecked');
+            }
+        } else {
+            $checkBox.removeClass('selected').closest('.well').find('ul li.active').removeClass('active');
+            $checkBox.children('i').removeClass('glyphicon-check').addClass('glyphicon-unchecked');
+        }
+    }
+    else{
+        var div_id = "#" + id_val.split("_")[0];
+        if(!$checkBox.hasClass("selected")){
+            $(this_param).addClass('selected');
+            $(div_id).find("ul li:not(.active)").addClass("active");
+            $("#"+id_val).children('i').removeClass("glyphicon-unchecked").addClass('glyphicon-check');
+        }
+        else{
+            $checkBox.removeClass('selected');
+            $(div_id).find("ul li.active").removeClass("active");
+            $("#"+id_val).children('i').removeClass("glyphicon-check").addClass('glyphicon-unchecked');
+        }
+    }
+
+}
+
+
+
 $('#selectReviewProject').change(function(){
     show_review_tasks();
 });
@@ -10196,10 +10693,16 @@ window.onload = function() {
     if ($('#artist_tasks').attr('class') == 'active'){
          show_artist_tasks();
     }
+    if ($('#create_roles').attr('class') == 'active'){
+         show_role_pages();
+    }
+    if ($('#update_users').attr('class') == 'active'){
+	create_datatable('tbl_users');
+    }
     if ($('#review_tasks').attr('class') == 'active'){
         show_review_tasks();
     }
-    if($('#create_project_page').attr('class') == 'active'){
+    if($('#create_entities').attr('class') == 'active'){
         get_project_details();
     }
     if($('#artist_productivity_reports').attr('class') == 'active'){

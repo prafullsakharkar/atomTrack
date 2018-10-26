@@ -5,78 +5,32 @@
                 <li class="nav-header"><img class="dashboard-avatar" alt=""
                                             src="http://192.168.1.18/Employees/{{emp_code}}.jpg"></li>
                 <li class="nav-header">Main</li>
-                <li class="{% if request.path == '/create/' %}active{% endif %}" id="create_project_page">
-                    <a class="ajax-link" href="/create"><i class="glyphicon glyphicon-new-window"></i>&nbsp;&nbsp;
-                        <span> Create Entities</span>
-                    </a>
-                </li>
-                <li id="artist_tasks" class="{% if request.path == '/tasks/' %}active{% endif %}">
-                    <a class="ajax-link" href="/tasks"><i class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;
-                        <span> To Do List</span>
-                    </a>
-                </li>
-                <li class="{% if request.path == '/task_entity/' %}active{% endif %}" id="task_entity">
-                    <a class="ajax-link" href="/task_entity"><i class="glyphicon glyphicon-new-window"></i>&nbsp;&nbsp;
-                        <span> Task Entity</span>
-                    </a>
-                </li>
-                <li class="{% if request.path == '/status/' %}active{% endif %}">
-                    <a class="ajax-link" href="/status"><i class="glyphicon glyphicon-th"></i>
-                        <span>&nbsp;&nbsp; Task Status</span>
-                    </a>
-                </li>
-                {% if data.user_role == 'Co-ordinator' or data.user_role == 'Supervisor' %}
-                <li id="review_tasks" class="{% if request.path == '/review/' %}active{% endif %}">
-                    <a class="ajax-link" href="/review"><i class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;
-                        <span> Review Tasks</span>
-                    </a>
-                </li>
-                <li class="{% if request.path == '/ftp/' %}active{% endif %}">
-                    <a class="ajax-link" href="/ftp"><i class="glyphicon glyphicon-cloud-upload"></i>&nbsp;&nbsp;
-                        <span> FTP Upload</span>
-                    </a>
-                </li>
-                <li class="accordion">
-                    <a href="#"><i class="glyphicon glyphicon-plus"></i>&nbsp;&nbsp;
-                        <span> Reports</span>
-                    </a>
-                    <ul class="nav nav-pills nav-stacked">
-                        <li id="mgm_dashboard_page" class="{% if request.path == '/mgm_dashboard/' %}active{% endif %}">
-                            <a class="ajax-link" href="/mgm_dashboard"><i class="glyphicon glyphicon-briefcase"></i>&nbsp;&nbsp;
-                                <span> Management</span>
-                            </a>
-                        </li>
-                        <li id="dashboard_page" class="{% if request.path == '/dashboard/' %}active{% endif %}">
-                            <a class="ajax-link" href="/dashboard"><i class="glyphicon glyphicon-dashboard"></i>&nbsp;&nbsp;
-                                <span> Dashboard</span>
-                            </a>
-                        </li>
-                        <li class="{% if request.path == '/month_wise/' %}active{% endif %}" id="month_wise_reports">
-                            <a href="/month_wise"><i class="glyphicon glyphicon-dashboard"></i>&nbsp;&nbsp;
-                                <span>Month Wise</span>
-                            </a>
-                        </li>
-                        <li class="{% if request.path == '/artist_prod/' %}active{% endif %}"
-                            id="artist_productivity_reports">
-                            <a class="ajax-link" href="/artist_prod"><i class="glyphicon glyphicon-dashboard"></i>&nbsp;&nbsp;
-                                <span> Artist Productivity</span>
-                            </a>
-                        </li>
-                        <li class="{% if request.path == '/sequence_delivery/' %}active{% endif %}"
-                            id="sequence_delivery">
-                            <a class="ajax-link" href="/sequence_delivery"><i class="glyphicon glyphicon-dashboard"></i>&nbsp;&nbsp;
-                                <span> Sequence Delivery</span>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-                {% elif data.user_role == 'Lead' %}
-                <li id="review_tasks" class="{% if request.path == '/review/' %}active{% endif %}">
-                    <a class="ajax-link" href="/review"><i class="glyphicon glyphicon-tasks"></i>&nbsp;&nbsp;
-                        <span> Review Tasks</span>
-                    </a>
-                </li>
-                {% endif %}
+		{% for page in data.left_side_menu %}
+		    {% if not page.Reports %}
+			<li class="{% if request.path == page.url %}active{% endif %}" id="{{ page.id }}">
+			    <a class="ajax-link" href="{{ page.url }}"><i class="glyphicon glyphicon-new-window"></i>&nbsp;&nbsp;
+				<span> {{ page.name }}</span>
+			    </a>
+			</li>
+		    {% else %}
+			<li class="accordion">
+			    <a href="#"><i class="glyphicon glyphicon-plus"></i>&nbsp;&nbsp;
+				<span> Reports</span>
+			    </a>
+			    <ul class="nav nav-pills nav-stacked">
+				{% for report in page.Reports %}
+				    <li class="{% if request.path == report.url %}active{% endif %}" id="{{ report.id }}">
+					<a class="ajax-link" href="{{ report.url }}"><i class="glyphicon glyphicon-dashboard"></i>&nbsp;&nbsp;
+					    <span> {{ report.name }}</span>
+					</a>
+				    </li>
+				{% endfor %}
+			    </ul>
+			</li>
+
+		    {% endif %}
+		{% endfor %}
+
                 <li class="{% if request.path == '/help_documentation/' %}active{% endif %}"
                     id="help_document">
                     <a class="ajax-link"

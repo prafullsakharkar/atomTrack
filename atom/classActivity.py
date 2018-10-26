@@ -6,7 +6,6 @@ import re
 import smtplib
 import time
 
-import ase_task
 import ldap
 import pymongo
 import csv
@@ -19,7 +18,7 @@ from email.mime.text import MIMEText
 
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-from settings import BASE_DIR, PROJ_BASE_DIR, FTRACK_URL, MONGO_SERVER, DEVMODE
+from settings import BASE_DIR, PROJ_BASE_DIR, MONGO_SERVER, DEVMODE, MONGO_DB
 
 from pprint import pprint
 from socket import socket, AF_INET, SOCK_DGRAM
@@ -33,23 +32,21 @@ class Activity:
 
         mongo_server = MONGO_SERVER
         self.debug = DEVMODE
+        mongo_default_db = MONGO_DB
 
 	self.atom = ase_atomsession.Session()
 
         self.mongo_client = pymongo.MongoClient(mongo_server, 27017)
-        self.mongo_database = self.mongo_client['userDailyBackupTask']
+        self.mongo_database = self.mongo_client[mongo_default_db]
 
         print("**************** START ******************")
-        print(mongo_server, self.debug)
+        print(mongo_server, mongo_default_db, self.debug)
 
         self.password_str = base64.b64decode("bWFkQHBpcDE=")
         self.projects = self.get_projects()
-        self.email_jfile = os.path.join(BASE_DIR, 'atomTrack/static/json/email.json')
         self.task_template_jfile = os.path.join(BASE_DIR, 'atomTrack/static/json/task_template.json')
         self.review_statuses = ["Pending Client Review", "Pending Internal Review", "Outsource",
                                 "Outsource Client Review"]
-
-        self.dept_short = ase_task.getTaskFtFsMapping()
 
         self.users_columns = ''
         self.object_name = ''
@@ -77,7 +74,6 @@ class Activity:
                            10: 'Oct', 11: 'Nov', 12: 'Dec'}
 
 	self.emp_db = self.mongo_client['employees']
-	self.col_emp_details = self.emp_db['employee_details']
 
         self.durations = ['Daily', 'Weekly', 'Monthly', 'Date Wise']
         self.empcode = {'prafull.sakharkar': 'RCP0713', 'muqtar.shaikh': 'RCM0800', 'ayush.goel': 'RCA0633'}
@@ -348,12 +344,119 @@ class Activity:
                     last = request.POST.get('last')
                     data = self.sequence_task_total_time_duration(first, last, project_name)
 
+                elif object_name == 'Role Pages':
+                    role = request.POST.get('role')
+		    data = self.get_role_page_details(role)
+                elif object_name == 'Update Role Page':
+                    role = request.POST.get('role')
+                    page_details = request.POST.get('page_details')
+		    data = self.update_page_details(role, page_details)
+                elif object_name == 'Update Users Role':
+                    role = request.POST.get('role')
+                    columns = request.POST.get('columns')
+                    user = request.POST.get('user_name')
+		    data = self.update_users_role(user, role, columns)
+                elif object_name == 'Assigned Emails':
+                    tool_name = request.POST.get('tool_name')
+                    task_name = request.POST.get('task_name')
+		    data = self.get_assigned_emails(project_name, tool_name, task_name)
+                elif object_name == 'Add Emails':
+                    tool_name = request.POST.get('tool_name')
+                    task_name = request.POST.get('task_name')
+                    email_list = request.POST.get('email_list')
+		    data = self.add_email_tool_wise(project_name, tool_name, task_name, email_list)
+
             if request.FILES:
                 data = self.attach_upload_files(request)
 
             # pprint(data)
             data = json.dumps(data)
             return HttpResponse(data, content_type="application/json")
+
+    # Page --- Create Role
+    def create_role(self, request):
+        username = request.user.username
+        if not username:
+            return HttpResponseRedirect('/login/')
+
+        self.username = username
+        self.reload_config()
+
+        # Get task details
+        task_hash = {}
+
+        task_hash['emp_code'] = 'blank'
+        if username in self.employee_details:
+            task_hash['emp_code'] = self.employee_details[username]['emp_code']
+        task_hash['user_id'] = username.upper()
+
+	left_side_menu = self.get_left_side_pages(self.user_role)
+
+	role_list = self.get_roles()
+
+        task_hash['data'] = {'user_role': self.user_role, 'left_side_menu': left_side_menu, 'role_list': role_list}
+
+        return render(request, 'create_role.html', task_hash)
+
+    # Page --- Users
+    def update_users(self, request):
+        username = request.user.username
+        if not username:
+            return HttpResponseRedirect('/login/')
+
+        self.username = username
+        self.reload_config()
+
+        # Get task details
+        task_hash = {}
+        task_hash['user_id'] = username.upper()
+
+        task_hash['emp_code'] = 'blank'
+        if username in self.employee_details:
+            task_hash['emp_code'] = self.employee_details[username]['emp_code']
+
+	user_details = self.emp_user_details(self.employee_details)
+
+	left_side_menu = self.get_left_side_pages(self.user_role)
+	role_list = self.get_roles()
+
+        task_hash['data'] = {'user_role': self.user_role, 'left_side_menu': left_side_menu, 'user_details' : user_details, 'role_list': role_list, 'all_tasks': self.all_tasks}
+
+        return render(request, 'update_users.html', task_hash)
+
+    # Page --- Add Emails
+    def add_emails(self, request):
+        username = request.user.username
+        if not username:
+            return HttpResponseRedirect('/login/')
+
+        self.username = username
+        self.reload_config()
+
+        # Get task details
+        task_hash = {}
+        task_hash['user_id'] = username.upper()
+
+	tool_list = ['Review Tasks', 'FTP Upload', 'Create Package', 'Render Manager', 'Fox Render']
+
+        task_hash['emp_code'] = 'blank'
+        if username in self.employee_details:
+            task_hash['emp_code'] = self.employee_details[username]['emp_code']
+
+	left_side_menu = self.get_left_side_pages(self.user_role)
+	user_details = self.emp_user_details(self.employee_details)
+
+	role_wise = dict()
+	for each in user_details:
+	    if each['role'] != 'Artist':
+		if each['role'] not in role_wise:
+		    role_wise[each['role']] = [each['email_id']]
+		else:
+		    role_wise[each['role']].append(each['email_id'])
+
+        task_hash['data'] = {'projects': self.projects, 'user_role': self.user_role, 'left_side_menu': left_side_menu, 'tool_list': tool_list, 'all_tasks': self.all_tasks, 'emails': role_wise}
+
+        return render(request, 'add_emails.html', task_hash)
 
     # Page --- To Do List
     def artist_tasks(self, request):
@@ -365,7 +468,7 @@ class Activity:
         self.reload_config()
 
         # Current Project
-        project = 'abc'
+        project = 'ice'
         status = ''
 
         # Get task details
@@ -375,7 +478,8 @@ class Activity:
         if username in self.employee_details:
             task_hash['emp_code'] = self.employee_details[username]['emp_code']
         task_hash['user_id'] = username.upper()
-        task_hash['data'] = {'projects': self.projects, 'user_role': self.user_role, 'all_tasks': self.all_tasks,
+	left_side_menu = self.get_left_side_pages(self.user_role)
+        task_hash['data'] = {'projects': self.projects, 'user_role': self.user_role, 'left_side_menu': left_side_menu,
                              'project': project}
 
         return render(request, 'artist_tasks.html', task_hash)
@@ -409,7 +513,8 @@ class Activity:
 
         objects = ['Asset Build', 'Shot', 'Sequence']
         asset_type = ['Set', 'Character', 'Prop', 'Vehicle', 'FX']
-        task_hash['data'] = {'projects': self.projects, 'user_role': self.user_role, 'objects': objects,
+	left_side_menu = self.get_left_side_pages(self.user_role)
+        task_hash['data'] = {'projects': self.projects, 'user_role': self.user_role, 'objects': objects, 'left_side_menu': left_side_menu, 
                              'asset_type': asset_type}
         statuses = self.atom.getStatuses()
         ldap_users = self.ldap_users()
@@ -446,8 +551,8 @@ class Activity:
 
         task_hash['task_temp_data'] = task_temp_data
 
-        task_hash['data'] = {'projects': self.projects, 'columns': self.users_columns, 'user_role': self.user_role,
-                             'all_tasks': self.all_tasks}
+	left_side_menu = self.get_left_side_pages(self.user_role)
+        task_hash['data'] = {'projects': self.projects, 'columns': self.users_columns, 'user_role': self.user_role, 'left_side_menu': left_side_menu}
 
         task_hash['statement'] = 'Yahoooooooooooooooo'
         return render(request, 'task_status.html', task_hash)
@@ -477,7 +582,8 @@ class Activity:
 
         task_hash['user_id'] = username.upper()
 
-        task_hash['data'] = {'projects': self.projects, 'user_role': self.user_role}
+	left_side_menu = self.get_left_side_pages(self.user_role)
+        task_hash['data'] = {'projects': self.projects, 'user_role': self.user_role, 'left_side_menu': left_side_menu}
 
         statuses = self.atom.getStatuses()
         list_statuses = list()
@@ -508,7 +614,6 @@ class Activity:
         task_hash['sequence_form'] = sequence_creation_form
         task_hash['asset_form'] = asset_creation_form
         task_hash['task_form'] = task_creation_form
-
         return render(request, 'create_entities.html', task_hash)
 
     # Page --- Review Tasks
@@ -532,7 +637,8 @@ class Activity:
         if username in self.employee_details:
             task_hash['emp_code'] = self.employee_details[username]['emp_code']
         task_hash['user_id'] = username.upper()
-        task_hash['data'] = {'projects': self.projects, 'user_role': self.user_role, 'project': project,
+	left_side_menu = self.get_left_side_pages(self.user_role)
+        task_hash['data'] = {'projects': self.projects, 'user_role': self.user_role, 'project': project, 'left_side_menu': left_side_menu,
                              'review_status': self.review_statuses}
 
         return render(request, 'review_tasks.html', task_hash)
@@ -558,7 +664,8 @@ class Activity:
 
         ftp_hash['task_temp_data'] = task_temp_data
 
-        ftp_hash['data'] = {'projects': self.projects, 'user_role': self.user_role}
+	left_side_menu = self.get_left_side_pages(self.user_role)
+        ftp_hash['data'] = {'projects': self.projects, 'user_role': self.user_role, 'left_side_menu': left_side_menu}
 
         return render(request, 'upload_ftp.html', ftp_hash)
 
@@ -598,7 +705,8 @@ class Activity:
             task_hash['emp_code'] = self.employee_details[username]['emp_code']
 
         task_hash['user_id'] = username.upper()
-        task_hash['data'] = {'projects': self.projects, 'user_role': self.user_role, 'durations': self.durations,
+	left_side_menu = self.get_left_side_pages(self.user_role)
+        task_hash['data'] = {'projects': self.projects, 'user_role': self.user_role, 'durations': self.durations, 'left_side_menu': left_side_menu,
                              'reports': reports, 'all_tasks': self.all_tasks}
 
         return render(request, 'dashboard.html', task_hash)
@@ -628,7 +736,8 @@ class Activity:
         if username in self.employee_details:
             task_hash['emp_code'] = self.employee_details[username]['emp_code']
         task_hash['user_id'] = username.upper()
-        task_hash['data'] = {'projects': self.projects, 'user_role': self.user_role, 'current_project': project}
+	left_side_menu = self.get_left_side_pages(self.user_role)
+        task_hash['data'] = {'projects': self.projects, 'user_role': self.user_role, 'current_project': project, 'left_side_menu': left_side_menu}
 
         return render(request, 'month_wise_reports.html', task_hash)
 
@@ -666,7 +775,8 @@ class Activity:
         if username in self.employee_details:
             task_hash['emp_code'] = self.employee_details[username]['emp_code']
         task_hash['user_id'] = username.upper()
-        task_hash['data'] = {'projects': self.projects, 'user_role': self.user_role, 'current_project': project,
+	left_side_menu = self.get_left_side_pages(self.user_role)
+        task_hash['data'] = {'projects': self.projects, 'user_role': self.user_role, 'current_project': project, 'left_side_menu': left_side_menu,
                              'status': status}
 
         return render(request, 'mgm_dashboard.html', task_hash)
@@ -701,21 +811,202 @@ class Activity:
             task_hash['emp_code'] = self.employee_details[username]['emp_code']
 
         task_hash['user_id'] = username.upper()
-        task_hash['data'] = {'projects': self.projects, 'user_role': self.user_role, 'durations': self.durations,
+	left_side_menu = self.get_left_side_pages(self.user_role)
+        task_hash['data'] = {'projects': self.projects, 'user_role': self.user_role, 'durations': self.durations, 'left_side_menu': left_side_menu,
                              'reports': reports, 'current_project': project, 'all_users': ldap_users,
                              'all_tasks': self.all_tasks}
 
         return render(request, 'artist_productivity.html', task_hash)
 
+    # Page --- Sequence Delivery
+    def sequence_delivery(self, request, project='ice'):
+
+        username = request.user.username
+        if not username:
+            return HttpResponseRedirect("/login")
+
+	self.reload_config()
+        if not self.user_role or self.user_role != 'Supervisor':
+            return HttpResponseRedirect("/login/")
+
+        template_name = 'sequence_delivery.html'
+
+        seq_dict = {}
+        seq_dict['emp_code'] = 'blank'
+        if username in self.employee_details:
+            seq_dict['emp_code'] = self.employee_details[username]['emp_code']
+
+        seq_dict['user_id'] = username.upper()
+
+	left_side_menu = self.get_left_side_pages(self.user_role)
+        seq_dict['data'] = {'projects': self.projects,
+                            'current_project': project,
+                            'user_role': self.user_role, 'left_side_menu': left_side_menu}
+        return render(request, template_name, seq_dict)
+
     def reload_config(self):
 	self.get_user_columns()
         self.email_address = self.atom.getEmailIds()
+
+    def get_left_side_pages(self, role=''):
+	page_list = self.get_page_details(role)
+	new_list = list()
+	parent = dict()
+	for each in page_list:
+	    if 'name' in each:
+		pages = each['name'].split('/')
+		if isinstance(pages, list) and len(pages) > 1:
+		    each['name'] = pages[1]
+		    if pages[0] not in parent:
+			parent[pages[0]] = [each]
+		    else:
+			parent[pages[0]].append(each)
+		else:
+		    new_list.append(each)
+
+	if parent:
+	    new_list.append(parent)
+
+	return new_list
+
+    def get_role_page_details(self, role):
+	default_pages = self.get_page_details('Developer')
+	role_pages = self.get_page_details(role)
+	role_list = map(lambda x:x['id'], role_pages)
+
+	page_list = list()
+	for each in default_pages:
+	    if each['id'] not in role_list:
+		each['active'] = 'inactive'
+		each['access'] = []
+		role_pages.append(each)
+
+	return role_pages
+
+    def get_page_details(self, role=''):
+	collection = self.emp_db["role_map"]
+	data = collection.find_one({'role':role})
+	data_list = list()
+	if 'pages' in data:
+	    data_list = data['pages']
+
+	return data_list
+
+    def emp_user_details(self, emp_details):
+	data_list = list()
+	if not isinstance(emp_details, dict):
+	    return data_list
+	not_required_dept = ['Accounts', 'Information Technology', 'Creative Management', 'Human Resources',
+                                 'Strategy and Corporate Finance', 'Management', "Administration"]
+	for user, data in emp_details.iteritems():
+	    if data['department'] in not_required_dept:
+		continue
+
+	    columns = ''
+	    if 'columns' in data and isinstance(data['columns'], list):
+		columns = ','.join(data['columns'])
+		
+	    data['columns'] = columns
+	    data_list.append(data)
+
+	return data_list
+
+    def update_page_details(self, role='', page_details=''):
+	page_details = json.loads(page_details)
+
+	collection = self.emp_db["role_map"]
+	collection.update_one({'role':role},{'$set':{'pages':page_details}},upsert=True)
+
+    def update_users_role(self, user='', role='', columns=''):
+
+	data = dict()
+	if role and role != '---':
+	    data['role'] = role
+
+	if columns:
+	    if columns == '---':
+		data['columns'] = []
+	    else:
+		data['columns'] = columns.split(',')
+	
+	collection = self.emp_db["employee_details"]
+	collection.update_one({'user_name':user},{'$set': data})
+
+    def add_email_tool_wise(self, project_name, tool_name, task_name, email_list):
+
+	email_list = json.loads(email_list)
+
+	email_dict = dict()
+	email_dict['email'] = email_list
+
+	search_key = {
+		'project_name' : project_name,
+		'tool_name' : tool_name,
+		'task_name' : task_name
+	    }
+	collection = self.emp_db["email"]
+	collection.update_one(search_key,{'$set': email_dict}, upsert=True)
+
+    def get_assigned_emails(self, project_name, tool_name, task_name):
+
+	search_key = {
+		'project_name' : project_name,
+		'tool_name' : tool_name,
+		'task_name' : task_name
+	    }
+	collection = self.emp_db["email"]
+	email_cursor = collection.find_one(search_key)
+
+	email_dict = dict()
+	if not email_cursor or 'email' not in email_cursor:
+	    email_dict['to'] = []
+	    email_dict['cc'] = []
+	else:
+	    email_dict['to'] = email_cursor['email']['to']
+	    email_dict['cc'] = email_cursor['email']['cc']
+	
+	user_details = self.emp_user_details(self.employee_details)
+
+	to_cc = email_dict['to'] + email_dict['cc']
+
+	to = []
+	cc = []
+	role_wise = dict()
+	for each in user_details:
+	    if each['email_id'] in email_dict['to']: 
+		to.append({'role':each['role'], 'email': each['email_id']})
+		continue
+	    elif each['email_id'] in email_dict['cc']:
+		cc.append({'role':each['role'], 'email': each['email_id']})
+		continue
+	    if each['role'] != 'Artist':
+		if each['role'] not in role_wise:
+		    role_wise[each['role']] = [each['email_id']]
+		else:
+		    role_wise[each['role']].append(each['email_id'])
+
+	email_dict['unique_list'] = role_wise
+	email_dict['to'] = to
+	email_dict['cc'] = cc
+
+	return email_dict
+
+    def get_roles(self):
+	collection = self.emp_db["role_map"]
+	data = collection.find({})
+	role_list = list()
+	for each in data:
+	    if 'role' in each:
+		role_list.append(each['role'])
+
+	return role_list
 
     def get_user_details(self):
 
         json_data = {}
 
-	emp_data = self.col_emp_details.find({"user_name":{"$exists":True}, "active": 1})
+	col_emp_details = self.emp_db['employee_details']
+	emp_data = col_emp_details.find({"user_name":{"$exists":True}, "active": 1})
 	for each in emp_data:
 	    json_data[each['user_name']] = each
 
@@ -772,7 +1063,7 @@ class Activity:
 	parent_obj = self.atom.getFromId(project_name,[parent_id])
 	parent_name = parent_obj[parent_id]['name']
 
-        obj_shots = self.atom.getShots(project_name, parent_name)
+        obj_shots = self.atom.getShots(project_name, [parent_name])
         shot_list = list()
         for seq, values in obj_shots.iteritems():
 	    for data in values:
@@ -1787,8 +2078,8 @@ class Activity:
                 version_hash['status_name'] = each['status']
                 version_hash['published_on'] = str(each['published_on']).split('.')[0]
                 version_hash['user_role'] = self.user_role
-                version_hash['comment'] = each['description']
                 version_hash['published_by'] = each['published_by']
+                version_hash['comment'] = each['description']
             except Exception as e:
 		print("Fetch version Error : %s" %e)
 
@@ -2145,18 +2436,6 @@ class Activity:
         json_data = {}
         if os.path.isfile(self.task_template_jfile):
             data_file = open(self.task_template_jfile, 'r')
-            try:
-                json_data = json.load(data_file)
-            finally:
-                data_file.close()
-
-        return json_data
-
-    def get_email_address(self):
-
-        json_data = {}
-        if os.path.isfile(self.email_jfile):
-            data_file = open(self.email_jfile, 'r')
             try:
                 json_data = json.load(data_file)
             finally:
@@ -3225,8 +3504,6 @@ class Activity:
 
 #        self.get_user_details()
 
-        print(startdate, enddate)
-
         match_dict = {
             'start_date': {'$gte': startdate}, 'stop_date': {'$lte': enddate}
         }
@@ -4273,35 +4550,6 @@ class Activity:
             else:
                 range_list = ["%04d" % x for x in range(0, 1000, x_range)]
         return range_list
-
-    def sequence_delivery(self, request, project='ice'):
-
-        username = request.user.username
-        if not username:
-            return HttpResponseRedirect("/login")
-
-	self.reload_config()
-        if not self.user_role or self.user_role != 'Supervisor':
-            return HttpResponseRedirect("/login/")
-
-        template_name = 'sequence_delivery.html'
-
-        seq_dict = {}
-#        self.get_user_details()
-        seq_dict['emp_code'] = 'blank'
-        if username in self.employee_details:
-            seq_dict['emp_code'] = self.employee_details[username]['emp_code']
-
-        seq_dict['user_id'] = username.upper()
-
-        seq_dict['data'] = {'projects': self.projects,
-                            'current_project': project,
-                            'user_role': self.user_role}
-        # seq_dict['total_time'] = total_sequence_duration
-        # seq_dict['current_project'] = project
-        # order_dict = OrderedDict(sorted(total_sequence_duration.items(), key=lambda (k, v): (v, k)))
-        #
-        return render(request, template_name, seq_dict)
 
     def sequence_task_total_time_duration(self, first, last, project='ice'):
 

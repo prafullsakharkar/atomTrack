@@ -6011,8 +6011,8 @@ a.thumbnail:hover,a.thumbnail:focus,a.thumbnail.active {
 .published{
     background-color: #415730;
 }
-input[name="asset"]:checked {
-  box-shadow: 0 0 0 3px green;    
+input:checked {
+  box-shadow: 0 0 0 3px #ccf746;    
 }
 
 /*

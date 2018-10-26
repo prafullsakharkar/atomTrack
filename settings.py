@@ -72,13 +72,11 @@ except ValueError:
 if ip_address not in ['192.168.1.97']:
     DEVMODE = True
 
-MONGO_SERVER = '192.168.1.99'
-MONGO_DB = 'userDailyBackupTask'
-FTRACK_URL = 'http://192.168.1.98' 
+MONGO_SERVER = '192.168.1.199'
+MONGO_DB = 'atomTrack'
 
 if DEVMODE:
-    MONGO_SERVER = '192.168.1.128'
-    FTRACK_URL = 'http://192.168.1.99' 
+    MONGO_SERVER = '192.168.1.97'
 
 mongoengine.connect(db=MONGO_DB,host=MONGO_SERVER,connect=False)
 # Application definition
