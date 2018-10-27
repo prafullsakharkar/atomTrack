@@ -4123,6 +4123,12 @@ a.label:hover,a.label:focus {
         filter:none;
         color: black;
 }
+.label-Completed {
+        background-image:linear-gradient(#77e0f1, #5b9bee 60%, #068afb);
+        background-repeat:no-repeat;
+        filter:none;
+        color: black;
+}
 
 .label-default {
 	background-color:#3a3f44;

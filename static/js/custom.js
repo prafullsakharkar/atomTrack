@@ -3541,26 +3541,6 @@ $('#download_task_status').click(function(){
     });
 });
 
-function add_task_note(note, note_category, object_id, note_for, attach_files){
-    var page = $('#task_menu1').find('li.active').first('a span').text()
-    $.ajax({
-	type: "POST",
-	url: "/callajax/",
-	data: {"object_name": "Create Note", "note_text": note, "note_category": note_category, "task_id": object_id, "note_for": note_for, "attach_files": attach_files, "page": page},
-	success: function(json){
-	    noty({
-                text: 'Note added successfully ...',
-                layout: 'topCenter',
-                closeWith: ['click', 'hover'],
-                type: 'success'
-            });
-	},
-	error: function(error){
-	    console.log("Error:"+error);
-	}
-    });
-}
-
 function object_status_change(project, object_id, status_for, new_status){
     var page = $('#task_menu1').find('li.active').first('a span').text().trim();
     $.ajax({
@@ -4967,11 +4947,15 @@ function artist_action(param){
     action = '';
     action_attr = $(param).attr('title');
     note_text = '';
+    currentRow = $(param).closest('tr');
     if (action_attr == 'START'){
-	    action = 'Started';
+	action = 'Started';
+	currentRow.find("td:eq(9)").find("#task_start").css("display", "none");
+	currentRow.find("td:eq(9)").find("#task_stop").css("display", "inline");
+	currentRow.find("td:eq(9)").find("#task_pause").css("display", "inline");
     }else if (action_attr == 'PAUSE'){
-	    action = 'Paused';
-	    note_text = prompt("Why you want to pause the task ?", "");
+	action = 'Paused';
+	note_text = prompt("Why you want to pause the task ?", "");
 	if (note_text != null)
 	    note_text = note_text.trim();
 
@@ -4979,10 +4963,20 @@ function artist_action(param){
             error_message("invalid reason ...");
             return null;
         }
-    }else if (action_attr == 'REVIEW'){
-	    action = 'Review';
+	currentRow.find("td:eq(9)").find("#task_start").css("display", "inline");
+	currentRow.find("td:eq(9)").find("#task_stop").css("display", "inline");
+	currentRow.find("td:eq(9)").find("#task_pause").css("display", "none");
+    }else if (action_attr == 'COMPLETE'){
+	action = 'Completed';
+	currentRow.find("td:eq(9)").find("#task_start").css("display", "none");
+	currentRow.find("td:eq(9)").find("#task_stop").css("display", "none");
+	currentRow.find("td:eq(9)").find("#task_pause").css("display", "none");
+	currentRow.find("td:eq(9)").find("#task_complete").css("display", "none");
     }else{
-	    action = 'Stopped';
+	action = 'Stopped';
+	currentRow.find("td:eq(9)").find("#task_start").css("display", "inline");
+	currentRow.find("td:eq(9)").find("#task_stop").css("display", "none");
+	currentRow.find("td:eq(9)").find("#task_pause").css("display", "none");
     }
 
     fn_artist_task_action(param,action,note_text);
@@ -5087,7 +5081,10 @@ function show_artist_tasks(){
                 action_play = 'display:none;';
                 action_pause = 'display:none;';
                 action_stop = 'display:none;';
-                action_review = 'display:none;';
+                action_complete = 'display:none;';
+		if (obj.task == 'Shave Hair' || obj.task == 'Shot Finaling')
+                    action_complete = '';
+
                 if (obj.backup_status == 'Started'){
                     action_pause = '';
                     action_stop = '';
@@ -5130,13 +5127,21 @@ function show_artist_tasks(){
                         <strong '+color_code+'>'+obj.time_left+'</strong>\
                       </td>\
               <td style="width: 205px;">\
-                        <button title="START" class="btn btn-inverse btn-success btn-sm" id="task_approved"\
+                        <button title="START" class="btn btn-inverse btn-success btn-sm" id="task_start"\
                                 style="color: black;'+action_play+'" onclick="artist_action(this)">\
                           <i class="glyphicon glyphicon-play"></i>\
                         </button>\
-                        <button title="STOP" class="btn btn-inverse btn-danger btn-sm" id="task_reject"\
+                        <button title="STOP" class="btn btn-inverse btn-danger btn-sm" id="task_stop"\
                                 style="color: black;'+action_stop+'" onclick="artist_action(this)">\
                           <i class="glyphicon glyphicon-stop"></i>\
+                        </button>\
+			<button title="PAUSE" class="btn btn-inverse btn-warning btn-sm" id="task_pause"\
+                                style="color: black;'+action_pause+'" onclick="artist_action(this)">\
+                          <i class="glyphicon glyphicon-pause"></i>\
+                        </button>\
+                        <button title="COMPLETE" class="btn btn-inverse btn-info btn-sm" id="task_complete"\
+                                style="color: black;'+action_complete+'" onclick="artist_action(this)">\
+                          <i class="glyphicon glyphicon-ok"></i>\
                         </button>\
                       </td>\
                     </tr>';
@@ -5148,14 +5153,6 @@ function show_artist_tasks(){
                         <strong>'+obj.task+'</strong>\
                       </td>\
 
-                    <button title="PAUSE" class="btn btn-inverse btn-warning btn-sm" id="task_pause"\
-                                style="color: black;'+action_pause+'" onclick="artist_action(this)">\
-                          <i class="glyphicon glyphicon-pause"></i>\
-                        </button>\
-                        <button title="REVIEW" class="btn btn-inverse btn-primary btn-sm" id="task_review"\
-                                style="color: black;'+action_review+'" onclick="artist_action(this)">\
-                          <i class="glyphicon glyphicon-send"></i>\
-                        </button>\
                 */
                 $('#tbl_task tbody').append(table_row);
             });

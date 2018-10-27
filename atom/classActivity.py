@@ -101,12 +101,7 @@ class Activity:
         self.reload_config()
         print(str(datetime.datetime.now()), "User (%s) Login : %s" % (self.user_role,username))
 
-        if self.user_role == 'Supervisor':
-            return HttpResponseRedirect('/mgm_dashboard/')
-        elif self.user_role == 'Co-ordinator':
-            return HttpResponseRedirect('/status/')
-        else:
-            return HttpResponseRedirect('/tasks/')
+        return HttpResponseRedirect('/tasks/')
 
     def ajax_call(self, request):
         """
@@ -161,7 +156,8 @@ class Activity:
                     page = request.POST.get('page')
                     path = request.POST.get('path')
                     parent_id = request.POST.get('parent_id')
-                    data = self.apply_artist_action(project_name, task_id, action, page, path, parent_id)
+                    note_text = request.POST.get('note_text')
+                    data = self.apply_artist_action(project_name, task_id, action, page, path, parent_id, note_text)
                 elif object_name == 'Select Task':
                     parent_id = request.POST.get('parent_id')
                     data = self.get_tasks(parent_id, project_name)
@@ -382,6 +378,12 @@ class Activity:
         self.username = username
         self.reload_config()
 
+	pages = self.get_page_details(self.user_role)
+	url = request.get_full_path()
+	check_access = filter(lambda x: x['url'] == url, pages)
+	if not check_access:
+            return HttpResponseRedirect('/login/')
+
         # Get task details
         task_hash = {}
 
@@ -406,6 +408,12 @@ class Activity:
 
         self.username = username
         self.reload_config()
+
+	pages = self.get_page_details(self.user_role)
+	url = request.get_full_path()
+	check_access = filter(lambda x: x['url'] == url, pages)
+	if not check_access:
+            return HttpResponseRedirect('/login/')
 
         # Get task details
         task_hash = {}
@@ -432,6 +440,12 @@ class Activity:
 
         self.username = username
         self.reload_config()
+
+	pages = self.get_page_details(self.user_role)
+	url = request.get_full_path()
+	check_access = filter(lambda x: x['url'] == url, pages)
+	if not check_access:
+            return HttpResponseRedirect('/login/')
 
         # Get task details
         task_hash = {}
@@ -467,18 +481,23 @@ class Activity:
         self.username = username
         self.reload_config()
 
+	pages = self.get_page_details(self.user_role)
+	url = request.get_full_path()
+	check_access = filter(lambda x: x['url'] == url, pages)
+	if not check_access:
+            return HttpResponseRedirect('/login/')
+
         # Current Project
         project = 'ice'
-        status = ''
 
         # Get task details
         task_hash = {}
-
         task_hash['emp_code'] = 'blank'
         if username in self.employee_details:
             task_hash['emp_code'] = self.employee_details[username]['emp_code']
         task_hash['user_id'] = username.upper()
 	left_side_menu = self.get_left_side_pages(self.user_role)
+
         task_hash['data'] = {'projects': self.projects, 'user_role': self.user_role, 'left_side_menu': left_side_menu,
                              'project': project}
 
@@ -499,8 +518,11 @@ class Activity:
 
         self.reload_config()
 
-        if not self.user_role or self.user_role not in ['Supervisor', 'Co-ordinator']:
-            return HttpResponseRedirect('/tasks/')
+	pages = self.get_page_details(self.user_role)
+	url = request.get_full_path()
+	check_access = filter(lambda x: x['url'] == url, pages)
+	if not check_access:
+            return HttpResponseRedirect('/login/')
 
         # Get task details
         task_hash = dict()
@@ -541,6 +563,12 @@ class Activity:
 
         self.reload_config()
 
+	pages = self.get_page_details(self.user_role)
+	url = request.get_full_path()
+	check_access = filter(lambda x: x['url'] == url, pages)
+	if not check_access:
+            return HttpResponseRedirect('/login/')
+
         task_hash = {}
 
         task_hash['emp_code'] = 'blank'
@@ -566,7 +594,10 @@ class Activity:
         self.username = username
         self.reload_config()
 
-        if not self.user_role or self.user_role not in ['Supervisor', 'Co-ordinator']:
+	pages = self.get_page_details(self.user_role)
+	url = request.get_full_path()
+	check_access = filter(lambda x: x['url'] == url, pages)
+	if not check_access:
             return HttpResponseRedirect('/login/')
 
         # Get task details
@@ -625,8 +656,11 @@ class Activity:
         self.username = username
         self.reload_config()
 
-        if not self.user_role or self.user_role not in ['Supervisor', 'Co-ordinator']:
-            return HttpResponseRedirect('/tasks/')
+	pages = self.get_page_details(self.user_role)
+	url = request.get_full_path()
+	check_access = filter(lambda x: x['url'] == url, pages)
+	if not check_access:
+            return HttpResponseRedirect('/login/')
 
         # Get task details
         task_hash = {}
@@ -653,8 +687,11 @@ class Activity:
         ftp_hash = {}
         self.reload_config()
 
-        if not self.user_role or self.user_role not in ['Supervisor', 'Co-ordinator']:
-            return HttpResponseRedirect('/tasks/')
+	pages = self.get_page_details(self.user_role)
+	url = request.get_full_path()
+	check_access = filter(lambda x: x['url'] == url, pages)
+	if not check_access:
+            return HttpResponseRedirect('/login/')
 
         ftp_hash['emp_code'] = 'blank'
         if username in self.employee_details:
@@ -679,8 +716,11 @@ class Activity:
 
         self.reload_config()
 
-        if not self.user_role or self.user_role != 'Supervisor':
-            return HttpResponseRedirect('/tasks/')
+	pages = self.get_page_details(self.user_role)
+	url = request.get_full_path()
+	check_access = filter(lambda x: x['url'] == url, pages)
+	if not check_access:
+            return HttpResponseRedirect('/login/')
 
         # Get task details
         task_hash = {}
@@ -720,7 +760,10 @@ class Activity:
         self.username = username
         self.reload_config()
 
-        if not self.user_role or self.user_role not in ['Supervisor', 'Co-ordinator']:
+	pages = self.get_page_details(self.user_role)
+	url = request.get_full_path()
+	check_access = filter(lambda x: x['url'] == url, pages)
+	if not check_access:
             return HttpResponseRedirect('/login/')
 
         # Get task details
@@ -750,7 +793,10 @@ class Activity:
         self.username = username
         self.reload_config()
 
-        if not self.user_role or self.user_role not in ['Supervisor', 'Co-ordinator']:
+	pages = self.get_page_details(self.user_role)
+	url = request.get_full_path()
+	check_access = filter(lambda x: x['url'] == url, pages)
+	if not check_access:
             return HttpResponseRedirect('/login/')
 
         # Get task details
@@ -791,8 +837,11 @@ class Activity:
 
         self.reload_config()
 
-        if not self.user_role or self.user_role != 'Supervisor':
-            return HttpResponseRedirect('/tasks/')
+	pages = self.get_page_details(self.user_role)
+	url = request.get_full_path()
+	check_access = filter(lambda x: x['url'] == url, pages)
+	if not check_access:
+            return HttpResponseRedirect('/login/')
 
         # Get task details
         task_hash = {}
@@ -826,10 +875,12 @@ class Activity:
             return HttpResponseRedirect("/login")
 
 	self.reload_config()
-        if not self.user_role or self.user_role != 'Supervisor':
-            return HttpResponseRedirect("/login/")
 
-        template_name = 'sequence_delivery.html'
+	pages = self.get_page_details(self.user_role)
+	url = request.get_full_path()
+	check_access = filter(lambda x: x['url'] == url, pages)
+	if not check_access:
+            return HttpResponseRedirect('/login/')
 
         seq_dict = {}
         seq_dict['emp_code'] = 'blank'
@@ -842,7 +893,7 @@ class Activity:
         seq_dict['data'] = {'projects': self.projects,
                             'current_project': project,
                             'user_role': self.user_role, 'left_side_menu': left_side_menu}
-        return render(request, template_name, seq_dict)
+        return render(request, 'sequence_delivery.html', seq_dict)
 
     def reload_config(self):
 	self.get_user_columns()
@@ -1319,11 +1370,14 @@ class Activity:
 
 	    if asset_name == 'final':
 		# check sequence version 
-		approve_seq = collection.find({'status': approve_status, 'task_id': task_id, 'asset_name': 'sequence'})
-		approve_seq_vers = approve_seq.count()
-		if not approve_seq_vers:
+		approve_seq = collection.find_one({'status': approve_status, 'task_id': task_id, 'asset_name': 'sequence'}).sort('published_on', -1)
+		if not approve_seq:
 		    data_hash['status'] = '%s sequence version not found' % approve_status
 		    data_hash['upload_error'] = 1
+		# sending final with sequence approved version for ICE, IC2
+		elif proj_name.lower() in ['ice', 'ic2']:
+		    final_seq_version = '%003d' % int(approve_seq['name'].split(' ')[-1])
+		    data_hash['upload_version'] = asset_name + '_' + comp + '_v' + final_seq_version
 
 	    if not approve_versions:
 		data_hash['status'] = '%s version not found' % approve_status
@@ -3320,6 +3374,7 @@ class Activity:
 	    try:
 		task_path = each_key
                 task_details['task_id'] = str(each_val['_id'])
+                task_details['task'] = each_val['name']
                 task_details['user_name'] = user
                 task_details['project'] = project
                 task_details['path'] = task_path
@@ -3430,7 +3485,7 @@ class Activity:
                     print("No task a live")
                 daily_task_col.update_one({'_id': each['_id']}, {'$set': {'active': 0}})
 
-    def apply_artist_action(self, project, task_id, action, page, task_path, parent_id):
+    def apply_artist_action(self, project, task_id, action, page, task_path, parent_id, pause_text):
         """
         Function to add or update detail about the task by the artist.
         :param username: Name of the artist or user
@@ -3446,6 +3501,9 @@ class Activity:
 	if not task_id:
 	    return False
 
+        obj_col = self.mongo_database[project + '_tasks']
+        search_key = {'current_assignees.user_name': self.username, '_id': ObjectId(task_id)}
+
         update_value = dict()
         log_update_value = dict()
         update_value['current_assignees.$.backup_status'] = action
@@ -3453,21 +3511,28 @@ class Activity:
         log_update_value[action] = datetime.datetime.now()
         if action == 'Started':
             update_value['current_assignees.$.start_date'] = datetime.datetime.now()
+            change_status = 'In Progress'
+            update_value['status'] = change_status
+	    log_update_value['status'] = change_status
         elif action == 'Paused':
             update_value['current_assignees.$.pause_date'] = datetime.datetime.now()
+	    if pause_text:
+		pause_list = [{"note": pause_text, "date": datetime.datetime.now()}]
+		log_update_value['pause_note'] = pause_text
+		obj_col.update_one(search_key,
+				    {"$addToSet": {"current_assignees.$.pause_text":
+                                        {"$each": pause_list}
+                                    }
+                                })
         else:
             update_value['current_assignees.$.finish_date'] = datetime.datetime.now()
             self.stop_active_task(project, task_path)
-
-        if action == 'Started':
-            change_status = 'In Progress'
-
-            update_value['status'] = change_status
-	    log_update_value['status'] = change_status
+	    if action == 'Completed':
+		change_status = 'Internal Approved'
+		update_value['status'] = change_status
+		log_update_value['status'] = change_status
 
         # update backup status and task status
-        obj_col = self.mongo_database[project + '_tasks']
-        search_key = {'current_assignees.user_name': self.username, '_id': ObjectId(task_id)}
         obj_col.update_one(search_key, {'$set': update_value})
 
 	for key, value in log_update_value.iteritems():
